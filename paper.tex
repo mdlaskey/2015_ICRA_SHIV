@@ -208,7 +208,7 @@ Next, we define a "surrogate" loss function $l$, which gives the distance betwee
    \right.
 \end{align}
 
-Given a candidate policy $\theta$, we can use the surrogate loss function to compute how "close" it is to the competent controller's policy $\tilde{\pi}$. 
+Given a candidate policy $\theta$, we can use the surrogate loss function to compute how "close" it is to the supervisor's policy $\tilde{\pi}$. 
 
 We want to compute a policy $\pi_{\theta}$ that minimizes the expected surrogate loss where the expectation is taken over the distribution of states. 
 
@@ -220,7 +220,7 @@ We want to compute a policy $\pi_{\theta}$ that minimizes the expected surrogate
  
  
  
-The optimization problem in Eq. \ref{eq:LFD_obj} compares the action taken of the policy $\pi_\theta$ and  the competent controller, $\tilde{\pi}$  weighted by the probability of  the state occurring $p(\bx|\theta)$. 
+The optimization problem in Eq. \ref{eq:LFD_obj} compares the action taken of the policy $\pi_\theta$ and  the supervisor, $\tilde{\pi}$  weighted by the probability of  the state occurring $p(\bx|\theta)$. 
 
 Eq. \ref{eq:LFD_obj} is hard to solve because  the objective is not convex and we only have access to $\tilde{\pi}(x)$, where $x$ is a state in one of the demonstrations or $\bx \in \mathcal{D}$. To address these issues Stephane and Ross proposed an iterative method known as DAgger\cite{ross2010reduction}.
 
@@ -244,16 +244,16 @@ At iteration $k=0$ given a dataset $\mathcal{D}_0$, the training set with $N_0$ 
  
 This is a supervised learning problem and can be solved using standard machine learning techniques, for example a support vector machine or a neural network. The surrogate losses mentioned early like Squared Euclidean distance or an Indicator function are appropriate optimization objectives. 
  
- To handle the fact that the competent actor's policy contains noise $\epsilon$, we employ a regularization technique in the optimization. Regularization is a technique to control the smoothness of the function that is fit to the sampled data. It is a common technique to make the estimator robust to zero mean noise on data. In practice it is a penalty term on either  the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.
+ To handle the fact that the supervisor's policy contains noise $\epsilon$, we employ a regularization technique in the optimization. Regularization is a technique to control the smoothness of the function that is fit to the sampled data. It is a common technique to make the estimator robust to zero mean noise on data. In practice it is a penalty term on either  the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.
  
  \subsubsection{Step 2}
-DAgger rolls out the policy $\pi_{\theta_{k=1}}$ to sample states that are likely to occur under $\theta_{k=1}$. For every state visited, DAgger requests the competent controller to provide the appropriate control/label. Formally, for a given sampled trajectory  $\tau = (\bx_1,\bu_1,...,\bx_T\bu_T )$. The competent controller provides labels $\tilde{\bu}_t$, where $\bu_t \sim \pi(\bx_t) + \epsilon$ to the trajectory $\tau = (\bx_1,\tilde{\bu}_1,...,\bx_T, \tilde{\bu}_T )$.  This can be very tedious for a human. The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_1$. 
+DAgger rolls out the policy $\pi_{\theta_{k=1}}$ to sample states that are likely to occur under $\theta_{k=1}$. For every state visited, DAgger requests the supervisor to provide the appropriate control/label. Formally, for a given sampled trajectory  $\tau = (\bx_1,\bu_1,...,\bx_T,\bu_T )$. The supervisor provides labels $\tilde{\bu}_t$, where $\bu_t \sim \pi(\bx_t) + \epsilon$ to the trajectory $\tau = (\bx_1,\tilde{\bu}_1,...,\bx_T, \tilde{\bu}_T )$.  This can be very tedious for a human. The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_1$. 
 
 
 Steps 1 and 2 are repeated for $K$ iterations or until the cumulative surrogate loss  goes to zero. Since DAgger requires rolling out the policy at each iteration, one way to terminate the algorithm is when the performance of the rolled out policy matches the intended behavior, or more formally when the surrogate loss is below some predefined threshold $\gamma$.  
 
 
-Dagger works well in both simulation and real world experiments. It also has theoretical guarantees that it will converge in the limit to the competent controller's policy. However, using policy rollouts means the robot can enter dangerous states, which could damage a robot in a non simulation system. For example, when DAgger was used on a quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}. A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor and incur high surrogate loss \cite{tokdar2010importance} 2) the surrogate loss associated with the state is high, so the state, although visited, doesn't have good control yet. Furthermore, iterations are tedious because if a human is the supervisor requires manual "labeling" of every state visited with the appropriate control. 
+Dagger works well in both simulation and real world experiments. It also has theoretical guarantees that it will converge in the limit to the supervisor's policy. However, using policy rollouts means the robot can enter dangerous states, which could damage a robot in a non simulation system. For example, when DAgger was used on a quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}. A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor and incur high surrogate loss \cite{tokdar2010importance} 2) the surrogate loss associated with the state is high, so the state, although visited, doesn't have good control yet. Furthermore, iterations are tedious because if a human is the supervisor requires manual "labeling" of every state visited with the appropriate control. 
 
 To address these limitations, we propose to 1) avoid highly risky states entirely via terminating the policy roll-out and 2) recognize slightly risky states and request human input for these and to reduce the burden on the human trainer. One way to do this is to define risk in terms of distance to the nearest neighbor, but this vulnerable to outliers in the known set of states. Another option is to fit a distribution to the known set of states, which requires an exponential number of samples in the dimension of the state space \cite{nadaraya1964estimating}. We propose using a modified version of the technique known as the One Class SVM that  estimates a boundary of the density \cite{scholkopf2001estimating}.
 
@@ -310,7 +310,7 @@ The main idea is to solve an optimization problem that separates the origin, we 
 \vspace{-2ex}
 \begin{align}\label{eq:primal_sup}
 \underset{w\in F, \mathbf{\xi} \in \mR, \rho \in \mR}{\mbox{min}}\: \frac{1}{2}||w||^2+\frac{1}{vn} \sum^n_i \xi_i - \rho\\
-\mbox{s.t} \: \langle w,\Phi(x_i) \rangle \geq \rho - \xi_i, \: \xi_i \geq 0 \\
+\mbox{s.t} \: \langle w,\Phi(x_i) \rangle \geq \rho - \xi_i, \: \xi_i \geq 0 \notag
 \end{align}
 
 The parameter $\nu$ controls the penalty on slack terms and asymptotically approaches is equivalent to $\gamma$ \cite{vert2006consistency}.  The decision function then becomes 
@@ -322,7 +322,7 @@ g(x) = \mbox{sgn}(\langle w,\Phi(x) \rangle-\rho)
 
 Where $g(x) = 1$ indicates in the support region and $(g) = -1$ denotes being outside the support region. The dual form of the optimization takes the form of a Quadratic Program with respect to the Gram Matrix \cite{scholkopf2001estimating}. 
 
-Estimating the level set of a distribution can be a measure of the generalization ability of $\pi_{\theta}$ to points not within $\mathcal{D}$. However, it does not account for the fact that for a given $\theta$ or  solution to Eq. \ref{eq:super_objj}. $\pi_\theta$ may not correctly match the competent controller's controls for all points train on. To account for this, we propose a modification to the One Class SVM denote: 
+Estimating the level set of a distribution can be a measure of the generalization ability of $\pi_{\theta}$ to points not within $\mathcal{D}$. However, it does not account for the fact that for a given $\theta$ or  solution to Eq. \ref{eq:super_objj}. $\pi_\theta$ may not correctly match the supervisor's controls for all points train on. To account for this, we propose a modification to the One Class SVM denote: 
 
 \begin{align}
 y_i = \left\{
@@ -333,7 +333,7 @@ y_i = \left\{
    \right.
 \end{align}
 
-or $y_i$ is $1$ if the control applied matches the competent controller and $-1$ if it differs. In the regression case the decision between $1$ and $-1$ can be set by a some threshold on a L2-norm or $||\pi_{\theta}(\bx_i)-\bu_i||$. We use $y_i$ to modify the optimization as follows: 
+or $y_i$ is $1$ if the control applied matches the supervisor and $-1$ if it differs. In the regression case the decision between $1$ and $-1$ can be set by a some threshold on a L2-norm or $||\pi_{\theta}(\bx_i)-\bu_i||$. We use $y_i$ to modify the optimization as follows: 
 
 \vspace{-2ex}
 \begin{align}\label{eq:primal_sup}
@@ -356,14 +356,14 @@ Our decision boundary function $g(\bx)$ is then derived in terms of the support 
 
 \subsection{SHEATH:Support-based HElp AquisiTion from Humans}
 
-Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately predict the competent controller's control,which we define as the region of low risk.  In the statistics community, a known property is that estimators are function will likely mis-classify if they are evaluated at points not in the distribution sampled from.Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  Thus, we try to estimate the level set of the training distribution, which is explained in \ref{sec:level} and only have the competent controller provide labels when the robot leaves this boundary. Furthermore to avoid entering pathological states that are far from the competent controller's demonstrations, we terminate the roll-out when it is a certain distance or risk factor from the decision boundary, which is given by $r(\bx) = \sum_i^n \alpha_i \bx_i k(\bx_i,\bx)-\rho$. The risk threshold, $r_0$, is user defined based on the task. 
+Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately predict the supervisor's control,which we define as the region of low risk.  In the statistics community, a known property is that estimators are function will likely mis-classify if they are evaluated at points not in the distribution sampled from.Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  Thus, we try to estimate the level set of the training distribution, which is explained in \ref{sec:level} and only have the supervisor provide labels when the robot leaves this boundary. Furthermore to avoid entering pathological states that are far from the supervisor's demonstrations, we terminate the roll-out when it is a certain distance or risk factor from the decision boundary, which is given by $r(\bx) = \sum_i^n \alpha_i \bx_i k(\bx_i,\bx)-\rho$. The risk threshold, $r_0$, is user defined based on the task. 
 
 \subsubsection{Step 1}
 Similar to DAgger at iteration $k$ the algorithm estimates a policy, $\pi_{\theta_k}$ on the dataset $\mathcal{D}_k$ by solving Eq. \ref{eq:super_objj}. We then estimate the level set of the distribution being trained on by solving the optimization for the One Class SVM or $\ref{eq:primal_sup}$ on the dataset $\mathcal{D}_k$. We now have a decision boundary $g_k(\bx)$, which is $1$ if the region is in the low risk area and $-1$ otherwise . The parameter $\nu$ is an estimate of how much probability mass is contained in the level set and can be use to control the size of the low risk region. 
  
  
  \subsubsection{Step 2}
- In DAgger the policy that was rolled out is $\pi_{\theta_k}$, however this could potential encounter pathological states that are far from the initial set of demonstrations $\mathcal{D}_0$. To prevent this we terminate the rolled out policy if the risk, or distance from the support, is above some threshold $r(\bx_t) > r_0$.  Furthermore, instead of labeling every state now the competent controller is only require to label states outside of the level set or $\bx$, where $g(\bx) = -1$.  These states are then added to the dataset $\mathcal{D}_{k+1}$ and the algorithm goes back to Step 1. 
+ In DAgger the policy that was rolled out is $\pi_{\theta_k}$, however this could potential encounter pathological states that are far from the initial set of demonstrations $\mathcal{D}_0$. To prevent this we terminate the rolled out policy if the risk, or distance from the support, is above some threshold $r(\bx_t) > r_0$.  Furthermore, instead of labeling every state now the supervisor is only require to label states outside of the level set or $\bx$, where $g(\bx) = -1$.  These states are then added to the dataset $\mathcal{D}_{k+1}$ and the algorithm goes back to Step 1. 
 
 An implicit trade off exists between what how much of the distribution is contained in the selected level set and the amount of exploration the robot is allowed. If the level set is large the robot will be allowed to explore in this region and potentially make more mistakes with respect to the expert, but learn faster. If the level set contains a smaller fraction of data, then the expert will be in control more and the robot will learn at a slower rate. 
 
@@ -428,7 +428,7 @@ Super Mario Bros. is a platform video game where the character, Mario, must move
 \includegraphics[width=8cm, height = 4.5cm]{figures/dagger_sheath_mario.eps}
 
 
-\caption{We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the number of labels provided by the competent controller. Initial results, averaged over 20 levels, suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.   \todo{I think these results are promising but want to make clear they are very preliminary and want to run more experiments on Mario and the self driving car to ensure that we can actually do this reliable. Also, the jaggedness is concerning and needs to be looked in to, my intuition is telling me that Mario is just a very chaotic environment though. I am going to average over more levels to see if it improves}}
+\caption{We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the number of labels provided by the supervisor. Initial results, averaged over 20 levels, suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.   \todo{I think these results are promising but want to make clear they are very preliminary and want to run more experiments on Mario and the self driving car to ensure that we can actually do this reliable. Also, the jaggedness is concerning and needs to be looked in to, my intuition is telling me that Mario is just a very chaotic environment though. I am going to average over more levels to see if it improves}}
 \label{fig:mario_results}
 \end{figure}
 
