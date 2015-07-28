@@ -22,14 +22,27 @@
 %\usepackage{amsmath} % assumes amsmath package installed
 %\usepackage{amssymb}  % assumes amsmath package installed
 
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\usepackage[ruled,vlined]{algorithm2e}
 
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
+
+\def\lc{\left\lfloor}   
+\def\rc{\right\rfloor}
 
 \usepackage{amsmath,amssymb}
 
 \usepackage{tabularx}
-\usepackage{tikz,hyperref,graphicx,units,subfig}
-\usepackage{subfig}
+\usepackage{tikz,hyperref,graphicx,units}
+\usepackage{subfigure}
 \usepackage{benktools}
+
 \usepackage{caption}
 \usepackage{epstopdf}
 \renewcommand{\captionfont}{\footnotesize}
@@ -51,6 +64,7 @@
 \newcommand{\bp}{\mathbf{p}}
 \newcommand{\bw}{\mathbf{w}}
 \newcommand{\bt}{\mathbf{t}}
+\newcommand{\bu}{\mathbf{u}}
 \newcommand{\by}{\mathbf{y}}
 \newcommand{\bx}{\mathbf{x}}
 \newcommand{\bz}{\mathbf{z}}
@@ -67,6 +81,7 @@
 \newcommand{\mW}{\mathcal{W}}
 \newcommand{\mF}{\mathcal{F}}
 \newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\mR}{\mathcal{R}}
 
 \newcommand{\bfc}{W}
 \newcommand{\Qinf}{Q_{\infty}}
@@ -87,18 +102,14 @@
 \newcolumntype{R}[1]{>{\RaggedLeft\hspace{0pt}}p{#1}}
 
 \title{\LARGE \bf
-Multi-Arm Bandit Models for 2D Sample Based Grasp Planning with Uncertainty }
+An Algorithm to Reduce Supervisor Demonstrations for DAgger in Learning From Demonstrations[v9] }
 
 
-\author{Michael Laskey$^1$, Jeff Mahler$^1$, Zoe McCarthy$^1$,  Florian T. Pokorny$^3$, Sachin Patil$^1$,\\ Jur van den Berg$^4$,  Danica Kragic$^3$, Pieter Abbeel$^1$, Ken Goldberg$^2$% <-this % stops a space
-\thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, zmccarthy, jmahler, sachinpatil, pabbeel\}@berkeley.edu}}%
+\author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Ken Goldberg$^2$% <-this % stops a space
+\thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, ftpokorny\}@berkeley.edu}}%
 \thanks{$^2$Department of Industrial Engineering and Operations Research and Department of Electrical Engineering and Computer Sciences; {\small goldberg@berkeley.edu}}%
 \thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
-\thanks{$^3$Computer Vision and Active Perception Lab, Centre for Autonomous Systems, School of Computer Science and Communication, KTH Royal Institute of Technology, Stockholm, Sweden {\small \{fpokorny, dani\}@kth.se}}%
-\thanks{$^4$Google; Amphitheatre Parkway, Mountain View, CA 94043, USA {\small jurvandenberg@gmail.com}}%
 } 
-
-\newtheorem{theorem}{Theorem}
 
 \begin{document}
 
@@ -112,454 +123,325 @@ Multi-Arm Bandit Models for 2D Sample Based Grasp Planning with Uncertainty }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-For applications such as warehouse order fulfillment, robot grasps must be robust to uncertainty arising from sensing, shape, mechanics, and control.  One way to achieve this is to evaluate the performance of candidate grasps by sampling perturbations in shape, pose, and control, computing the probability of force closure for each candidate to identify the grasp with the highest expected quality. Prior work has turned to cloud computing because evaluating the quality of each grasp is computationally demanding. To improve efficiency and extend this work, we consider how Multi-Armed Bandit (MAB) models for optimizing decisions can be applied in this context. We formulate robust grasp planning as a MAB problem and evaluate grasp planning convergence time using 100 object shapes randomly selected from the Brown Vision 2D Lab Dataset from 1000 uniformly distributed candidate grasp angles. We consider the case where shape uncertainty is represented as a Gaussian process implicit surface (GPIS) and there is Gaussian uncertainty in pose, gripper approach angle, and coefficient of friction. 
-Uniform allocation and iterative pruning, the non-MAB methods, converge slowly.
-In contrast, Thompson Sampling and the Gittins index method, the MAB methods we consider, converged to within 3\% of the optimal grasp approximately 5x faster.
+For robot control problems where the dynamics of the environment and the reward function are unknown, one technique is to learn a policy that attempts to match a supervisor's demonstration . A state of the art method in learning from demonstration is known as Dataset Aggregation, or DAgger. DAgger treats learning from demonstration as a supervised learning problem.The algorithm iteratively trains a policy on labeled data and then estimates states the robot is likely to encounter by executing the trained policy and has the supervisor tell the robot what controls it should have applied. Some successes of DAgger have been achieving state of the art performance on both Mario and Atari video game benchmarks, flying a quadcopter through a forest and teaching a robot to follow verbal instructions. One potential limitation though of DAgger is that it requires the supervisor to label the control for every state the robot visits during training, which can be expensive and tedious if the supervisor is a human. We propose estimating where the train policy is likely to mis-predict the supervisor's control, which we define as area of risk and then only having the supervisor label these states. Areas of risk can occur if the state is far from training data or if it has been incorrectly classified during the supervised learning. We propose identifying these areas via a modified version of the One Class SVM, which is used to estimate a level set of the distribution trained on. Then only states outside of this boundary are queried. Initial results suggest \todo{once we polish the experiments tomorrow and Wednesday}
+
 \end{abstract}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
+ Consider a robot trying to learn a task, such as driving a rc car around a track with other cars. In this task, the robot may have no prior information other than visual demonstrations from a human demonstrator. With no knowledge of a underlying cost function or system dynamics traditional control techniques are not practical.  One method in robotics that can handle such a situation is called Learning from demonstrations.  In the past, these methods  have  achieved state of the art performance  in a variety of applications.\cite{ross2013learning,pomerleau1989alvinn,schulman2013case} 
+
+One approach to LfD is to train a policy, or a  function estimator (either a classifier or regressor), to predict a supervisor's behavior given training data of the  observations (input) and actions (output) performed while accomplishing a task. However the robot's actions affect the next state observed, which violates the standard i.i.d assumption that is common in most statistical learning approaches. Ross et al. proved that this can cause the error in the estimator to compound over the time and lead to performance degradation that is proportional to the time horizon of the task squared. The intuition behind this result is that as the robot makes mistakes with respect to the supervisor's policy it drifts from the distribution it was trained on and encounters new states it can't generalize to.  Ross and Bagnell overcome this by presenting an iterative method that first trains a policy on the data observed using standard supervised learning techniques then tries the policy out in the environment to see what states are likely to occur under the robot's trained policy.  The supervisor then tells the robot what controls it should applied after each iteration and the policy is retrained \cite{ross2010reduction}. The DAgger method has been used since to teach a robot how to follow verbal instructions, achieve state of the art performance on Atari games and fly a quad copter through a forest~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
 
 
-%\vspace{10pt}
-%\todo{Get High res GPIS visualizations, Incorporate next round of feedback}
 
-Consider a robot fulfilling orders in a warehouse, where it encounters new consumer products and must handle them quickly.
-Planning grasps using analytic methods requires knowledge of contact locations and surface normals.
-However, a robot may not be able to measure these quantities exactly due to sensor imprecision and missing data, which could result from occlusions, transparency, or highly reflective surfaces. 
 
-% \begin{figure}%
-%     \centering
-% %     \subfloat{{\includegraphics[width=8cm]{figures/cup.jpg} }}%
-% %       \qquad
-  
-%      \subfloat{{\includegraphics[width=8.5cm]{matlab_figures/pfc.eps} }}%
-   
-%     \caption{ Comparison of the current average probability of force closure vs. the stopping time $T_s$. The plots are averaged over 100 shapes randomly drawn from the Brown Vision 2D Lab Dataset \cite{brown} with $|G|=1000$ for each shape.  We demonstrate this for Thompson, Gittins, Monte-Carlo and the approach of Kehoe et al \cite{kehoe2012toward}. We also plot the average probability of force closure for the estimated optimal grasp evaluated using Monte-Carlo sampling. Empirically, it appears that Thompson and Gittins converge to the optimal solution at a faster rate, which is desired for an anytime algorithm.   }%
-%     \label{fig:rot_shapes}%
-% \end{figure}
-
-\begin{figure}%
-    \centering
-     \subfloat{{\includegraphics[scale=1]{matlab_figures/pfc-01.jpg} }}%
-
-    \caption{Number of samples versus the normalized probability of force closure $P_F$ for the best estimated grasp after $t$ samples, $P_F(\Gamma_{\bar{k}, t})$, out of 1000 candidate grasps using uniform allocation, iterative pruning (eliminating candidates that perform poorly on initial samples), and our proposed Multi-Armed Bandit (MAB) algorithms (Gittins indices and Thompson Sampling).
-    %We evaluated performance on 100 objects randomly selected from from the Brown Vision 2D Lab Dataset \cite{brown} with 1000 uniformly distributed candidate grasp plans.
-    The normalized $P_F$ is the ratio of $P_F(\Gamma_{\bar{k}, t})$ to the highest $P_F$ in the candidate grasp set $P_F(\Gamma^*)$ averaged over 100 independent runs on randomly selected objects from the Brown Vision 2D Dataset \cite{brown}.
-    The highest quality grasp was determined by brute force search over all candidate grasps ( a method that is 10x more iterations than all methods shown)~\cite{kehoe2012toward} 
-    Uniform allocation and iterative pruning converge to within 3$\%$ of the optimal (the dashed grey line) in approximately 40,000 and 20,000 iterations, respectively.
-    In comparison, the MAB methods both converge in approxmately 4,000 iterations. 
-%    $P_F(\Gamma_{\bar{k}})$ (ratio of $P_F(\Gamma_{\bar{k}})$ to $P_F(\Gamma^*)$)
-%    
-%    Normalized grasp quality over time of the returned grasp for 4 sample-based planning methods.  Normalization divides the current quality of grasp, $P_F(\Gamma_{\bar{k}})$ returned by the highest probability of force closure in the candidate grasp set $P_F(\Gamma^*)$. The highest quality grasp was determined by brute force search over all candidate grasps (which required 10x  more time than any of these methods \cite{kehoe2012toward}).  Data is based on 100 objects randomly selected from from the Brown Vision 2D Lab Dataset \cite{brown} with 1000 uniformly distributed candidate grasp plans. Monte Carlo methods such as Uniform sampling and iterative pruning (eliminating candidates that perform poorly on initial samples) eventually converge to within 3$\%$ of the optimal (the dashed grey line), requiring approximately 40,000 and 20,000 iterations.  Two Multi-Arm Bandit methods perform significantly better, converging after only 4000 iterations..
-	}
-    \label{fig:grasp_quality}
+\begin{figure}[t!]
+\centering
+\includegraphics[width=12cm, height=6cm]{figures/teaser.eps}
+\caption{ An illustrative example of estimating the risk area in the data collected for a simulated self driving car around a track with other cars. The green area corresponds to points that are likely to occur under the expert demonstrations, where outside are points that would occur with low probability and thus are considered high risk. } 
+\vspace*{-10pt}
+\label{fig:dis_traveled}
 \end{figure}
 
 
-One common measure of quality is force closure, the ability to resist external forces and torques in arbitrary directions~\cite{li1988task}. To cope with uncertainty, recent work has explored computing the probability of  force closure given uncertainty in pose~\cite{christopoulos2007handling, kim2012physically, weisz2012pose} and object shape~\cite{kehoe2012estimating, mahler2015gp}.
-One way to compute the probability of force closure is using Monte-Carlo integration over sample perturbations in the uncertain quantities\cite{christopoulos2007handling, kim2012physically, weisz2012pose, kehoe2012toward}. However, performing Monte-Carlo integration for each candidate grasp in a set is computationally expensive.  Past work has looked at using parallel programming in the cloud to overcome this problem~\cite{kehoe2012estimating,kehoe2012toward,kehoe2015survey}.
-In this work, we aim to extend these cloud-based methods by reducing the number of samples needed to converge to a high-quality grasp.  
+During learning, implementations of DAgger require the supervisor to manually label the controls the robot should have applied for each states it visits. If the supervisor, is a human this can be tedious and expensive. We are interested in having the supervisor only need to provide labels in areas of high risk, or where the robot is likely to mis-predict the controllers actions to reduce the workload on the controller.  A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor \cite{tokdar2010importance} 2)  the state in the training set is being mis-predicted, so the state, although visited, doesn't have good control yet 
 
-Our main contribution is formulating this problem as  a Multi-Armed Bandit (MAB) and showing it is possible to allocate sampling effort to only grasps that seem promising \cite{barto1998reinforcement, lai1985asymptotically, robbins1985some}. In a standard MAB there are a set of possible options, or `arms'~\cite{barto1998reinforcement}, that each return a numeric reward from a stationary distribution. The goal in a MAB problem is to  select a sequence of options to maximize expected reward. We formulate the problem of ranking a set of candidate grasps according to a quality metric in the presence of uncertainty as a MAB problem. We then treat the MAB algorithm as an anytime algorithm that terminates once a user defined confidence level is met or at a given stopping time. 
+To estimate where the robot's current policy is likely to mis-predict the supervisor, we  leverage a property in statistical machine learning that a trained model will be able to generalize within the distribution it is trained on \cite{tokdar2010importance}. This property can be seen used in importance sampling when data is collected from one distribution, but tested on another and has to be re-weighted to the test distribution \cite{huang2006correcting}. One approach then is to estimate the distribution the policy is trained on and then ask for the supervisor to take over if the  probability of the current state is low under the estimated distribution. However, the amount of data needed to accurately estimate the density increases exponentially with the dimension of state space \cite{nadaraya1964estimating}. If we are working with partial observations like image data this could be impractical.  Thus, we propose using a modified version of a technique known as the One Class SVM that only tries to estimate the level set of the density trained on \cite{scholkopf2001estimating} and has been shown to successfully work on image data before in the context of outlier detection \cite{liu2014unsupervised}. 
 
-We study this formulation using probability of force closure~\cite{christopoulos2007handling, weisz2012pose, kehoe2012toward} as a quality metric under uncertainty in pose, shape, gripper approach, and friction coefficient. 
-We model shape uncertainty using Gaussian process implicit surfaces (GPISs), a Bayesian representation of shape uncertainty that has been used in various robotic applications~\cite{dragiev2011, hollinger2013}. 
-We model uncertainty in pose as a normal distribution around the orientation and 2D position of the object.
-We chose to model uncertainty in grasp approach as a normal distribution around the center and angle of the grasp axis for a parallel jaw gripper. We model uncertainty in friction coefficient as a normal distribution around an expected friction coefficient.
+We make the following assumptions access to an environment where a robot can try out policies and sample trajectories and access to a supervisor that is able to provide demonstrations and tell the robot the control it should have applied after each iteration. We also assume that we are able to collect a series of partial observations from the environment and the controls applied. Lastly, we assume the observations encapsulate the Markov assumption in such that the probability of one is only dependent on the last observation and the controls applied. 
 
-We compare the performance of Thompson sampling and Gittins indices, two popular algorithms for solving the MAB problem, against uniform allocation and an adaptive sampling method known as iterative pruning, which iteratively reduces the set of candidate grasps  based on sample mean~\cite{kehoe2012toward}. In the task of finding grasps with high probability of force closure.
-We compare on the Brown Vision 2D Dataset, a dataset of 2D planar objects~\cite{brown, christopoulos2007handling}.
 
-Our initial results in simulation show that Thompson Sampling, a MAB algorithm, required approximately $5\times$ fewer samples than iterative pruning to plan a grasp within $3\%$ of the estimated highest probability of force closure in the set of 1000 randomly selected grasps averaged over 100 objects. 
-Although our current implementation is local, our methods may be extended to the cloud by solving $M$ MAB problems on disjoint subsets of the arms and aggregating the results~\cite{glazebrook2000index}.
-%by dividing the arms into $M$ subset,where $M$ is the number of available cores, and solving each MAB problem separately\cite{glazebrook2000index}. 
-
+Our contributions to date are framing the problem of asking for help in an online setting as estimating the support of a distribution and proposing a modified version of the One Class SVM,that both estimates the level set of a distribution and carves out areas in the support where we know our policy will mis-predict the supervisor, to identify states of high risk.  Initial results on a Mario AI video game, averaged over 20 levels,  suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 queries to the supervisor, while DAgger required 2800 queries.  \todo{These are preliminary results and I want to test on more mario experiments and the self driving car, also look at robustness to hyperparamters such as $\nu$ before I am confident in them}
 
 \section{Related Work}
+The field of learning from demonstration has achieved state of the art performance in a variety of areas within robotics \cite{argall2009survey}. Abbeel et al. used an iLQR controller around helicopter trajectories demonstrated by an expert to successfully learn a series of aerobatics stunts \cite{abbeel2007application}. Billard and Matari used a hierarchy of neural networks on video data and tracking markers to imitate a human arms movements on a 37 degree of freedom humaniod robot \cite{billard2001learning}. Schulman et al. used a non-linear warping, thin plate splines, on collected trajectories of a human controlling a PR2 and tying knots with a rope. Then transferred the demonstrations to the new unseen initial configurations of the rope~\cite{schulman2013case}. 
 
-Most research on grasp planning focuses on finding grasps by maximizing a grasp quality metric. Grasp quality is often measured by the ability to resist external perturbations to the object in wrench space~\cite{ferrari1992, miller2004graspit}. Analytical quality metrics typically assume precisely known object shape, object pose, and locations of contact~\cite{cheong2011output, ciocarlie2009}. Work on grasping under uncertainty has considered uncertainty in the state of a robotic gripper~\cite{goldberg1990bayesian, stulp2011learning} and uncertainty in contact locations with an object~\cite{zheng2005} Furthermore, recent work has studied the effects of uncertainty in object pose and gripper positioning\cite{brook2011collaborative, hsiao2011bayesian}.
+ A subset of the learning from demonstration field is working within the assumption of no known dynamics and no access to a cost function. Under these assumptions, one approach to learning from demonstration is to collect a set of trajectories and controls from a supervisor and then treat the problem as a supervised learning problem that regresses on a function from state space to controls~\cite{argall2009survey}. Pomerleau et al. used this approach on raw image data and controls provided by a person driving a car and learned a policy that allowed a car to travel on a highway. However, they observed if the car deviated from the middle of the road it would not know how to recover, this behavior was attributed to the fact the car only drove in middle of the road while collecting demonstrations~\cite{pomerleau1989alvinn}. Ross et al. studied this effect and proved the amount of error accumulated is squared in the time horizon of a policy and proposed a learning algorithm, SMILE, that stochastically mixes the supervisor's control with the robots during training. Thus allowing the robot to explore states the supervisor hasn't seen before~\cite{ross2010efficient}. 
 
-Brook, Ciocarlie, and Hsiao~\cite{brook2011collaborative, hsiao2011bayesian} studied a Bayesian framework to evaluate the probability of grasp success given uncertainty in object identity, gripper positioning, and pose by simulating grasps on deterministic mesh and point cloud models.
-Weisz et al.~\cite{weisz2012pose} found that grasps ranked by probability of force closure subject to uncertainty in object pose were empirically more successful on a physical robot than grasps planned using deterministic wrench space metrics. 
-Similarly, Kim et al.~\cite{kim2012physically} planned grasps using dynamic simulations over perturbations in object pose. They also found that the planned grasps were more successful on a physical robot than those planned with classical wrench space metrics.
+Ross and Bagnell then improved upon this method with DAgger an iterative method that first trains a policy on the data observed using standard supervised learning techniques and tries the policy out in the environment to see what states are likely to occur under the robots policy. The supervisor then tells the robot what controls it should applied after each iteration and the policy is retrained with an aggregate of all data seen before \cite{ross2010reduction}. 
 
-Recent work has also studied uncertainty in object shape, motivated by the use of uncertain low-cost sensors and tolerances in part manufacturing.
-Christopoulos et al.~\cite{christopoulos2007handling} sampled spline fits for 2-dimensional planar objects and ranked a set of randomly generated grasps by probability of force closure.
-Kehoe et al.~\cite{kehoe2012estimating, kehoe2012toward} sampled perturbations in shape for extruded polygonal objects to plan push grasps for parallel-jaw grippers.
-Several recent works have also studied using Gaussian process implicit surfaces (GPISs) to represent shape uncertainty motivated by its ability to model spatial noise correlations and to integrate multiple sensing modalities~\cite{dragiev2011, dragiev2013uncertainty, hollinger2013, mahler2015gp}.
-Dragiev et al.~\cite{dragiev2011} uses GPIS to actively explore shapes with tactile sensing to find a hand posture that aligned the gripper fingers to an object's surface normals~\cite{dragiev2013uncertainty}.
-Mahler et al. used the GPIS representation to find locally optimal anti-podal grasps by framing grasp planning as an optimization problem~\cite{mahler2015gp}. 
+A quad-copter using DAgger learned how to fly through a forest using only HOG features extracted from visual images \cite{ross2013learning}. Guo et al. combined DAgger with Deep Q learning methods to achieve state of the art performance on the common Atari game benchmark in Reinforcement Learning \cite{NIPS2014_5421}. Duvallet use DAgger to teach robots to follow verbal instructions about where to move sematically in a building with a training set of humans following similar verbal instructions \cite{duvallet2013imitation}. Levine et al. extended the iterative learning paradigm through Guided Policy Search, which replaces the expert with iLQG and uses KL divergence constraints to train the policy to match the distributions of the controllers \cite{levine2015end}.  
 
 
-
-
-
-%For shape uncertainty, we used a Gaussian process implicit surface representation. 
-%Hollinger et al. used GPIS as a model of uncertainty to perform active sensing on the hulls in underwater boats \cite{hollinger2013}.
-%Dragiev et al. showed how GPIS can enable a grasp controller on the continuous signed distance function \cite{dragiev2011}.
-%Mahler et al. used the GPIS representation to find locally optimal anti-podal grasps by framing grasp planning as an optimization problem \cite{mahler2015gp}. 
-
-Some probabilistic grasp quality measures, such as probability of force closure, are computed using Monte-Carlo integration~\cite{christopoulos2007handling, kehoe2012toward, kim2012physically, weisz2012pose}.
-Monte-Carlo involves sampling from distributions on uncertainty quantities and averaging the quality over these samples to empirically estimate a probability distribution~\cite{caflisch1998monte}.
-However, it can be computationally expensive to sample all proposed grasps to convergence.
-To address the computational cost, Kehoe et al.~\cite{kehoe2012estimating} proposed an adaptive sampling procedure called iterative pruning, which periodically discards a subset of the grasps that seem unlikely to be of high probability of force closure. However, the method pruned grasps using only the sample mean, which could discard good grasps.
-We propose modeling the problem as a Multi-Armed Bandit, which selects the next grasp to sample based on past observations instead~\cite{barto1998reinforcement, lai1985asymptotically}.
-
-\subsection{MAB Model}
-The MAB model, originally described by Robbins~\cite{robbins1985some}, is a statistical model of an agent attempting to make a sequence of correct decisions while concurrently gathering information about each possible decision. Solutions to the MAB model have been used in applications for which evaluating all possible options is expensive or impossible, such as the optimal design of clinical trials~\cite{simon1989optimal}, market pricing~\cite{rothschild1974two}, and choosing strategies for games~\cite{st2012online}. 
-
-A traditional MAB example is a gambler with $K$ independent one-armed bandits, also known as slot machines.
-When an arm is played (or ``pulled'' in the literature), it returns an amount of money from a fixed reward distribution that is unknown to the gambler.
-The goal of the gambler is to come up with a method to maximize the sum of average rewards over all pulls.
-If the gambler knew the machine with the highest expected reward, the gambler would only pull that arm.
-However, since the reward distributions are unknown, a successful gambler needs to trade off exploiting the arms that currently yields the highest expected reward and exploring new arms.
-Developing a policy that successfully trades between exploration and exploitation reward has been the focus of extensive research since the problem formulation  ~\cite{bergemann2006bandit},\cite{bubeck2009pure}, \cite{robbins1985some}.
-
-At each time step the MAB algorithm incurs \textit{regret}, the difference between the expected reward of the best arm and that of the selected arm. Bandit algorithms minimize cumulative regret, the sum of regret over the entire sequence of arm choices.
-Lai and Robbins~\cite{lai1985asymptotically} showed that the cumulative regret of the optimal solution to the bandit problem is bounded by a logarithmic function of the number of arm pulls.
-They presented an algorithm called (Upper Confidence Bound) UCB that obtains this bound asymptotically~\cite{lai1985asymptotically}.
-The algorithm maintains a confidence bound on the distribution of reward based on prior observations and pulls the arm with the highest upper confidence bound.
-%Many variants of UCB have thus been proposed~\cite{cesa2006prediction}. 
-
-
-
-
-\subsection{Bayesian Algorithms for MAB}\label{sec:bandit_algorithm}
-We consider Bayesian MAB algorithms that use previous samples to form a belief distribution on the likelihood of the parameters specifying the distribution of each arm \cite{weber1992gittins,agrawal2011analysis}.  Bayesian methods have been shown empirically to outperform UCB~\cite{chapelle2011empirical, bachman2013greedy}. Bayesian algorithms maintain a belief distribution on the grasp quality distributions for each of the candidate grasps to rank. For instance a Bernoulli random variable $p$ can be used to represent a binary grasping metric like force closure. The prior typically placed on a Bernoulli variable is its conjugate prior, the Beta distribution.
-Beta distributions are specified by shape parameters $\alpha$ and $\beta$, where ($\alpha >0$ and $\beta >0$).
-
-
-One benefit of the Beta prior on Bernoulli reward distributions is that updates to the belief distribution after observing rewards from arm pulls can be derived in closed form.
-At timestep $t=0$, we pull arm $k$ and observe reward $R_{k,0}$, where $R_{k,0} \in \lbrace 0, 1\rbrace$.
-The posterior of the Beta after this observation is $\alpha_{k, 1} = \alpha_{k, 0} + R_{k,0}$  $\beta_{k, 1} = \beta_{k, 0} + 1-R_{k,0}$, where $\alpha_{k,0}$ and $\beta_{k,0}$ are the prior shape parameters for arm $k$ before any samples are evaluated.
-
-Given the current belief $\alpha_{k, t}, \beta_{k, t}$ for an arm $k$ at time $t$, the algorithm can calculate the expected Bernoulli parameter, $\bar{p}_{k,t}$, as follows:
-%Thus, we can write the expected probability of force closure as follows
-
-\vspace{-2ex}
-\begin{align}\label{eq:shape_sampling}
-\bar{p}_{k,t} = \frac{\alpha_{k,t}}{\alpha_{k,t} + \beta_{k,t}}
-\end{align}
-
-
-
-%In practice, when the distribution on the rewards of arms is not known, the empirical methods such as $\epsilon-$greedy have shown to have better performance in some situations \cite{kuleshov}.
-
-%In our case we only care about the regret at the time our decision of the optimal grasp needs to be made, decoupling the exploration and exploitation stages.
-
-\subsubsection{The Gittins Index Method} 
-One MAB method is to treat the problem as a Markov Decision Process (MDP) and use Markov Decision theory.
-Formally, a MDP is defined as a set of states, a set of actions, a set of transition probabilities between states, a reward function, and a discount factor \cite{barto1998reinforcement}.
-In the Beta-Bernoulli MAB case, the set of actions is the $K$ arms and the states are the Beta posterior on each arm, or the integer values of $\alpha_{k,t}$ and $\beta_{k,t}$. 
-
-Methods such as Value Iteration can compute optimal policies for a discrete MDP with respect to the discount factor $\gamma$ ~\cite{barto1998reinforcement}.
-However, the curse of dimensionality effects performance because for $K$ arms, a finite horizon of $T$ and a Beta-Bernoulli distribution on each arm then the state space is exponential in $K$.
-A key insight was given by Gittins, who showed that instead of solving the $K$-dimensional MDP one can instead solve $K$ 1-dimensional optimization problems: for each arm $k$ and for each state $x_{k,t} = \lbrace \alpha_{k,t}, \beta_{k,t} \rbrace$ up to a timestep $T$ \cite{weber1992gittins}.
-
-The solution to the optimization problem assigns each state an index $v(x_{k,t})$.
-The indices can then be used to form a policy, where at each timestep the agent selects the arm $k_t$ where $k_t= \underset{1 \leq k \leq K}{\mbox{argmax }} v(x_{k,t})$.  The indices can be  computed offline using a variety of methods \cite{weber1992gittins}; we chose to use the restart method proposed by Katehakis et al. \cite{katehakis1987multi} because it can be implemented in a dynamic programming fashion.
-We refer the reader to~\cite{gittins2011multi} for a more detailed analysis of the Gittins index method.
+One limitation of DAgger is that it requires the demonstrator, or supervisor, to "label" every state the policy visits during learning. The act of labeling can be very tedious and expensive when the supervisor is a human. To reduce this Judah et al. proposed applying active learning technique to only query the supervisor for states that are likely to be visited under the current policy and are likely to be mis-predicted under the current policy\cite{judah2011active,judah2012active}. A drawback of this approach though is that it requires estimating the distribution of states, which can be difficult in high dimensions. Furthermore, their use of query by committee reduces their policy's function class to non-kernelized linear classifiers \cite{gilad2005query}, which could potentially hurt the ability of a policy to generalize.
  
 
-\subsubsection{Thompson Sampling}
-Computation of the Gittins indices can increase exponentially in time as the discount factor approaches $1$.
-However, in the case of finding the best arm, we want to plan for long term reward and thus want $\gamma$ as close to $1$ as possible.
-Due to computational constraints we must use a smaller $\gamma$, but this can lead to the algorithm pulling only the most promising arm for many iterations~\cite{kelly1981multi}.
+In order to tell where a policy is likely to mis-predict,we  leverage a property in statistical machine learning that a trained model will be able to generalize within the distribution it is trained on \cite{tokdar2010importance}. This property is used in importance sampling when data is collected from one distribution, but tested on another and has to be re-weighted to the test distribution \cite{huang2006correcting}. One approach is to  estimate the probability density the policy is trained on. However, the amount of data needed to accurately estimate the density scales exponentially in the number of \cite{nadaraya1964estimating}.
 
-Thompson sampling is an alternative to the Gittins index method that isn't prone to such a problem. 
-In Thompson sampling, for each arm draw $p_{k,t} \sim \mbox{Beta}(\alpha_{k,t},\beta_{k,t})$ and pull the arm with the highest $p_{k,t}$ drawn.
-A reward is then observed, $R_{k,t}$ and the corresponding Beta distribution is updated. All arms are initialized with prior Beta distributions, which is normally Beta($\alpha_{k,0}=1$,  $\beta_{k,0} =1$) $\forall 1 \leq k \leq K$ to reflect a uniform prior on the parameter of the Bernoulli distribution, $p_{k,0}$.The full algorithm is shown in Algorithm 1.
+ Several other approaches have been proposed to tell when your estimator is likely to not generalize \cite{2003novelty}.Knox and Ng used a nearest neighbors approach to try and estimate if a point was close to $k$ neighbors, however it was shown to be susceptible to outliers because nearest neighbor only uses local information about the data \cite{knox1998algorithms}. Manevitz and Yousef trained a neural network filter to try and reconstruct the data and if the reconstruction error is high, they mark the point as likely to be outside of the estimators generalization ability. Manevitz and Yousef mention  that finding the right architecture can be task specific and require a lot of hyperparameter tuning  \cite{manevitz2002one}. The One Class SVM proposed by Scholk{\"o}pf et al. estimates a user defined level set of the distribution it is trained on by solving a convex quadratic program   to find the support vectors that encompasses the data. The method has been theoretically shown to approximate the level set of a density estimate in the asymptomatic  limit of sample and also its regularization term has the nice property of being equivalent to the quantile function\cite{vert2006consistency}. It has also been shown to successfully work on outlier detection for raw image data~\cite{liu2014unsupervised}.
 
-\begin{algorithm}
- \KwResult{Current Best Arm, $\Gamma^*$ }
- For Beta($\alpha_{k,0}=1$,$\beta_{k,0}=1$) $\forall k \in K$ prior: \\
-\For{ t=1,2,...}{ 
- Draw $p_{k,t} \sim$ Beta($\alpha_{k,t}$,$\beta_{k,t}$) for $k = 1,...,K$\\
- Pull $k_t  = \underset{k\in K}{\mbox{argmax}} \: p_{k,t}$\\
- Observe reward $R_{k,t} \in \lbrace 0,1 \rbrace$\\
- Update posterior:\\
- 
- \eIf{$k = k_t$}{
- Set $\alpha_{k,t+1} = \alpha_{k,t} + R_{k_t,t}$ \\
- Set $\beta_{k,t+1} = \beta_{k,t} +1-R_{k_t,t}$\\
- }{
- Set $\alpha_{k,t+1} = \alpha_{k,t}$ \\
- Set $\beta_{k,t+1} = \beta_{k,t}$\\
- }
-  }
- \caption{Thompson sampling for Beta-Bernoulli Process}
-\end{algorithm}
 
-The intuition for Thompson sampling is that the random samples of $p_{k,t}$ allow the method to explore. However as it receives more samples it hones in on promising arms, since the Beta distributions approach delta distributions as number of samples drawn goes towards infinity \cite{goetschalckx2011continuous}. Chapelle et al. demonstrated empirically that Thompson sampling achieved lower cumulative regret than traditional bandit algorithms like UCB for the Beta-Bernoulli case \cite{chapelle2011empirical}. Theoretically, Agrawal et al. recently proved an upper bound on the asymptotic complexity of  cumulative regret for  Thompson sampling that was sub-linear  for $k$ -arms and logarithmic in the case of $2$ arms  \cite{agrawal2011analysis}. 
+\section{Problem Statement}
+
+\subsection{Notation and Background}
+\todo{figure out sensor model, meeting with Sergey next week about safe learning with out assuming a human is available I can ask him then}
+Define $\mathbf{x} \in \mathcal{X}$ as state space for a robot, for example $\mathbf{x}$ could be an image from a camera feed or a vector of joint angles. Define $\mathbf{u} \in \mathcal{U}$ as the class of controls for an agent, which could be for example torque control applied to a robot or discrete commands such as in a video game. The environment is modeled to have dynamics that are stationary and Markovian, such that the the probability of state $\mathbf{x_{t+1}}$ can be determined from $\mathbf{x}_t$ and $\mathbf{u}_t$, or $p(\bx_{t+1}|\bu_t,\bx_t)$.  We represent a probability distribution over the initial state of the environment $p(\bx_0)$.. Denote a trajectory as series of states visited and the controls applied  as $\tau = (\mathbf{x}_0,\mathbf{u}_1, ...., \mathbf{x}_T,\mathbf{u}_T)$.  A trajectory that is defined with state space only and not controls is $\tau_{\bx} = (\bx_0,....,\bx_T)$.
 
 
 
+A policy is a function from state space to controls, $\pi: \bx \rightarrow \bu$. A policy could be $\pi_\theta: \bx \rightarrow \mathbf{u}$, which is a  function that is specified by a vector of parameters  $\theta$.The vector of parameters $\theta$ can be for example weights in a neural network or the  vectors in a Support Vector Machine. A policy, $\pi_{\theta}$ in an environment with $p(\bx_0)$ and $p(\bx_{t+1}|\bx_t,\bu_t)$ induces a distribution on the possible trajectories:$ p(\tau_\bx | \theta)= p(\bx_0)\prod_{i=0}^{T-1}p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. Also $\pi_{\theta}$ in an environment with $p(\bx_0)$ and $p(\bx_{t+1}|\bx_t,\bu_t)$  induces a distribution on states visited $p(\mathbf{x}|\theta)$. 
 
-\section{Grasp Planning Problem Definition}
-We consider grasping a rigid, planar object from above using parallel-jaw grippers.
-We assume that the interaction between the gripper and object is quasi-static~\cite{kehoe2012estimating, kehoe2012toward}.
-We consider uncertainty in shape, pose, gripper approach, and friction coefficient. We assume that the distributions on these quantities are given and can be sampled from. 
-
-\subsection{Candidate Grasp Model}
-The grasp model is illustrated in Fig.~\ref{fig:grasp_model}. We formulate the MAB problem for planar objects using parallel-jaw grippers as modeled in Fig.~\ref{fig:grasp_model}. Similar to~\cite{mahler2015gp}, we parameterize a grasp using a {\it grasp axis}, the axis of approach for two jaws,  with jaws of width $w_j \in \mathbb{R}$ and a maximum width $w_g \in \mathbb{R}$. The two location of the jaws can be specified as $\mathbf{j}_1,\mathbf{j}_2 \in \mathbb{R}^2$, where $||\mathbf{j}_1 - \mathbf{j}_2||_2 \leq w_g$. We define a grasp consisting of the tuple $\Gamma = \lbrace \mathbf{j}_1, \mathbf{j}_2 \rbrace$. 
-
-%We chose of the line of action model because perturbations to a surface resulting from shape uncertainty lead to changesa in the location of contact with a surface, and the line of action allows us to compute these new locations.
-
-Given a grasp and an object, we define the {\it contact points} as the spatial locations at which the jaws come into contact with the object when following along the grasp axis, $\bc_1, \bc_2 \in \mathbb{R}^2$.
-We also refer to the unit outward pointing surface normals at the contact points as $\bn_1, \bn_2 \in \mathbb{R}^2$, the object center of mass as $\bz \in \mathbb{R}^2$ and the friction coefficient as $\mu \in \mathbb{R}$.
-%Together these form the set of grasp parameters that allows us to evaluate the forces and torques that a given grasp can apply to an object \cite{ferrari1992}. 
-
-%\begin{figure}[ht!]
-%\centering
-%\includegraphics[width = 6cm, height = 4cm]{figures/Slide01.jpg}
-%\caption{Illustration of a grasp plan $\Gamma$ composed of two lines of action, $\gamma_1(t)$ and $\gamma_2(t)$}
-%\vspace*{-10pt}
-%\label{fig:line_of_action}
-%\end{figure}
-
-\begin{figure}[t!]
-\centering
-\includegraphics[width = 8.5cm, height = 5.25cm]{figures/bandit_grasp_model.jpg}
-\caption{Illustration of our grasping model for parallel jaw grippers on a mechanical switch. Jaw placements are illustrated by a red direction arrow and line. A grasp plan centered at $\by$ (plus symbol) at angle $\psi$ consists of 2D locations for each of the parallel jaws $\bj_1$ and $\bj_2$. When following the grasp plan, the jaws contact the object at locations $\bc_1$ and $\bc_2$, and the object has outward pointing unit surface normals $\bn_1$ and $\bn_2$ at these locations. Together with the center of mass of the object $\bz$, these values can be used to determine the forces and torques that a grasp can apply to an object.}
-\vspace*{-2ex}
-\label{fig:grasp_model}
-\end{figure}
-
-\subsection{Sources of Uncertainty}
-We consider uncertainty in object shape, object pose, grasp approach angle, and friction coefficient.
-Fig.~\ref{fig:graphical_model} illustrates a graphical model of the relationship between these sources of uncertainty.
-In this section, we describe our model of each source of uncertainty.
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[scale=0.095]{figures/Graphical_Model.jpg}
-\caption{A graphical model of the relationship between the uncertain parameters we consider. Uncertainty in object shape $\theta$, object pose $\xi$, and grasp approach angle $\rho$ affect the points of contact $\bc$ with the object and the surface normals $\bn$ at the contacts. Uncertainty in friction $\mu$ coefficient affects the forces and torques used to compute our quality measure, the probability of force closure $P_F$.  }
-\vspace*{-10pt}
-\label{fig:graphical_model}
-\end{figure}
-
-\subsubsection{Shape Uncertainty}
-
-Uncertainty in object shape results from sensor imprecision and missing sensor data, which can occur due to transparency, specularity, and occlusions~\cite{mahler2015gp}.
-Following ~\cite{mahler2015gp}, we represent the distribution over possible surfaces given sensing noise using a Gaussian process implicit surface (GPIS).
-A GPIS represents a distribution over signed distance functions (SDFs).
-A SDF is a real-valued function over spatial locations $f: \mathbb{R}^2 \rightarrow \mathbb{R}$ that is greater than 0 outside the object, 0 on the surface and less than 0 inside the object.
-A GPIS is a Gaussian distribution over SDF values at a fixed set of query points $\mX = \{\bx_1, ... \bx_n\}, \bx_i \in \mathbb{R}^2$, $f(\bx_i) \sim \mN(\mu_{f}(\bx_i),\Sigma_{f}(\bx_i))$, where $\mu_{f}(\cdot)$ and $\Sigma_{f}(\cdot)$ are the mean and covariance functions of the GPIS~\cite{rasmussen2006}.
-See Mahler et al. for details on how to estimate a mean and covariance function and sample shapes from a GPIS~\cite{mahler2015gp}.
-For convenience, in later sections we will refer to the GPIS parameters as $\theta = \lbrace \mu_{f}(\bx), \Sigma_{f}(\bx) \rbrace$. 
-
-
-\subsubsection{Pose Uncertainty}
-In 2-dimensional space, the pose of an object $T$ is defined by a rotation angle $\phi$ and two translation coordinates $\bt = (t_x, t_y)$, summarized in parameter vector $\mathbf{\xi} = (\phi, \bt)^T \in \mathbb{R}^3$.  We assume Gaussian uncertainty on the pose parameters $\mathbf{\xi} \sim \mN \left( \hat{\mathbf{\xi}}, \Sigma_{\xi} \right)$, where $\hat{\mathbf{\xi}}$ corresponds to the expected pose of the object. 
-
- 
- \subsubsection{Approach Uncertainty}
-In practice a robot may not be able to execute a desired grasp $\Gamma = \lbrace \bj_i,\bj_2\rbrace$ exactly due to errors in actuation or feedback measurements used for trajectory following~\cite{kehoe2012estimating}.
-We model approach uncertainty as Gaussian uncertainty around the angle of approach and centroid of a straight line grasp $\Gamma$.
-Formally, let $\hat{\by} = \frac{1}{2} (\bj_1 + \bj_2)$ denote the center of a planned grasp axis and $\hat{\psi}$ denote the clockwise angle that the planned axis $\bj_1 - \bj_2$ makes with the y-axis of the 2D coordinate system on our shape representation.
-We model uncertainty in the approach center as $\by \sim \mN(\hat{\by}, \Sigma_y)$ and uncertainty in the approach angle as $\psi \sim \mN(\hat{\psi}, \sigma_{\psi}^2)$.
-For shorthand in the remainder of this paper we will refer to the uncertain approach parameters as $\rho = \{\by, \psi \}$.
-In practice $\Sigma_{y}^2$ and $\sigma_{\psi}^2$ can be set from repeatability measurements for a robot~\cite{mooring1986determination}.
-
- \subsubsection{Friction Uncertainty}
-As shown in \cite{zheng2005,hang2013a}, uncertainty in friction coefficient can cause grasp quality to significantly vary.
-However, friction coefficients may be uncertain due to factors such as material between a gripper and an object (e.g. dust, water, moisture), variations in the gripper material due to manufacturing tolerances, or misclassification of the object surface to be grasped.
-We model uncertainty in friction coefficient as Gaussian noise, $\mu \sim \mN(\hat{\mu},\sigma_{\mu}^2)$.
-
- 
-\subsection{Grasp Quality}\label{sec:grasp_sample}
-We measure the quality of grasp using the probability of force closure~\cite{kehoe2012estimating, kehoe2012toward, kim2012physically,weisz2012pose} given a grasp $\Gamma$. Force closure is a binary-valued quantity $F$ that is 1 if the grasp can resist wrenches in arbitrary directions and 0 otherwise.
-Let $\mW \in \mathbb{R}^3$ denote the contact wrenches derived from contact locations $\bc_1,\bc_2$, normals $\bn_1,\bn_2$, friction coefficient $\mu$, and center of mass $\bz$ for a given grasp and shape.
-If the origin lies within the convex hull of $\mW$, then the grasp is in force closure~\cite{li1988task}.
-We rank grasps using the probability of force closure given uncertainty in shape, pose, robot approach, and friction coefficient~\cite{christopoulos2007handling, kehoe2012toward}:
-
-\vspace{-2ex}
-\begin{align*}
-	P_F(\Gamma_k) &= P \left(F = 1 | \Gamma_k, \theta, \xi, \rho, \mu \right).
-\end{align*}
- 
-To estimate $P_F(\Gamma_k)$, we first generate samples from the distributions on $\theta, \xi, \rho,$ and $\mu$.
-Using the relationships defined by the graphical model in Fig. \ref{fig:graphical_model}, we next compute the contact locations $\bc_1, \bc_2$ given a sampled SDF, pose, and grasp approach by ray tracing along the grasp axis defined by $\Gamma_k = \lbrace \bj_1,\bj_2 \rbrace$~\cite{mahler2015gp}.
-We then compute the surface normals $\bn_1, \bn_2$ at the contacts using the gradient of the sampled SDF at the contact locations.
-Finally, we use these quantities to compute the forces and torques that can be applied to form the contact wrench set $\mW$ and evaluate the force closure condition \cite{li1988task}.
-
-%After sampling a shape, pose, approach direction, and friction coefficient, we compute the contact locations $\bc_i$ and the surface normals $\bn_i$ using Bayes rule:
-%
-% \vspace{-2ex}
-% \begin{align*}
-% &p(\textbf{n}_i,\textbf{c}_i |\Gamma_k,\theta,\xi,\rho)=\\
-% &p(\textbf{n}_i|\textbf{c}_i,\theta)p(\textbf{c}_i|\Gamma_k,\theta,\rho,\xi)
-% \end{align*}
-%
-% 
-%Mahler et al.describe how to draw shape samples from a GPIS model ~\cite{mahler2015gp}.
-%We next sample from $p(\xi)$ and $p(\rho)$ to compute $p(\textbf{c}_i|\Gamma_k,\theta,\rho,\xi)$ via ray tracing along the grasp axis defined by $\Gamma_k = \lbrace \bj_1,\bj_2 \rbrace$~\cite{newcombe2011kinectfusion}.
-%Then $p(\textbf{n}_i|\textbf{c}_i,\theta)$ corresponds to the normal vector at the sampled contact point.We use these quantities to compute the forces and torques that can be applied to form the contact wrench set $\mW$ and evaluate the force closure condition \cite{li1988task}.
+ The following is a way to convert from $p(\bx_t|\theta)$ to $p(\bx|\theta)$. Let $p(\bx_t|\theta)$ be the distribution of states visited at time $t$ if the robot follows the policy $\pi_{\theta}$ for $t-1$ time steps. Calculating this from $p(\tau_{\bx}|\theta)$ is mean marginalizing over the previous timesteps $p(\bx_t|\theta) = \int_{\bx_{t-1}}...\int_{\bx_1} p((\bx_t,...,\bx_1)|\theta) d\bx_{t-1}...d\bx_1$. The average distribution on states is now defined as $p(\bx|\theta) = \frac{1}{T} \sum^T_{t=1} p(\bx_t|\theta)$.
 
 
 
-\subsection{Objective}
-\seclabel{objective}
+We do not know the distributions: $p(\bx_{t+1}|\bx_t,\bu_t)$, $p(\bx_0)$,$p(\tau_{\bx}|
+\bx)$ or $p(\bx|\theta)$. But we assume we have a stochastic real robot or a simulator such that given any state $\bx_t$ and control $\bu_t$, it will move into a state $\bx_{t+1}$ such that $\bx_{t+1} \sim p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. Note that $p(\tau_{\bx}|\theta)$ is high dimensional because $\bx$ is high dimensional. 
 
-Given the sources of uncertainty and their relationships as described above, the grasp planning objective is to find the grasp that maximizes the probability of force closure from a set of candidate grasps $\mG = \{\Gamma_1, ..., \Gamma_K\}$:
+Given $\pi_{\theta}$ we want to identify a set of highly probable trajectories and the associated highly probable states. We assume we are given some initial state $\bx_0$. We  "roll-out" the policy using the robot with the policy to sample the resulting trajectory and set of states reached, which provides a sequence of highly probably states under $p(\tau_{\bx}|\theta)$.Rather than estimating $p(\bx|\theta)$ or $p(\tau_{\bx}|\theta)$, we draw samples from them. 
 
-\vspace{-2ex}
+
+The objective in policy learning can be framed as minimizing some cost function $C(\tau) = \sum^T_{t=1} c(\bx_t,\bu_t)$. The cost function is user defined and task specific. For each state $\bx_{t}$ and control $\bu_t$ the robot receives a penalty related to how far it is from the goal state. For example, in task of inserting a peg into a hole the cost function can be distance to desired final state \cite{levine2015end}.  We also do not know the cost function. But we do have access to a "supervisor", an algorithm or human that uses some policy $\tilde{\pi}$ to minimize $C(\tau)$, and we are given an initial set of $N$ training/demonstration trajectories resulting from this policy: $\mathcal{D} = \lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
+
+Next, we define a "surrogate" loss function $l$, which gives the distance between any pair of control values: in the continuous case $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2$ or in a discrete case
+
+ \vspace{-2ex}
 \begin{align}
-\Gamma^* &= \underset{\Gamma_k \in \mG}{\text{argmax }} P_F\left( \Gamma_k\right) \label{eq:old_problem_def}
+ l(\bu_0,\bu_1) = \left\{
+     \begin{array}{lr}
+       1 & : \bu_0 = \bu_1\\
+       0 & : \bu_0 \neq \bu_1
+     \end{array}
+   \right.
 \end{align}
 
-% Since we only can approximate the probability of force closure, with samples drawn from the distribution $P_F(\Gamma)$ our objective is rewritten as: 
+Given a candidate policy $\theta$, we can use the surrogate loss function to compute how "close" it is to the competent controller's policy $\tilde{\pi}$. 
 
-% \vspace{-2ex}
-% \begin{align}
-% \Gamma^* &\approx \underset{\Gamma \in \mG}{\text{argmax }} P\left( F = 1 | \Gamma, \theta, \xi, \rho, \mu \right) \label{eq:problem_def}
-% \end{align}
+We want to compute a policy $\pi_{\theta}$ that minimizes the expected surrogate loss where the expectation is taken over the distribution of states. 
 
-One method to approximately solve Equation~\ref{eq:old_problem_def} is to exhaustively evaluate $P_F(\Gamma_k)$ for all grasp in $\mG$ using Monte-Carlo integration and then sort the plans by this quality metric.
-We refer to this as a brute force approach. 
-This method has been evaluated for shape uncertainty~\cite{christopoulos2007handling, kehoe2012estimating} and pose uncertainty~\cite{weisz2012pose} but may require many samples for each of a large set of candidates to converge to the true value.
-More recent work has considered adaptive sampling to discard grasps that are not likely to be optimal without fully evaluating their quality~\cite{kehoe2012toward}.
-
-To try and reduce the number of samples needed, we instead maximize the sum of $P_F$ values for each sampled grasp  $\Gamma_{k,t}$ at time $t$ up to a given time $T_s$:
-\begin{align}
-    \underset{\Gamma_{k,} \in \mG}{\text{max }} \sum \limits_{t=1}^
-    {T_s} P_F \left( \Gamma_{k,t}\right)  \label{eq:problem_def}
+ \vspace{-2ex}
+\begin{align}\label{eq:LFD_obj}
+\underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))]
 \end{align}
-\noindent This attempts to perform as well as Equation~\ref{eq:old_problem_def} in as few samples as possible~\cite{srinivas2009gaussian}. We then formulate  problem as a MAB model and compare two different Bayesian MAB algorithms, Thompson sampling and Gittins indices.
+ 
+ 
+ 
+ 
+The optimization problem in Eq. \ref{eq:LFD_obj} compares the action taken of the policy $\pi_\theta$ and  the competent controller, $\tilde{\pi}$  weighted by the probability of  the state occurring $p(\bx|\theta)$. 
 
-\section{Grasp Planning as a Multi-Armed Bandit}
-We frame the grasp selection problem of \secref{objective} as a MAB problem.
-Each arm corresponds to a different grasp, $\Gamma_k$, and pulling an arm corresponds to sampling from the graphical model in Fig. \ref{fig:graphical_model} and evaluating the force closure condition. Since force closure is a binary value, each grasp $\Gamma_k$ has a Bernoulli reward distribution with probability of force closure, $P_F(\Gamma_k)$.
-In a MAB, we want to try and minimize cumulative regret which is an equivalent objective to the objective of Equation~\ref{eq:problem_def}.
+Eq. \ref{eq:LFD_obj} is hard to solve because  the objective is not convex and we only have access to $\tilde{\pi}(x)$, where $x$ is a state in one of the demonstrations or $\bx \in \mathcal{D}$. To address these issues Stephane and Ross proposed an iterative method known as DAgger\cite{ross2010reduction}.
 
-One can think of the proposed algorithm as an anytime algorithm. It can be stopped at anytime during its computation to return the current estimate of the best grasp or wait until a $95\%$ confidence interval is smaller than some threshold $\epsilon$. Using the quantile function of the beta distribution, $B$, we can measure the $95\%$ confidence interval as: 
+
+
+
+
+
+ \subsection{DAgger: Dataset Aggregation}
+ DAgger is an iterative algorithm that repeats two steps for $K$ iterations. 
+ In Eq. \ref{eq:LFD_obj}, the objective involves both the parameterized policy $\pi_{\theta}$ and the average distribution of states with respect to the policy, $p(\bx|\theta)$. DAgger iteratively minimizes $\pi_{\theta}$ on the collected dataset of examples $\mathcal{D}$ and then adds new states of high probability under $\pi_\theta$ by sampling via policy roll outs from $p(\bx|\theta)$. 
+
+\subsubsection{Step 1}
+At iteration $k=0$ given a dataset $\mathcal{D}_0$, the training set with $N_0$ demonstrated trajectories mapping $\bx$ to $\bu$. DAgger solves the following supervised learning problem with respect to the surrogate loss function. 
+
+ \vspace{-2ex}
+\begin{align}\label{eq:super_objj}
+\theta_{k} = \underset{\theta}{\argmin} \: \sum_{i=1}^{N}\sum_{t=1}^T l(\pi_{\theta}(\bx_t^{i}),\bu_{t}^i)
+\end{align}
+ 
+ 
+This is a supervised learning problem and can be solved using standard machine learning techniques, for example a support vector machine or a neural network. The surrogate losses mentioned early like Squared Euclidean distance or an Indicator function are appropriate optimization objectives. 
+ 
+ To handle the fact that the competent actor's policy contains noise $\epsilon$, we employ a regularization technique in the optimization. Regularization is a technique to control the smoothness of the function that is fit to the sampled data. It is a common technique to make the estimator robust to zero mean noise on data. In practice it is a penalty term on either  the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.
+ 
+ \subsubsection{Step 2}
+DAgger rolls out the policy $\pi_{\theta_{k=1}}$ to sample states that are likely to occur under $\theta_{k=1}$. For every state visited, DAgger requests the competent controller to provide the appropriate control/label. Formally, for a given sampled trajectory  $\tau = (\bx_1,\bu_1,...,\bx_T\bu_T )$. The competent controller provides labels $\tilde{\bu}_t$, where $\bu_t \sim \pi(\bx_t) + \epsilon$ to the trajectory $\tau = (\bx_1,\tilde{\bu}_1,...,\bx_T, \tilde{\bu}_T )$.  This can be very tedious for a human. The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_1$. 
+
+
+Steps 1 and 2 are repeated for $K$ iterations or until the cumulative surrogate loss  goes to zero. Since DAgger requires rolling out the policy at each iteration, one way to terminate the algorithm is when the performance of the rolled out policy matches the intended behavior, or more formally when the surrogate loss is below some predefined threshold $\gamma$.  
+
+
+Dagger works well in both simulation and real world experiments. It also has theoretical guarantees that it will converge in the limit to the competent controller's policy. However, using policy rollouts means the robot can enter dangerous states, which could damage a robot in a non simulation system. For example, when DAgger was used on a quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}. A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor and incur high surrogate loss \cite{tokdar2010importance} 2) the surrogate loss associated with the state is high, so the state, although visited, doesn't have good control yet. Furthermore, iterations are tedious because if a human is the supervisor requires manual "labeling" of every state visited with the appropriate control. 
+
+To address these limitations, we propose to 1) avoid highly risky states entirely via terminating the policy roll-out and 2) recognize slightly risky states and request human input for these and to reduce the burden on the human trainer. One way to do this is to define risk in terms of distance to the nearest neighbor, but this vulnerable to outliers in the known set of states. Another option is to fit a distribution to the known set of states, which requires an exponential number of samples in the dimension of the state space \cite{nadaraya1964estimating}. We propose using a modified version of the technique known as the One Class SVM that  estimates a boundary of the density \cite{scholkopf2001estimating}.
+
+
+\subsection{Estimation of a Distribution's Level Set}\label{sec:level}
+\todo{Work with Florian on the first paragraph to make it less abstract and specific to the robotics}
+Support estimation can be defined as minimizing a function that contains the volume of a given probability distribution. Formally we define it as follows let $\mathbf{x}_1,...,\mathbf{x}_n $ be i.i.d. random variables in a set $\mathcal{X}$ with distribution $P$. Let $\mathcal{G}$ be a class of measurable subsets of $\mathcal{X}$ and let $\lambda$ be a real function defined on $\mathcal{G}$. The quantile function with respect to $(P,\lambda,\mathcal{G})$ is 
 
 \vspace{-2ex}
-\begin{align}\label{eq:confidence}
-B(0.025,\alpha_{k,t},\beta_{k,t}) \leq P_F(\Gamma_{k,t})) \leq B(0.975,\alpha_{k,t},\beta_{k,t})
-\end{align}
-
-To summarize, the algorithm terminates and returns $\bar{k}$, or the grasp that has the highest estimated $P_F$ when the following condition is met:
-
-\vspace{-2ex}
-\begin{align}\label{eq:stopping_condition}
-\lbrace t \geq T_s \: \mbox{OR} \: |B(0.025,\alpha_{\bar{k},t},\beta_{\bar{k},t}) -  B(0.975,\alpha_{\bar{k},t},\beta_{\bar{k},t})| \leq \epsilon \rbrace.
-\end{align}
-
-\section{Simulation Experiments}
-We used the Brown Vision Lab 2D dataset \cite{brown}, a database of 2D planar objects, as in \cite{christopoulos2007handling}.
-GPIS models of 3 example objects are visualized using the GPIS-Blur method of~\cite{mahler2015gp} in Figure \ref{fig:shape_samples}.
-We downsampled the silhouette by a factor of 2 to create a 40 x 40 occupancy map, which holds 1 if the point cloud was observed and 0 if it was not observed, and a measurement noise map, which holds the variance 0-mean noise added to the SDF values.
-The measurement noise were assigned uniformly at random to the SDF.
-We then construct a GPIS using the same method proposed in~\cite{mahler2015gp}.
-For illustrative purposes, the noise in approach, pose, and friction coefficient were set to the following variances $\sigma_{\psi} = 0.2$ rads, $\sigma_{\by} = 3$ grid cells, $\sigma_{\mu} = 0.4$, $\sigma_{\phi} = 0.3$ rads and $\sigma_{\bt} = 3$ grid cells.
-We also performed experiments for the case of two hard contacts in 2-D.
-We drew random grasps $\Gamma$ by sampling the angle of grasp axis around a circle with radius $\sqrt{2} M$, where $M$ is the dimension of the workspace, and then sampling the circle's origin. All experiments were run on machine with OS X with a 2.7 GHz Intel core i7 processor and 16 GB 1600 MHz memory in Matlab 2014a.
+\begin{align}\label{eq:quantile}
+U(\gamma) = \mbox{inf} \lbrace \lambda(G):P(G) \geq \gamma, G \in \mathcal{G} \rbrace \: 0<\gamma \leq 1
+\end{align} 
 
 
+We denote by $G(\gamma)$ the $G \in \mathcal{G}$ that attains the infinimum. The most common choice of $\lambda$ is Lebesgue measure, in which case $G(\gamma)$ is the minimum volume $G \in \mathcal{G}$ that contains at least a fraction $\gamma$ of the the probability mass. Thus, $G(1)$ is the support of the density $p$ corresponding to $P$, assuming it exists. 
+
+To handle high dimensional densities $P$, work by Scholk{\"o}pf et al.  looked at representing the class $\mathcal{G}$ via a kernel $k$ as the set of half-spaces in the support vector (SV) feature space \cite{scholkopf2001estimating}. They then minimize a SV  regularizer which, using a kernel, controls the smoothness of the estimated function describing $G$. In terms of the quantile function described in Eq. \ref{eq:quantile}, the approach can be thought of as employing $\lambda(G) = ||w||^2$, where $G_w = \lbrace x: f_w(x) \geq \rho \rbrace$. Here $(w,\rho)$ are a weight vector and offset parameterizing a hyperplane in the feature space associated with a kernel. 
 
 
-
-\subsection{Multi-Armed Bandit Experiments}
-For our experiments we look at selecting the best grasp out of a size of $|G| = 1000$. We draw samples from our graphical model using the technique described in Sec.  \ref{sec:grasp_sample}. We averaged over 100 randomly selected shapes in the Brown Vision Lab 2D dataset and for the grasps planned by Thompson sampling, Gittins indices, iterative pruning \cite{kehoe2012toward} and uniform allocation). Uniform allocation selects a grasp at random from the set to sample next, thus does not use any prior information. Iterative pruning prunes grasps every 1000 iterations based on lowest sample mean and removes 10$\%$ of the current grasp set.  We set the discount factor $\gamma =0.98$ for Gittins because that was the highest we could compute the indices for in a feasible amount of time. 
-
-In Fig. \ref{fig:grasp_quality}, we plot time $t$ vs. $P(\Gamma_{\bar{k},t})$/$P(\Gamma^*)$, the normalized probability of force closure for the grasp returned by the algorithm $\Gamma_{\bar{k}}$.  Non-MAB methods such as uniform sampling and iterative pruning (eliminating candidates that perform poorly on initial samples) eventually converge to within 3$\%$ of the optimal, requiring approximately 40,000 and 20,000 iterations.  Gittins indices and Thompson sampling  perform significantly better, converging after only 4000 iterations.For illustrative purposes in Fig. \ref{fig:shape_samples}, we select a stopping time $T_s=10,000$, which is 10 samples per grasp on average, and for each method visualize the grasp  returned, $\Gamma_{\bar{k}}$, on 3 randomly selected shapes in the dataset.
-
-The time per iteration is $t_{i} = t_{a}+t_{p}$, where $t_{a}$ is the time to decide which arm to pull next and $t_{p}$ is the time taken to draw a sample from the graphical model in Fig. \ref{fig:graphical_model}. The time per iteration for Thompson sampling, Gittins indices, iterative pruning and uniform allocation is $31.6$, $31.2$, $30.4$ and $30.2$ ms. Most of $t_{i}$ is dominated by sampling time, since $t_{p} \approx 30$ms.
-
-The MAB algorithm can also be terminated when the $95\%$ confidence interval around the returned grasp (see Equation \ref{eq:confidence}) is below a set threshold $\epsilon$. We plot the confidence intervals around the returned grasp $P_F(\Gamma_{\bar{k}})$ vs. the number of samples drawn in Fig. \ref{fig:confidence} for Gittins indices, Thompson sampling, iterative pruning\cite{kehoe2012toward} and uniform allocation.  As illustrated, the confidence interval for Thompson sampling and Gttins indices converges at a faster rate than the other two methods. 
-
-
-\begin{figure}[t!]
+\begin{figure*}[ht]
 \centering
-\includegraphics[scale=1]{matlab_figures/confidence_bounds.jpg}
-\caption{ Number of samples versus the $95\%$ confidence intervals on the probability of force closure of the best estimated grasp after $t$ samples using uniform allocation, iterative pruning, Gittins indices, and Thompson Sampling. The values are averaged over 100 independent runs on randomly selected objects from the Brown Vision 2D Dataset~\cite{brown} with 1,000 candidate grasps for each object. An increasingly narrow confidence interval indicates that the algorithm allocated an increasing number of samples to its estimate of the best grasp. }
+\subfigure[Race Car Simulator]{%
+\vspace{-0.5ex}\includegraphics[width=5cm , height = 4cm]{figures/Slide1.jpg}
+\label{fig:subfigure1}}
+\quad
+\subfigure[Expert Demonstrations]{%
+\includegraphics[width=5.5cm, height = 4.5cm]{figures/exp_dist.eps}
+\label{fig:subfigure2}}
+\subfigure[Estimated Support of Expert Demonstrations]{%
+\includegraphics[width=5.5cm, height = 4.5cm]{figures/ocm_example.png}
+\label{fig:subfigure3}}
 
-\vspace*{-10pt}
-\label{fig:confidence}
-\end{figure}
-
-
-\begin{figure*}%
-\label{fig:shape_examples}
-    \centering
-    \includegraphics[width=16.5cm]{figures/shapes.jpg}%
-    \caption{Grasps with the highest estimated probabilty of force closure $P_F$ after 10,000 samples using uniform allocation, iterative pruning, Gittins indices, and Thompson sampling on three objects from the Brown Vision 2D Dataset. For reference, we also show the grasp with highest $P_F$ after brute force evaluation using 100,000 samples and the nominal shape. The candidate grasp set was of size $|\mG|=1000$. We visualize the GPIS representation of the object shape uncertainty using GPIS-Blur~\cite{mahler2015gp}, which causes more uncertain areas to appear more blurry.  On objects A and B Thompson sampling finds the best grasp after 10,000 samples, but for object C the grasp selected has $2\%$ lower $P_F$.}%
-    \label{fig:shape_samples}%
+\caption{\todo{Want to change this to highlight $\nu$ effect on level set estimation} A race car is driven around a track in Fig. \ref{fig:subfigure1} by an expert demonstrator. The state space of the car is represented as the x and y positions on the track or $\mathbf{s} = [x,y]$. In Fig. \ref{fig:subfigure2}, the demonstrations are plotted in state space. In Fig. \ref{fig:subfigure3}, the support is estimated using the decision function in \ref{eq:decision_func}. As illustrated the support accurately describes the boundary of the expert trajectory. }
+\label{fig:support_example}
 \end{figure*}
 
 
-\subsection{Sensitivity Analysis }\label{sec:sensitivity}
-We also analyze the performance of Thompson sampling under variations in noise from friction coefficient uncertainty, shape uncertainty, rotational pose, and translation pose.
-We increase the variance parameters across a set range for each parameter to simulate low, medium and high levels of noise.
-All experiments were averaged across 100 objects randomly selected with from the Brown dataset with $|\mG| = 1000$, or 1000 grasps, $\Gamma$. 
+Let $\Phi$ be a feature map $\mathcal{X} \rightarrow \mathcal{F}$, i.e. a map into an inner product space $\mathcal{F}$ such that the inner product in the image of $\Phi$ can be computed by evaluating some  kernel
 
-For friction coefficient we varied $\sigma_{\mu}$ across the following values $\sigma_{\mu} = \lbrace 0.05, 0.2, 0.4 \rbrace$.
-As illustrated in Table 1, the performance of the bandit algorithm remains largely unchanged, with typical convergence to zero in simple regret less than 2000 evaluations.
+\vspace{-2ex}
+\begin{align}
+k(\bx_0,\bx_1) = \langle\Phi(\bx_0),\Phi(\bx_1)\rangle
+\end{align}
 
-For rotational uncertainty in pose, we varied $\sigma_{\phi}$ over the set of $\lbrace 0.03, 0.12,0.24\rbrace$ radians. As illustrated in Table 1, the performance of the bandit algorithms is effected by the change in rotation, increase in variance to $0.24$ radians or $13^{\circ}$  causes the convergence in simple regret to not be reached until around 4432 samples or an average of 5.5 samples per grasp. 
+such as the Gaussian kernel 
 
-For translational uncertainty in pose, we varied $\sigma_{\bt}$ in the range of $\lbrace 3,12, 24 \rbrace$ units (on a 40 x 40 unit workspace). Our results indicate that the performance of the bandit algorithms is affected by the change in rotation and an increased noise of $\sigma_{\bt} = 24$ causes the convergence to not be reached until 8763 evaluations for Thompson sampling. 
+\vspace{-2ex}
+\begin{align}
+k(\bx_0,\bx_1) = e^{-||\bx_0 - \bx_1||^2/c}
+\end{align}
+
+The main idea is to solve an optimization problem that separates the origin, we solve the following quadratic problem:
+
+\vspace{-2ex}
+\begin{align}\label{eq:primal_sup}
+\underset{w\in F, \mathbf{\xi} \in \mR, \rho \in \mR}{\mbox{min}}\: \frac{1}{2}||w||^2+\frac{1}{vn} \sum^n_i \xi_i - \rho\\
+\mbox{s.t} \: \langle w,\Phi(x_i) \rangle \geq \rho - \xi_i, \: \xi_i \geq 0 \\
+\end{align}
+
+The parameter $\nu$ controls the penalty on slack terms and asymptotically approaches is equivalent to $\gamma$ \cite{vert2006consistency}.  The decision function then becomes 
+
+\vspace{-2ex}
+\begin{align}\label{eq:decision_func}
+g(x) = \mbox{sgn}(\langle w,\Phi(x) \rangle-\rho)
+\end{align}
+
+Where $g(x) = 1$ indicates in the support region and $(g) = -1$ denotes being outside the support region. The dual form of the optimization takes the form of a Quadratic Program with respect to the Gram Matrix \cite{scholkopf2001estimating}. 
+
+Estimating the level set of a distribution can be a measure of the generalization ability of $\pi_{\theta}$ to points not within $\mathcal{D}$. However, it does not account for the fact that for a given $\theta$ or  solution to Eq. \ref{eq:super_objj}. $\pi_\theta$ may not correctly match the competent controller's controls for all points train on. To account for this, we propose a modification to the One Class SVM denote: 
+
+\begin{align}
+y_i = \left\{
+     \begin{array}{lr}
+       1 & : \pi_{\theta}(\bx_i) =\bu_i\\
+       -1 & : \pi_{\theta}(\bx_i) \neq \bu_i
+     \end{array}
+   \right.
+\end{align}
+
+or $y_i$ is $1$ if the control applied matches the competent controller and $-1$ if it differs. In the regression case the decision between $1$ and $-1$ can be set by a some threshold on a L2-norm or $||\pi_{\theta}(\bx_i)-\bu_i||$. We use $y_i$ to modify the optimization as follows: 
+
+\vspace{-2ex}
+\begin{align}\label{eq:primal_sup}
+\underset{w\in F, \mathbf{\xi} \in \mR^l, \rho \in \mR}{\mbox{min}}\: \frac{1}{2}||w||^2+\frac{1}{vn} \sum^n_i \xi_i - \rho\\
+\mbox{s.t} \: y_i \langle w,\Phi(x_i)\rangle \geq \rho - \xi_i, \: \xi_i \geq 0 \label{eq:ineq}
+\end{align}
+
+Points that are mis-predicted are then enforced to lie on the opposite of the hyper-plane in the feature space $\phi(\bx)$, which carves out holes in the support region around them. The dual formulation, which is what is solved in practice, can be derived as 
+
+\vspace{-2ex}
+\begin{align}\label{eq:dual_sup}
+\underset{\alpha\in \mathcal{R}}{\mbox{min}} \sum_i^n \sum_j^n \alpha_i\alpha_j y_i y_jk(\bx_i,\bx_j)\\
+\mbox{s.t} \: 0 \leq \alpha \leq \frac{1}{\nu n} \:, \sum_i^n \alpha_i = 1 
+\end{align}
+
+Our decision boundary function $g(\bx)$ is then derived in terms of the support vectors as $g(\bx) = \sum_i^n \alpha_i y_i k(\bx_i,\bx) - \rho$. To compute the $\rho$ term,we leverage the fact that for an optimal solution the inequalities in Eq. \ref{eq:ineq} are equal for any $\alpha_j$ such that $0 < \alpha_j < \frac{1}{\nu n}$. Therefore we can compute $\rho$ as  $\rho = \sum_i^n y_i \alpha_i k(\bx_i,\bx_j)$ \cite{scholkopf2001estimating}. 
 
 
 
-\subsection{Worst Case}
-The MAB algorithms use the observations of samples drawn to decide which grasp to sample next from. To show worst case performance under such a model, we sorted the quality of all 1000 grasps offline and arranged the order of samples, so that the top 500 grasps have samples drawn in the order of worst to best and the bottom 500 grasps have samples drawn in order of best to worst. This provides misleading observations to the bandit algorithms. We demonstrate in Fig. \ref{fig:worst_case} a case where the observations are misleading. 
 
-As illustrated in Fig. \ref{fig:worst_case}, all the methods are affected by worst case performance. The results indicate that when the observations are misleading the best thing to do is uniform allocation of grasp samples. Interestingly, Thompson sampling appears to to continue to improvement while Gittins indices and iterative pruning do not continue to make progress.
+\subsection{SHEATH:Support-based HElp AquisiTion from Humans}
+
+Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately predict the competent controller's control,which we define as the region of low risk.  In the statistics community, a known property is that estimators are function will mis-classify if they are evaluated at points not in the distribution sampled from.Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  Thus, we try to estimate the level set of the training distribution, which is explained in \ref{sec:level} and only have the competent controller provide labels when the robot leaves this boundary. Furthermore to avoid entering pathological states that are far from the competent controller's demonstrations, we terminate the roll-out when it is a certain distance or risk factor from the decision boundary, which is given by $r(\bx) = \sum_i^n \alpha_i \bx_i k(\bx_i,\bx)-\rho$. The risk threshold, $r_0$, is user defined based on the task. 
+
+\subsubsection{Step 1}
+Similar to DAgger at iteration $k$ the algorithm estimates a policy, $\pi_{\theta_k}$ on the dataset $\mathcal{D}_k$ by solving Eq. \ref{eq:super_objj}. We then estimate the level set of the distribution being trained on by solving the optimization for the One Class SVM or $\ref{eq:primal_sup}$ on the dataset $\mathcal{D}_k$. We now have a decision boundary $g_k(\bx)$, which is $1$ if the region is in the low risk area and $-1$ otherwise . The parameter $\nu$ is an estimate of how much probability mass is contained in the level set and can be use to control the size of the low risk region. 
+ 
+ 
+ \subsubsection{Step 2}
+ In DAgger the policy that was rolled out is $\pi_{\theta_k}$, however this could potential encounter pathological states that are far from the initial set of demonstrations $\mathcal{D}_0$. To prevent this we terminate the rolled out policy if the risk, or distance from the support, is above some threshold $r(\bx_t) > r_0$.  Furthermore, instead of labeling every state now the competent controller is only require to label states outside of the level set or $\bx$, where $g(\bx) = -1$.  These states are then added to the dataset $\mathcal{D}_{k+1}$ and the algorithm goes back to Step 1. 
+
+An implicit trade off exists between what how much of the distribution is contained in the selected level set and the amount of exploration the robot is allowed. If the level set is large the robot will be allowed to explore in this region and potentially make more mistakes with respect to the expert, but learn faster. If the level set contains a smaller fraction of data, then the expert will be in control more and the robot will learn at a slower rate. 
+
+
+\section{Theoretical Analysis}
+
+\subsection{Convergence Rate}
+\todo{These are ideas still in progress}
+The convergence rate of DAgger is dependent on the probability of the expert taking over at each iteration $\beta_i$ \cite{ross2010reduction}. For SHEATH, this corresponds to the probability of leaving the support or $p(g(\mathbf{x}) = -1|\pi_{\theta_i})$ . The intuition is that the larger the level set parameter $\nu$ is the lower the probability of leaving is and thus faster convergence rate, but potentially less safe exploration. Not sure if a formal proof is going to be possible though with assuming known dynamics, still looking into it. However, we can experimentally demonstrate this. 
+
+
+
+
+\section{Experiments}
+\subsection{Driving Example}
+A common benchmark in RL is a car driving around a track avoiding other cars \cite{argall2009survey}. In our driving simulator a car is driven around a rectangular track and has orange cars placed on the track as well that need to be dodged. If the car falls off the track, it is placed back on to the center. Our control space $u = \lbrace -15^\circ, 0, 15^\circ \rbrace$. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
+
+We have the supervisor drive around the track 3 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV. For both DAgger and SHEATH, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our expert.. We initialized both Dagger and SHEATH with two expert demonstrations for each level. For the optimization of Eq. \ref{eq:dual_sup} in SHEATH we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
+
+We compare performance in terms of optimization of the underlying cost function $c(\bx,\bu)$, which is the sum of the number of times the car left the track and the number of times the car collided with the other cars on the track. Initial results averaged over 1 level shown in Fig.  suggest an $75\%$ reduction in the number of queries needed for SHEATH compared to DAgger. 
+
 
 
 
 \begin{figure}[t!]
 \centering
-\includegraphics[scale=1]{matlab_figures/worst_case-02.jpg}
-\caption{ \footnotesize 
-	Number of samples versus the probability of force closure of the best estimated grasp after $t$ samples $P_F(\Gamma_{\bar{k}, t})$ using uniform allocation, iterative pruning, Gittins indices, and Thompson sampling over 1,000 candidate grasps when samples are ordered such that many perturbations that do result in force closure are given to the algorithm initially.
-	The normalized $P_F$ is the ratio of the best estimated grasp at iteration $t$, $P_F(\Gamma_{\bar{k}, t})$, to the highest $P_F$ in the candidate grasp set $P_F(\Gamma^*)$ averaged over 100 independent runs on randomly selected objects from the Brown Vision 2D Dataset \cite{brown}.
- 	The highest quality grasp was determined by brute force search over all candidate grasps (which required 10x  more time than any of these methods \cite{kehoe2012toward}).
- 	The results suggest that when samples are misleading the best policy is uniform allocation. 	However, Thompson sampling appears to continue making progress whereas iterative pruning and Gittins indices do not.}
+\includegraphics[width=6cm, height=6cm]{figures/race_car_track_example.png}
+\caption{ An example image from the racing simulator. The car is meant to drive around a rectangular track and dodge other cars. The supervisor drives around the track for 3 iterations and HOG features are extracted from the images.  }
+
 \vspace*{-10pt}
-\label{fig:worst_case}
+\label{fig:race_car}
 \end{figure}
 
 
-\begin{table}[t]
+\begin{figure}[t!]
 \centering
-\begin{tabular}{ R{1.75cm}||R{1.65cm}|R{1.65cm}|R{1.65cm}  }
- %\hline
- %\multicolumn{4}{|c|}{Sensitivity Analysis for Convergence to Best Grasp for Thompson sampling} \\
- %\hline 
- & \multicolumn{3}{c}{$\#$ of Samples Until Convergence} \\
- \hline
-\specialcell{\bf Uncertainty\\ \bf Type} & \specialcell{\bf Low\\ \bf Uncertainty} & \specialcell{\bf Medium \\ \bf Uncertainty} & \specialcell{\bf High\\\bf Uncertainty}\\
- \hline
-Orientation $\sigma_{\phi}$ & 4230 & 5431 &  6432\\
-Position $\sigma_{\bt}$ & 4210    & 5207 &  8763\\
-Friction $\sigma_{\mu}$ &  4985  & 4456   & 4876\\
- %\hline
-\end{tabular}
-   \caption { \footnotesize  Number of iterations until convergence to within $3\%$ of grasp with the highest estimated probability of force closure $P_F$ for Thompson sampling under uncertainty in the object orientation $\sigma_{\phi} = \lbrace 0.03,0.12, 0.24 \rbrace$ radians,  uncertainty in the object position $\sigma_{\bt} = \lbrace 3, 12, 24 \rbrace$ units, and uncertainty in friction coefficient $\sigma_{\mu} = \lbrace 0.05,0.2, 0.4 \rbrace$ on a 40$\times$40 grid averaged over 100 independent runs on random objects from the Brown Vision 2D Dataset. High variances in position and orientation uncertainty increases the amount of iterations needed for the bandit algorithm to converge.
-   }
-		\tablabel{opt-p-comparison}
-\vspace*{-20pt}
-\end{table}
+\includegraphics[width=8cm, height=6cm]{figures/dagger_sheath_no_cars.png}
+\caption{ We compare performance in terms of optimization of the underlying cost function $c(\bx,\bu)$, which is the sum of the number of times the car left the track and the number of times the car collided with the other cars on the track. Initial results averaged over 1 level shown suggest an $75\%$ reduction in the number of queries needed for SHEATH compared to DAgger.  }
+
+\vspace*{-10pt}
+\label{fig:car_cost}
+\end{figure}
 
 
-\section{Discussion and Future Work } 
+\subsection{Super Mario Bros}
+Super Mario Bros. is a platform video game where the character, Mario, must move across each stage by avoiding being hit by enemies and falling into gaps, and before running out of time. We used the simulator from a recent Mario Bros. AI competition which can randomly generate stages of varying difficulty (more difficult gaps and types of enemies) \cite{marioAI}. Our goal is to train the computer to play the game based on current game features as input. Our expert is a near optimal $A^*$ search algorithm that plans ahead using the game simulator. An action consists of 4 binary variables indicating which subset of buttons we should press in $\lbrace \mbox{left},\mbox{right},\mbox{jump},\mbox{speed} \rbrace$. For both DAgger and SHEATH, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $C\gamma=0.01$, which was set via cross validation on the initial training examples from our expert.. We initialized both Dagger and SHEATH with two expert demonstrations for each level. For the optimization of Eq. \ref{eq:dual_sup} in SHEATH we used a radial basis function as well for the kernel with a bandwidth of $c=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
 
-In this work, we proposed a multi-armed bandit approach to efficiently identify high-quality grasps under uncertainty in shape, pose, friction coefficient and approach. 
-A key insight from our work is that exhaustively sampling each grasp is inefficient, and we found that a MAB approach gives priority to promising grasps and can reduce computational time. Initial results have shown MAB algorithms to outperform the methods of prior work, uniform allocation and iterative pruning  \cite{kehoe2012toward}\cite{kehoe2012estimating} in terms of finding a higher quality grasp faster.
-However, as shown in Fig. \ref{fig:worst_case} there are some pathological cases that can mislead bandit algorithms to focus samples on the wrong grasps.
-Fortunately, the probability of many successive samples being misleading approaches zero at an exponential rate as the time horizon is increased.
+\begin{figure}[t!]
+\centering
+\includegraphics[width = 6cm ]{figures/mario.png}
+\caption{ An example image from the Mario AI simulator. Mario faces many challenges to reach an end of a level, such as gaps, jumps and enemies.  }
 
-In future work, we plan to scale our method to 3D objects. This could substantially increase the number of candidate grasps, further motivating the use of cloud computing. Glazebrook and Wilkinson showed that the Gittins index method could be parallelized by simply dividing the arms into $M$ subsets, where $M$ is the number of cores, and solving each MAB separately. \cite{glazebrook2000index}. A similar method could also be done for Thompson sampling. Another promising scheme for parrallelizing the MAB, is to have the algorithm not sample one arm at each algorithm but $M$. We will explore both of these approaches in future work.
+\vspace*{-10pt}
+\label{fig:dis_traveled}
+\end{figure}
 
-\section{Acknowledgments} 
-This work is supported in part by the U.S. National Science Foundation under Award IIS-1227536, NSF-Graduate Research Fellowship, and by grants from Google. 
-We thank our colleagues who gave feedback and suggestions in particular Sanjay Krishnan, Peter Bartlett, Steve McKinley and Dylan Hadfield-Menell.
+
+
+\begin{figure}[ht]
+\centering
+
+\includegraphics[width=8cm, height = 4.5cm]{figures/dagger_sheath_mario.eps}
+
+
+\caption{We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the number of labels provided by the competent controller. Initial results, averaged over 20 levels, suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.   \todo{I think these results are promising but want to make clear they are very preliminary and want to run more experiments on Mario and the self driving car to ensure that we can actually do this reliable. Also, the jaggedness is concerning and needs to be looked in to, my intuition is telling me that Mario is just a very chaotic environment though. I am going to average over more levels to see if it improves}}
+\label{fig:mario_results}
+\end{figure}
+
+We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the amount of time a level was tried.  Initial results, averaged over 20 levels,  suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.  
+
+
+
+\subsection{Other Experiment}
+\todo{Florian and I are discussing different ideas for this one, maybe a controller for an arm or something along the lines of learning to grasp in clutter}
+
+
+\section{Discussion and Future Work}
+
 
 \bibliographystyle{IEEEtranS}
 \bibliography{references}
