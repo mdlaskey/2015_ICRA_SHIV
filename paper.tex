@@ -275,18 +275,18 @@ To handle high dimensional densities $P$, work by Scholk{\"o}pf et al.  looked a
 
 \begin{figure*}[ht]
 \centering
-\subfigure[Race Car Simulator]{%
-\vspace{-0.5ex}\includegraphics[width=5cm , height = 4cm]{figures/Slide1.jpg}
+\subfigure[Kernel Density Estimation of Sampled Data]{%
+\vspace{-0.5ex}\includegraphics[width=5.5cm , height = 4.5cm]{figures/kde_gmm.eps}
 \label{fig:subfigure1}}
 \quad
-\subfigure[Expert Demonstrations]{%
-\includegraphics[width=5.5cm, height = 4.5cm]{figures/exp_dist.eps}
+\subfigure[One Class SVM]{%
+\includegraphics[width=5.5cm, height = 4.5cm]{figures/kde_gmm_ocm.eps}
 \label{fig:subfigure2}}
-\subfigure[Estimated Support of Expert Demonstrations]{%
-\includegraphics[width=5.5cm, height = 4.5cm]{figures/ocm_example.png}
+\subfigure[Risk Sensitive One Class SVM]{%
+\includegraphics[width=5.5cm, height = 4.5cm]{figures/kde_gmm_mocm.eps}
 \label{fig:subfigure3}}
 
-\caption{\todo{Want to change this to highlight $\nu$ effect on level set estimation} A race car is driven around a track in Fig. \ref{fig:subfigure1} by an expert demonstrator. The state space of the car is represented as the x and y positions on the track or $\mathbf{s} = [x,y]$. In Fig. \ref{fig:subfigure2}, the demonstrations are plotted in state space. In Fig. \ref{fig:subfigure3}, the support is estimated using the decision function in \ref{eq:decision_func}. As illustrated the support accurately describes the boundary of the expert trajectory. }
+\caption{Data is sampled from a Gaussian Mixture Model and in Fig. \ref{fig:subfigure1}, the red points are those that the trained policy, $\pi_{theta}$ will mis-predict. In Fig. \ref{fig:subfigure2} the One Class SVM is fit to the data and tries to estimate the areas of low risk (the light green region), while it is able to estimates the area where the majority of the data lies it also encloses the points the trained policy is mis-predicting. In Fig. \ref{fig:subfigure3}, the Risk Sensitive One Class SVM is able to effectively remove the red points from the region of low risk.}
 \label{fig:support_example}
 \end{figure*}
 
