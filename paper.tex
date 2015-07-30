@@ -94,16 +94,14 @@
 \newcommand{\minksum}{\operatorname{MinkowskiSum}}
 
 \newcommand{\specialcell}[2][c]{ \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
-
+\newcommand{\acro}{SHIV}
 \newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
 \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
 
 \newcolumntype{L}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
 \newcolumntype{R}[1]{>{\RaggedLeft\hspace{0pt}}p{#1}}
 
-\title{\LARGE \bf
-An Algorithm to Reduce a Supervisor Demonstrations for DAgger in Learning From Demonstrations[v9] }
-
+\title{\LARGE \bf \acro: Reducing Supervisor Burden using SVM-based Risk to Efficiently Learn Robot Control Policies from Demonstrations }
 
 \author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Ken Goldberg$^2$% <-this % stops a space
 \thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, ftpokorny\}@berkeley.edu}}%
@@ -123,17 +121,47 @@ An Algorithm to Reduce a Supervisor Demonstrations for DAgger in Learning From D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-For robot control problems where the dynamics of the environment and the reward function are unknown, one technique is to learn a policy that attempts to match a supervisor's demonstration, also known as learning from demonstration . A state of the art method in learning from demonstration is known as Dataset Aggregation, or DAgger. DAgger treats learning from demonstration as an iterative supervised learning problem.The algorithm alternates between training a policy on labeled data and then acquiring labels on states the robot is likely to encounter by executing the trained policy and having the supervisor tell the robot what controls it should have applied. Some successes of DAgger have been achieving state of the art performance on both Mario and Atari video game benchmarks, flying a quadcopter through a forest and teaching a robot to follow verbal instructions. One potential limitation though of DAgger is that it requires the supervisor to label the control for every state the robot visits during training, which can be expensive and tedious if the supervisor is a human. We propose estimating where the train policy is likely to mis-predict the supervisor's control, which we define as areas of risk and then only having the supervisor label these states. Areas of risk can occur if the state is far from training data or if it has been incorrectly classified during the supervised learning step. We propose identifying these areas via a modified version of the One Class SVM, which is used to estimate a level set of the distribution trained on. Then only states outside of this boundary are queried. Initial results suggest \todo{once we polish the experiments tomorrow and Wednesday}
-
+For robot control problems where no reward function is known and the dynamics of the environment are not specified, the
+learning from demonstrations approach provides an algorithmic paradigm for learning a policy from supervisor-provided
+demonstrations. Dataset Aggregation (DAgger) in particular yields a state of the art method in this context which treats
+the problem of determining a policy as an iterative supervised learning problem which alternates between executing a
+trained policy and acquiring new supervisor control inputs for roll-outs of a current best policy estimator. In this
+work, we propose a novel algorithm, \acro~which is based on DAgger and which estimates the riskiness of states
+encountered by the policy roll-outs by means of an approximate quantile super-levelset estimate of the distribution of
+states used for training the current policy. Since learning a quantile function for high-dimensional input data is
+challenging, we instead modify an SVN-based approach to quantile estimation that employs regularization to solve this
+problem approximately. Our algorithm considers roll-outs with early termination as soon as a state outside a
+user-defined quantile super-levelset is encountered. Our approach furthermore reduces the amount of neccessary
+supervisor demonstrations by only collecting supervisor control inputs at states outside the current quantile estimate.
+In experiments involving a simulated race track and in a Super Mario Atari game benchmark considered by the authors of
+DAgger, our approach results in similar performance levels as DAgger while reducing the amount of required supervisor
+control inputs by more than {\color{blue}[-- TODO --]} percent.
 \end{abstract}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Introduction}
- Consider a robot trying to learn a task, such as driving a rc car around a track with other cars. In this task, the robot may have no prior information other than visual demonstrations from a human demonstrator. With no knowledge of a underlying cost function or system dynamics traditional control techniques are not practical.  One method in robotics that can handle such a situation is called Learning from demonstrations.  In the past, these methods  have  achieved state of the art performance  in a variety of applications.\cite{ross2013learning,pomerleau1989alvinn,schulman2013case} 
+\section{Introduction} 
+Consider the problem of teaching a robot a complex task such cooking a meal or as racing a toy car around a track
+against human opponents. When the robot is only provided with visual demonstrations without the knowledge or an
+underlying cost function describing the task, traditional model based control approaches are often not applicable. In
+these situations, the learning from demonstrations (LfD) approach provides a paradigmn for teaching the robot how to
+accomplish the task \cite{ross2013learning,pomerleau1989alvinn,schulman2013case}.
 
-One approach to LfD is to train a policy, or a  function estimator (either a classifier or regressor), to predict a supervisor's behavior given training data of the  observations (input) and actions (output) performed while accomplishing a task. However the robot's actions affect the next state observed, which violates the standard i.i.d assumption that is common in most statistical learning approaches. Ross et al. proved that this can cause the error in the estimator to compound over the time and lead to performance degradation that is proportional to the time horizon of the task squared. The intuition behind this result is that as the robot makes mistakes with respect to the supervisor's policy it drifts from the distribution it was trained on and encounters new states it can't generalize to.  Ross and Bagnell overcome this by presenting an iterative method that first trains a policy on the data observed using standard supervised learning techniques then tries the policy out in the environment to see what states are likely to occur under the robot's trained policy.  The supervisor then tells the robot what controls it should applied after each iteration and the policy is retrained \cite{ross2010reduction}. The DAgger method has been used since to teach a robot how to follow verbal instructions, achieve state of the art performance on Atari games and fly a quad copter through a forest~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
+One approach to LfD is to train a policy, or a function estimator (either a classifier or regressor), to predict a
+supervisor's behavior given training data consisting of pairs of observations (input) and actions (output) performed
+while accomplishing a task. Since the robot's actions typically affect the resulting next state, the resulting sequences
+of states encountered during the execution of a policy are not independent random variables, thus making statistical
+inference challenging. Ross et al. proved that this can cause the error in the policy estimator to compound over the
+time and lead to performance degradation that is proportional to the time horizon of the task squared. The intuition
+behind this result is that as the robot makes mistakes with respect to the supervisor's policy it drifts from the
+distribution it was trained on and might encounter new states it can't generalize to.  Ross and Bagnell overcome this by
+presenting an iterative method that first trains a policy on the data observed using standard supervised learning
+techniques then tries (or 'rolls out') the policy out in the environment to see what states are likely to occur under
+the robot's trained policy.  The supervisor then tells the robot what controls it should applied after each iteration
+and the policy is retrained \cite{ross2010reduction}. The DAgger method has been successfully used since to teach a
+robot how to follow verbal instructions, achieve state of the art performance on Atari games and fly a quad copter
+through a forest~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
 
 
 
@@ -141,125 +169,258 @@ One approach to LfD is to train a policy, or a  function estimator (either a cla
 \begin{figure}[t!]
 \centering
 \includegraphics[width=12cm, height=6cm]{figures/teaser.eps}
-\caption{ An illustrative example of estimating the risk area in the data collected for a simulated self driving car around a track with other cars. The green area corresponds to points that are likely to occur under the expert demonstrations, where outside are points that would occur with low probability and thus are considered high risk. } 
+\caption{ 
+Given a set of states corresponding to images of a race-track simulation (visualized in $\mathbb{R}^2$) with expert
+control inputs, we consider a quantile super levelset estimate (shaded) as an approximation of the riskiness of
+executing the trained policy at a given state. By varying the quantile threshold, we can increase or decrease the size
+of the quantile super-levelset area. In our approach, points outside the super-levelset are considered risky and, during
+training, roll-outs of the policy that leave the super-levelset require control demonstrations from the supervisor,
+while roll-outs within the super-levelset can be performed autonomously.
+}
 \vspace*{-10pt}
 \label{fig:dis_traveled}
 \end{figure}
 
+During learning, implementations of DAgger require the supervisor to manually provide control inputs that the robot
+should have applied for each states it visits when rolling out the current best policy estimate. If the supervisor is a
+human or an algorithm with a high time complexity, this can be tedious and expensive. We are hence interested in
+reducing the burdon on the supervisor by partitioning the state space into states where the policy can either be
+executed autonomously with little expected risk, or where supervisor control input (or 'labels') are likely to be
+required due to high 'risk'. A state can be risky for 2 reasons: 1) we encounter a state which has a low density of
+training data in its vicinity, which potentially means our policy will mis-predict the supervisor
+\cite{tokdar2010importance} 2) the state is near previously visited states, but the control-input is mis-predicted
+nonetheless. If an accurate density estimation corresponding to
+the pairs of visited states and control signals is available, the first scenario can be captured by regions of
+state-space with a low density estimate. Areas of low density are then considered to be risky since an insufficient data
+is available to accurately model the demonstrator's policy. This idea is also captured in the notion that 'a trained
+model will be able to generalize within the distribution it is trained on' \cite{tokdar2010importance} in statistical
+machine learning. The second case arises for example when the current best policy estimate is locally inconsistent with expert
+demonstrations.
+%
+%Vague!!!
+%This property can be seen used in importance sampling when data is collected from one distribution, but tested on
+%another and has to be re-weighted %to the test distribution \cite{huang2006correcting}. 
+%
+While the amount of data needed to accurately estimate the density increases exponentially with the dimension of state
+space \cite{nadaraya1964estimating}, we can turn to approximate methods which instead attempt to learn an approximate
+representation of the quantile levelsets of the distribution. Thus, we propose using a modified version the One Class
+SVM method for support estimation that only tries to estimate the level set of the quantile function of the density
+\cite{scholkopf2001estimating} at a user-determined quantile threshold which has been used even with high-dimensional
+image data \cite{liu2014unsupervised}. Our modification furthermore removes areas of state space from the super-levelset
+estimate where the local policy estimate is inconsistent with the expert demonstrations.
 
-During learning, implementations of DAgger require the supervisor to manually label the controls the robot should have applied for each states it visits. If the supervisor, is a human this can be tedious and expensive. We are interested in having the supervisor only need to provide labels in areas of high risk, or where the robot is likely to mis-predict the controllers actions to reduce the workload on the controller.  A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor \cite{tokdar2010importance} 2)  the state in the training set is being mis-predicted, so the state, although visited, doesn't have good control yet 
+To apply our approach, we make the same assumptions as in the case of DAgger: 1) we require access to an environment
+where a robot can try out (roll out) policies to sample trajectories and where we are able to collect observation states
+and corresponding control inputs along these trajectories. 2) an interface allowing a supervisor to provide control
+inputs that should have been applied for states along parts of the rolled out trajectories. 3) We assume that we are
+able to collect a series of observations from the environment and the controls applied. 4) Lastly, for our theoretical
+analysis to apply, we assume the current observation only depends on the previous observation and control input (i.e.
+the Markovian assumption).
 
-To estimate where the robot's current policy is likely to mis-predict the supervisor, we  leverage a property in statistical machine learning that a trained model will be able to generalize within the distribution it is trained on \cite{tokdar2010importance}. This property can be seen used in importance sampling when data is collected from one distribution, but tested on another and has to be re-weighted to the test distribution \cite{huang2006correcting}. One approach then is to estimate the distribution the policy is trained on and then ask for the supervisor to take over if the  probability of the current state is low under the estimated distribution. However, the amount of data needed to accurately estimate the density increases exponentially with the dimension of state space \cite{nadaraya1964estimating}. If we are working with partial observations like image data this could be impractical.  Thus, we propose using a modified version of a technique known as the One Class SVM that only tries to estimate the level set of the density trained on \cite{scholkopf2001estimating} and has been shown to successfully work on image data before in the context of outlier detection \cite{liu2014unsupervised}. 
-
-We make the following assumptions access to an environment where a robot can try out policies and sample trajectories and access to a supervisor that is able to provide demonstrations and tell the robot the control it should have applied after each iteration. We also assume that we are able to collect a series of partial observations from the environment and the controls applied. Lastly, we assume the observations encapsulate the Markov assumption in such that the probability of one is only dependent on the last observation and the controls applied. 
-
-
-Our contributions to date are framing the problem of asking for help in an online setting as estimating the support of a distribution and proposing a modified version of the One Class SVM,that both estimates the level set of a distribution and carves out areas in the support where we know our policy will mis-predict the supervisor, to identify states of high risk.  Initial results on a Mario AI video game, averaged over 20 levels,  suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 queries to the supervisor, while DAgger required 2800 queries.  \todo{These are preliminary results and I want to test on more mario experiments and the self driving car, also look at robustness to hyperparamters such as $\nu$ before I am confident in them}
+Our core contribution is the extension of DAgger to \acro~which incorporates a notion of risk to learning from
+demonstrations and reduces supervisor
+burdon by asking for supervisor demonstrations only in `risky' states. 
+We achieve this by proposing a modified version of the One Class SVM, that both estimates the quantile level sets 
+of the distribution of states with demonstrations and additionally
+and carves out areas in the support where we know our policy will mis-predict the supervisor, thus identifying states of high
+risk.  Our experimental results on a Super Mario Atari video game,  suggest \acro~is able to reach DAgger's
+peak performance of surviving for an average of 2200 simulation steps with only 1200 queries to the supervisor, while DAgger required 2800 queries
+averaged over 20 levels.
+{\color{blue}[-- FINALIZE --]}
 
 \section{Related Work}
-The field of learning from demonstration has achieved state of the art performance in a variety of areas within robotics \cite{argall2009survey}. Abbeel et al. used an iLQR controller around helicopter trajectories demonstrated by an expert to successfully learn a series of aerobatics stunts \cite{abbeel2007application}. Billard and Matari used a hierarchy of neural networks on video data and tracking markers to imitate a human arms movements on a 37 degree of freedom humaniod robot \cite{billard2001learning}. Schulman et al. used a non-linear warping, thin plate splines, on collected trajectories of a human controlling a PR2 and tying knots with a rope then transferred the demonstrations to the new unseen initial configurations of the rope~\cite{schulman2013case}. 
+The field of learning from demonstrations has achieved state of the art performance in a variety of areas within robotics
+\cite{argall2009survey}. Abbeel et al.~used an iLQR controller based on helicopter trajectories demonstrated by a human expert
+to successfully learn a series of aerobatics stunts \cite{abbeel2007application}. Billard and Matari used a hierarchy of
+neural networks on video data and tracking markers to imitate the movement of human arms on a 37 degree of freedom humaniod
+robot \cite{billard2001learning}. Schulman et al. used a non-linear warping technique based on thin-plate splines
+to transer demonstrations of a human controlling a PR2 robot to tie knots with a rope to new and unseen initial
+configurations of the~\cite{schulman2013case}. 
 
- A subset of the learning from demonstration field is working within the assumption of no known dynamics and no access to a cost function. Under these assumptions, one approach to learning from demonstration is to collect a set of trajectories and controls from a supervisor and then treat the problem as a supervised learning problem that regresses on a function from state space to controls~\cite{argall2009survey}. Pomerleau et al. used this approach on raw image data and controls provided by a person driving a car and learned a policy that allowed a car to travel on a highway. However, they observed if the car deviated from the middle of the road it would not know how to recover, this behavior was attributed to the fact the car only drove in middle of the road while collecting demonstrations~\cite{pomerleau1989alvinn}. Ross et al. studied this effect and proved the amount of error accumulated is squared in the time horizon of a policy and proposed a learning algorithm, SMILE, that stochastically mixes the supervisor's control with the robots during training. Thus allowing the robot to explore states the supervisor hasn't seen before~\cite{ross2010efficient}. 
+A subset of research in the field of learning from demonstrations is working within the assumptions that the dynamics of
+the robot and the environment are not known and that no access to a cost function describing a given task is available.
+Under these assumptions, a set of trajectories and controls can be collected from a supervisor and the policy learning
+problem can be treated as a supervised learning problem that determines a function from state space to
+controls~\cite{argall2009survey} by means of regression. Pomerleau et al. used this approach on raw image data and
+associated control inputs provided by a person driving a car. The authors then learned a policy that allowed a car to
+travel on a highway. However, they observed that if the car deviated from the middle of the road the learned policy was
+not able to recover, this behavior was attributed to the fact the car only drove in middle of the road while collecting
+demonstrations~\cite{pomerleau1989alvinn}. Ross et al. studied this effect and showed that error can accumulate at a
+rate quadratic in the time horizon of the policy in general. Ross et al. then proposed a learning algorithm, SMILE, that
+stochastically mixes the supervisor's control with the robot's policy control signal during training, thus allowing the
+robot to explore states the supervisor had not visited during training~\cite{ross2010efficient}. 
 
-Ross and Bagnell then improved upon this method with DAgger an iterative method that first trains a policy on the data observed using standard supervised learning techniques and tries the policy out in the environment to see what states are likely to occur under the robots policy. The supervisor then tells the robot what controls it should applied after each iteration and the policy is retrained with an aggregate of all data seen before \cite{ross2010reduction}. 
+Ross and Bagnell improved upon this method with DAgger (Dataset Aggregation) -- an iterative method that first trains a
+policy on the data observed using standard supervised learning techniques and then tries, or 'rolls out' the policy in
+the environment to see what states are likely to occur under the policy. The supervisor then tells the robot what
+controls it should applied at each stage of this roll-out and the policy is retrained with an aggregate of all data seen
+before \cite{ross2010reduction}. This algorithm has found widespread adoption in the robotics community. in
+\cite{ross2013learning}, a quad-copter using DAgger learned how to fly through a forest using only Histogram of Gradient
+(HOG) features extracted from camera images \cite{ross2013learning}. Guo et al. combined DAgger with Deep Q-learning
+methods to achieve state of the art performance on a common Atari game benchmark in Reinforcement Learning
+\cite{NIPS2014_5421}. Duvallet et al. furthermore used DAgger to teach robots to follow verbal instructions about where
+to move sematically in a building with a training set consisting of of humans following similar verbal instructions
+\cite{duvallet2013imitation}. Levine et al. very recently extended the iterative learning paradigm through Guided Policy
+Search, which replaces the expert with iLQG and uses KL-divergence constraints to train the policy~\cite{levine2015end}.  
 
-A quad-copter using DAgger learned how to fly through a forest using only HOG features extracted from visual images \cite{ross2013learning}. Guo et al. combined DAgger with Deep Q learning methods to achieve state of the art performance on the common Atari game benchmark in Reinforcement Learning \cite{NIPS2014_5421}. Duvallet use DAgger to teach robots to follow verbal instructions about where to move sematically in a building with a training set of humans following similar verbal instructions \cite{duvallet2013imitation}. Levine et al. extended the iterative learning paradigm through Guided Policy Search, which replaces the expert with iLQG and uses KL divergence constraints to train the policy to match the distributions of the controllers \cite{levine2015end}.  
 
+One limitation of DAgger which we address in the present work is that it requires the demonstrator, or supervisor, to
+provide control inputs that the expert would have applied for every state encountered along a roll-out of a trajectory at every interation of the
+algorithm. Providing these control inputs can be very tedious or expensive both in the case where the `supervisor' is a
+human or an algorithm with a high computational demand.
 
-One limitation of DAgger is that it requires the demonstrator, or supervisor, to "label" every state the policy visits during learning. The act of labeling can be very tedious and expensive when the supervisor is a human. To reduce this Judah et al. proposed applying active learning technique to only query the supervisor for states that are likely to be visited under the current policy and are likely to be mis-predicted under the current policy\cite{judah2011active,judah2012active}. A drawback of this approach though is that it requires estimating the distribution of states, which can be difficult in high dimensions. Furthermore, their use of query by committee reduces their policy's function class to non-kernelized linear classifiers \cite{gilad2005query}, which could potentially hurt the ability of a policy to generalize.
- 
+In prior work, Judah et al. proposed applying active learning techniques to only query the supervisor for states that are likely to be
+visited under the current policy and are likely to be mis-predicted under the current policy
+\cite{judah2011active,judah2012active}. A drawback of this approach is that it requires us to estimate a complete
+density of states from the samples, which can be difficult especially in high dimensions. Furthermore, the  
+approach is based on `query by committee', and considers only non-kernelized linear classifiers to represent the
+learned policy~\cite{gilad2005query}, thus restricting the class of policies which can be modelled with the approach.
 
-In order to tell where a policy is likely to mis-predict,we  leverage a property in statistical machine learning that a trained model will be able to generalize within the distribution it is trained on \cite{tokdar2010importance}. This property is used in importance sampling when data is collected from one distribution, but tested on another and has to be re-weighted to the test distribution \cite{huang2006correcting}. One approach is to  estimate the probability density the policy is trained on. However, the amount of data needed to accurately estimate the density scales exponentially in the number of \cite{nadaraya1964estimating}.
+%[Let's discuss this part]
+{\color{blue}[-- IMPROVE THIS PARAGRAPH --]} In order to determine state space regions where a policy is likely to determine
+an incorrect control input, we leverage a
+property in statistical machine learning that a trained model will be able to generalize within the distribution it is
+trained on \cite{tokdar2010importance}. This property is used in importance sampling when data is collected from one
+distribution, but tested on another and has to be re-weighted to the test distribution \cite{huang2006correcting}. One
+approach is to estimate the probability density of states the policy is trained on. However, the amount of data needed to accurately estimate the density scales exponentially in the number of \cite{nadaraya1964estimating}.
 
- Several other approaches have been proposed to tell when your estimator is likely to not generalize \cite{2003novelty}.Knox and Ng used a nearest neighbors approach to try and estimate if a point was close to $k$ neighbors, however it was shown to be susceptible to outliers because nearest neighbor only uses local information about the data \cite{knox1998algorithms}. Manevitz and Yousef trained a neural network filter to try and reconstruct the data and if the reconstruction error is high, they mark the point as likely to be outside of the estimators generalization ability. Manevitz and Yousef mention  that finding the right architecture can be task specific and require a lot of hyperparameter tuning  \cite{manevitz2002one}. The One Class SVM proposed by Scholk{\"o}pf et al. estimates a user defined level set of the distribution it is trained on by solving a convex quadratic program   to find the support vectors that encompasses the data. The method has been theoretically shown to approximate the level set of a density estimate in the asymptomatic  limit of sample and also its regularization term has the nice property of being equivalent to the quantile function\cite{vert2006consistency}. It has also been shown to successfully work on outlier detection for raw image data~\cite{liu2014unsupervised}.
+Several alternative approaches have been proposed to determine regions of state-space where an estimator is likely fail
+to generalize away from the training-data \cite{markou2003novelty}. Knox and Ng \cite{knox1998algorithms} used a nearest
+neighbor-based approach by estimating if a point was close to $k$ neighbors, however this approach was shown to be
+susceptible to outliers since nearest neighbors mostly incorporate local information about the data. Manevitz and Yousef
+\cite{manevitz2002one} trained a neural network filter to try and reconstruct the data and when the reconstruction error
+at a point was high, the point was considered as likely to be outside of the estimators domain within which
+generalization was possible. Manevitz and Yousef conjecture  that finding the right architecture can be task specific
+and might require a large amount of hyperparameter tuning.
 
+Our approach is in particular based on the One Class SVM proposed by Scholk{\"o}pf et al. which estimates a user
+defined quantile level set for a collection of training data by solving a convex quadratic program  to find support
+vectors. The method has been theoretically shown to approximate the quantile levelset of a density estimate
+asymptotically for correctly chosen bandwidth settings and in the case of a normalized Gaussian kernel function \cite{vert2006consistency}. 
+In \cite{liu2014unsupervised}, the One Class SVM has furthermore been used for outlier detection of high-dimensional 
+image data.
 
 \section{Problem Statement}
-
 \subsection{Notation and Background}
-\todo{figure out sensor model, meeting with Sergey next week about safe learning with out assuming a human is available I can ask him then}
-Define $\mathbf{x} \in \mathcal{X}$ as state space for a robot, for example $\mathbf{x}$ could be an image from a camera feed or a vector of joint angles. Define $\mathbf{u} \in \mathcal{U}$ as the class of controls for an agent, which could be for example torque control applied to a robot or discrete commands such as in a video game. The environment is modeled to have dynamics that are stationary and Markovian, such that the the probability of state $\mathbf{x_{t+1}}$ can be determined from $\mathbf{x}_t$ and $\mathbf{u}_t$, or $p(\bx_{t+1}|\bu_t,\bx_t)$.  We represent a probability distribution over the initial state of the environment $p(\bx_0)$.. Denote a trajectory as series of states visited and the controls applied  as $\tau = (\mathbf{x}_0,\mathbf{u}_1, ...., \mathbf{x}_T,\mathbf{u}_T)$.  A trajectory that is defined with state space only and not controls is $\tau_{\bx} = (\bx_0,....,\bx_T)$.
+{\color{blue} [-- TODO: SENSOR MODEL --]}
+We denote by $\mathcal{X}$ the set consisting of \emph{observable states} for a robot task, consisting, for example of
+high-dimensional vectors corresponding to images from a camera, or joint angles and object poses in the environment.
+We furthermore consider a set $\mathcal{U}$ of \emph{allowable control inputs} for the robot, which can be discrete or continuous in
+nature. The environment is
+modeled to have dynamics that are stationary and Markovian, such that the the probability of state $\mathbf{x_{t+1}}\in
+\mathcal{X}$ can be determined from the previous state $\mathbf{x}_t\in\mathcal{X}$ and control input $\mathbf{u}_t\in \mathcal{U}$,
+so that $p(\bx_{N+1}|\bu_{N},\bx_{N}, \ldots, \bu_{0}, \bx_{0})=p(\bx_{N+1}|\bu_{N}, \bx_N)$.  
+When no confusion arises, we denote the probability density over the initial state also by $p:\mathcal{X}\to
+\mathbb{R}$. By a trajectory, we mean a finite series of pairs of $T$ states visited and corresponding
+control inputs at these states $\tau = (\mathbf{x}_0,\mathbf{u}_1, ...., \mathbf{x}_T,\mathbf{u}_T)$, where $\bx_i\in \mathcal{X}$
+and $\bu_i\in \mathcal{U}$ for $i\in \{0, \ldots, T\}$ and some $T\in \mathbb{N}$.  
+At times we will also consider trajectories in state space only, in which case a trajectory corresponds
+to a sequence of states $\tau = (\bx_0,....,\bx_T)$ with $\bx_i\in\mathcal{X}$ for $i\in \{0, \ldots, T\}$.
 
 
+By a policy, we mean a function $\pi: \mathcal{X} \to \mathcal{U}$ from states to control inputs. 
+We shall in particular consider classes of policies $\pi_{\theta}:\mathcal{X}\to \mathcal{U}$ parameterized by a
+parameter $\theta\in \mathbb{R}^d$ corresponding to support vectors of a Support Vector Machine (SVM).
+Any such policy, $\pi_{\theta}$ in an environment with probabilistic initial state density and Markovian dynamics
+induces a density on state-space trajectories of length $T+1$: $p(\tau | \theta)=
+p(\bx_0)\prod_{i=0}^{T-1}p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$, for $\tau = (\bx_0, \bx_1, \ldots, \bx_N)\in
+\mathcal{X}^{N+1}$.
 
-A policy is a function from state space to controls, $\pi: \bx \rightarrow \bu$. A policy could be $\pi_\theta: \bx \rightarrow \mathbf{u}$, which is a  function that is specified by a vector of parameters  $\theta$.The vector of parameters $\theta$ can be for example weights in a neural network or the  vectors in a Support Vector Machine. A policy, $\pi_{\theta}$ in an environment with $p(\bx_0)$ and $p(\bx_{t+1}|\bx_t,\bu_t)$ induces a distribution on the possible trajectories:$ p(\tau_\bx | \theta)= p(\bx_0)\prod_{i=0}^{T-1}p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. Also $\pi_{\theta}$ in an environment with $p(\bx_0)$ and $p(\bx_{t+1}|\bx_t,\bu_t)$  induces a distribution on states visited $p(\mathbf{x}|\theta)$. 
+$p(\bx_t|\theta)$ denote the value of the density of states visited at time $t$ if the robot follows the policy
+$\pi_{\theta}$ for $t-1$ time steps which can be calculated by marginalization $p(\bx_t|\theta) =
+\int_{\bx_{t-1}}...\int_{\bx_1} p((\bx_t,...,\bx_1)|\theta) d\bx_{t-1}...d\bx_1$. Following \cite{ross2010reduction},
+the average density on states is now defined as $p(\bx|\theta) = \frac{1}{T} \sum^T_{t=1} p(\bx_t|\theta)$.
+While we do not assume analytic knowledge of the distributions corresponding to: $p(\bx_{t+1}|\bx_t,\bu_t)$, $p(\bx_0)$, $p(\bx_{\bx}|
+\bx)$ or $p(\bx|\theta)$, but instead assume that we have a stochastic real robot or a simulator such that for any state
+$\bx_t$ and control $\bu_t$, we can sample the $\bx_{t+1}$ such that $\bx_{t+1}$ follows the distribution corresponding
+to the density $p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. In particular, when 'rolling out' trajectories under a policy
+$\pi_{\theta}$, we utilize the robot or simulator to 'sample' the resulting stochastic trajectories rather than
+estimating than estimating $p(\bx|\theta)$ itself.
 
- The following is a way to convert from $p(\bx_t|\theta)$ to $p(\bx|\theta)$. Let $p(\bx_t|\theta)$ be the distribution of states visited at time $t$ if the robot follows the policy $\pi_{\theta}$ for $t-1$ time steps. Calculating this from $p(\tau_{\bx}|\theta)$ is mean marginalizing over the previous timesteps $p(\bx_t|\theta) = \int_{\bx_{t-1}}...\int_{\bx_1} p((\bx_t,...,\bx_1)|\theta) d\bx_{t-1}...d\bx_1$. The average distribution on states is now defined as $p(\bx|\theta) = \frac{1}{T} \sum^T_{t=1} p(\bx_t|\theta)$.
+Typically, the objective in policy learning can be framed as minimizing some cost function $C(\tau) = \sum^T_{t=1} c(\bx_t,\bu_t)$
+of a trajectory $\tau = (\mathbf{x}_0,\mathbf{u}_1, ...., \mathbf{x}_T,\mathbf{u}_T)\in (\mathcal{X}\times
+\mathcal{U})^{T+1}$. The cost function $c:\mathcal{X}\times \mathcal{U}\to \mathbb{R}$ is typically user defined and task specific. 
+For example, in task of inserting a peg into a hole, the distance between the peg's current and desired final state can
+be considered \cite{levine2015end}.  In our present setting, we do not know the cost function itself, but instead have access to a "supervisor", 
+an algorithm or human that we assume uses some near-optimal policy $\tilde{\pi}$ to minimize $C(\tau)$, and we are given
+an initial set of $N$ stochastic demonstration trajectories $\mathcal{D} = \lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
+which are the result of the supervisor applying this policy. 
 
+Next, we define a ``surrogate'' loss function $l:\mathcal{U}\times \mathcal{U}\to \mathbb{R}$, which provides a distance
+measure between any pair of control values. In the continuous case, we consider $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2$,
+while in the discrete case $l(\bu_0,\bu_1) = 1$ if $\bu_0 \neq \bu_1$ and $l(\bu_0, \bu_1)=0$ otherwise.
 
-
-We do not know the distributions: $p(\bx_{t+1}|\bx_t,\bu_t)$, $p(\bx_0)$,$p(\tau_{\bx}|
-\bx)$ or $p(\bx|\theta)$. But we assume we have a stochastic real robot or a simulator such that given any state $\bx_t$ and control $\bu_t$, it will move into a state $\bx_{t+1}$ such that $\bx_{t+1} \sim p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. Note that $p(\tau_{\bx}|\theta)$ is high dimensional because $\bx$ is high dimensional. 
-
-Given $\pi_{\theta}$ we want to identify a set of highly probable trajectories and the associated highly probable states. We assume we are given some initial state $\bx_0$. We  "roll-out" the policy using the robot with the policy to sample the resulting trajectory and set of states reached, which provides a sequence of highly probably states under $p(\tau_{\bx}|\theta)$.Rather than estimating $p(\bx|\theta)$ or $p(\tau_{\bx}|\theta)$, we draw samples from them. 
-
-
-The objective in policy learning can be framed as minimizing some cost function $C(\tau) = \sum^T_{t=1} c(\bx_t,\bu_t)$. The cost function is user defined and task specific. For each state $\bx_{t}$ and control $\bu_t$ the robot receives a penalty related to how far it is from the goal state. For example, in task of inserting a peg into a hole the cost function can be distance to desired final state \cite{levine2015end}.  We also do not know the cost function. But we do have access to a "supervisor", an algorithm or human that uses some policy $\tilde{\pi}$ to minimize $C(\tau)$, and we are given an initial set of $N$ training/demonstration trajectories resulting from this policy: $\mathcal{D} = \lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
-
-Next, we define a "surrogate" loss function $l$, which gives the distance between any pair of control values: in the continuous case $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2$ or in a discrete case
-
- \vspace{-2ex}
-\begin{align}
- l(\bu_0,\bu_1) = \left\{
-     \begin{array}{lr}
-       1 & : \bu_0 = \bu_1\\
-       0 & : \bu_0 \neq \bu_1
-     \end{array}
-   \right.
-\end{align}
-
-Given a candidate policy $\theta$, we can use the surrogate loss function to compute how "close" it is to the supervisor's policy $\tilde{\pi}$. 
-
-We want to compute a policy $\pi_{\theta}$ that minimizes the expected surrogate loss where the expectation is taken over the distribution of states. 
+Given a candidate policy $\pi_{\theta}$, we then use the surrogate loss function to approximately measure how "close" the policy's
+returned control intput $\pi_{\theta}(\bx)\in \mathcal{U}$ at a given state $\bx\in \mathcal{X}$ is to the supervisor's policy's control output
+$\tilde{\pi}(\bx)\in \mathcal{U}$. Our objective then consists of determining a policy $\pi_{\theta}$ minimizing the expected surrogate loss where the expectation is taken over the distribution of states. 
 
  \vspace{-2ex}
 \begin{align}\label{eq:LFD_obj}
-\underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))]
+\underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))].
 \end{align}
  
- 
- 
- 
-The optimization problem in Eq. \ref{eq:LFD_obj} compares the action taken of the policy $\pi_\theta$ and  the supervisor, $\tilde{\pi}$  weighted by the probability of  the state occurring $p(\bx|\theta)$. 
-
-Eq. \ref{eq:LFD_obj} is hard to solve because  the objective is not convex and we only have access to $\tilde{\pi}(x)$, where $x$ is a state in one of the demonstrations or $\bx \in \mathcal{D}$. To address these issues Stephane and Ross proposed an iterative method known as DAgger\cite{ross2010reduction}.
-
-
-
-
-
+The optimization problem in Eq. \ref{eq:LFD_obj} is typically non-convex and difficult to solve since we only have
+access to samples from the supervisor's policy $\tilde{\pi}$ arising from the demonstration trajectories $\mathcal{D}$. To address these issues Stephane and Ross proposed an iterative method known as DAgger \cite{ross2010reduction}.
 
  \subsection{DAgger: Dataset Aggregation}
- DAgger is an iterative algorithm that repeats two steps for $K$ iterations. 
- In Eq. \ref{eq:LFD_obj}, the objective involves both the parameterized policy $\pi_{\theta}$ and the average distribution of states with respect to the policy, $p(\bx|\theta)$. DAgger iteratively minimizes $\pi_{\theta}$ on the collected dataset of examples $\mathcal{D}$ and then adds new states of high probability under $\pi_\theta$ by sampling via policy roll outs from $p(\bx|\theta)$. 
+Note that Eq. \ref{eq:LFD_obj} involves both the parameterized policy $\pi_{\theta}$ and the average distribution of
+states with respect to the policy, $p(\bx|\theta)$. Let us recall that Dataset Aggregation (DAgger) is an iterative algorithm developed by \cite{ross2010reduction} which iterates two basic steps for $K$ iterations to find an optimal policy under this objective. 
+DAgger iteratively minimizes $\pi_{\theta}$ on the collected dataset of examples $\mathcal{D}$ and then adds new states
+of high probability under $\pi_\theta$ by sampling via policy `roll outs' from $p(\bx|\theta)$. 
+{\color{blue} [-- F: DAgger and \acro~formal algorithms side by side would be better, also the Step 1/2 below can be
+made more precise then and refer to the algorithm --]}
 
 \subsubsection{Step 1}
-At iteration $k=0$ given a dataset $\mathcal{D}_0$, the training set with $N_0$ demonstrated trajectories mapping $\bx$ to $\bu$. DAgger solves the following supervised learning problem with respect to the surrogate loss function. 
+At iteration $k=0$ an initial dataset $\mathcal{D}_0$ of $N_0$ supervisor demonstration trajectories 
+with $T+1$ time steps: $\tau^i=(\bx_0^i, \bu_0^i, \ldots, \bx_T^i, \bu_T^i)\in (\mathcal{X}\times\mathcal{U})^{T+1}$ for $i\in \{0, \ldots, N_0\}$
+mapping states to control
+inputs is provided. DAgger solves the following optimization problem with respect to the surrogate loss function:
 
  \vspace{-2ex}
 \begin{align}\label{eq:super_objj}
-\theta_{k} = \underset{\theta}{\argmin} \: \sum_{i=1}^{N}\sum_{t=1}^T l(\pi_{\theta}(\bx_t^{i}),\bu_{t}^i)
+\theta_{k} = \underset{\theta}{\argmin} \: \sum_{i=1}^{N_0}\sum_{t=0}^T l(\pi_{\theta}(\bx_t^{i}),\bu_{t}^i).
 \end{align}
+
+This problem can be considered as a supervised learning problem in particular and can be solved using standard machine
+learning techniques, for example a support vector machine or a neural network. 
  
- 
-This is a supervised learning problem and can be solved using standard machine learning techniques, for example a support vector machine or a neural network. The surrogate losses mentioned early like Squared Euclidean distance or an Indicator function are appropriate optimization objectives. 
- 
- To handle the fact that the supervisor's policy contains noise $\epsilon$, we employ a regularization technique in the optimization. Regularization is a technique to control the smoothness of the function that is fit to the sampled data. It is a common technique to make the estimator robust to zero mean noise on data. In practice it is a penalty term on either  the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.
+To handle the fact that the supervisor's policy can be noisy, a zero-mean noise term $\epsilon$ 
+{ \color{blue} [-- F: Make precise --]}
+can be considered as present in policy's output. We employ a regularization technique in the optimization which is
+used to control the smoothness of the function that is fit to the sampled data. In practice this regularization corresponds to a penalty term on either the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.
  
  \subsubsection{Step 2}
-DAgger rolls out the policy $\pi_{\theta_{k=1}}$ to sample states that are likely to occur under $\theta_{k=1}$. For every state visited, DAgger requests the supervisor to provide the appropriate control/label. Formally, for a given sampled trajectory  $\tau = (\bx_1,\bu_1,...,\bx_T,\bu_T )$. The supervisor provides labels $\tilde{\bu}_t$, where $\bu_t \sim \pi(\bx_t) + \epsilon$ to the trajectory $\tau = (\bx_1,\tilde{\bu}_1,...,\bx_T, \tilde{\bu}_T )$.  This can be very tedious for a human. The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_1$. 
+DAgger rolls out the policy $\pi_{\theta_{k=1}}$ to sample states that are likely to occur under $\theta_{k=1}$. For every state visited, DAgger requests the supervisor to provide the appropriate control/label. Formally, for a given sampled trajectory  $\tau = (\bx_0,\bu_0,...,\bx_T,\bu_T )$. The supervisor provides labels $\tilde{\bu}_t$, where $\bu_t \sim \pi(\bx_t) + \epsilon$ for $t\in \{0, \ldots, T\}$.
+The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_1$. 
+
+Steps 1 and 2 are repeated for $K$ iterations or until the cumulative surrogate loss approaches zero. Since DAgger
+requires rolling out the policy at each iteration, one way to terminate the algorithm is when the performance of the
+rolled out policy matches the intended behavior, or more formally when the surrogate loss is below some predefined
+threshold $\gamma$. {\color{blue} [-- F: Also talk about $\beta_i$ weights in DAgger --]}. 
+
+Dagger has been experimentally shown to perform  well in both simulation and real world experiments and furthermore
+has guarantees guarantees the convergence to the supervisor's policy {\color{blue} [-- F: ONLY AN ERROR BOUND, RIGHT? --]}. 
+However, policy rollouts can result in the robot entering dangerous states. For example, when DAgger was used on a
+quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}.
+We work under the assumption that a state can be risky for 2 reasons: 1) it lies in an area with a low density of
+previously trained states, which potentially means our policy will mis-predict the supervisor and incur high surrogate
+loss \cite{tokdar2010importance} 2) the surrogate loss of the current policy at the current state is high, so the state, although visited, does
+not model the supervisor's control inputs correctly. Furthermore providing correct control inputs or ``labeling'' at each
+iteration and each state in DAgger can be tedious or costly.
+
+To address these limitations, we propose to 1) avoid highly risky states entirely by early termination the policy
+roll-out that enter these regions and 2) to recognize non-risky states and to not request human input for these,
+thereby reducing the burden on the human trainer. 
+
+One way to do this is to define risk in terms of distance to a nearest neighbor, but this approach is vulnerable to
+outliers in the known set of states. Another option is to fit a density to the known set of states, which requires an
+exponential number of samples in the dimension of the state space \cite{nadaraya1964estimating}. We propose using a
+modified version of the technique known as the One Class SVM that implicitly approximately estimates a boundary of a user defined quantile of
+a density representing the training data in $\mathcal{X}$ \cite{scholkopf2001estimating}.
 
 
-Steps 1 and 2 are repeated for $K$ iterations or until the cumulative surrogate loss  goes to zero. Since DAgger requires rolling out the policy at each iteration, one way to terminate the algorithm is when the performance of the rolled out policy matches the intended behavior, or more formally when the surrogate loss is below some predefined threshold $\gamma$.  
-
-
-Dagger works well in both simulation and real world experiments. It also has theoretical guarantees that it will converge in the limit to the supervisor's policy. However, using policy rollouts means the robot can enter dangerous states, which could damage a robot in a non simulation system. For example, when DAgger was used on a quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}. A state can be risky for 2 reasons: 1) its is far from the states trained on, which potentially means our policy will mis-predict the supervisor and incur high surrogate loss \cite{tokdar2010importance} 2) the surrogate loss associated with the state is high, so the state, although visited, doesn't have good control yet. Furthermore, iterations are tedious because if a human is the supervisor requires manual "labeling" of every state visited with the appropriate control. 
-
-To address these limitations, we propose to 1) avoid highly risky states entirely via terminating the policy roll-out and 2) recognize slightly risky states and request human input for these and to reduce the burden on the human trainer. One way to do this is to define risk in terms of distance to the nearest neighbor, but this vulnerable to outliers in the known set of states. Another option is to fit a distribution to the known set of states, which requires an exponential number of samples in the dimension of the state space \cite{nadaraya1964estimating}. We propose using a modified version of the technique known as the One Class SVM that  estimates a boundary of the density \cite{scholkopf2001estimating}.
-
-
-\subsection{Estimation of a Distribution's Level Set}\label{sec:level}
-\todo{Work with Florian on the first paragraph to make it less abstract and specific to the robotics}
+\subsection{Estimation of Quantile Level Sets}\label{sec:level}
+{\color{blue} [-- REVISED UP TO HERE --]}
 Support estimation can be defined as minimizing a function that contains the volume of a given probability distribution. Formally we define it as follows let $\mathbf{x}_1,...,\mathbf{x}_n $ be i.i.d. random variables in a set $\mathcal{X}$ with distribution $P$. Let $\mathcal{G}$ be a class of measurable subsets of $\mathcal{X}$ and let $\lambda$ be a real function defined on $\mathcal{G}$. The quantile function with respect to $(P,\lambda,\mathcal{G})$ is 
 
 \vspace{-2ex}
@@ -354,7 +515,7 @@ Our decision boundary function $g(\bx)$ is then derived in terms of the support 
 
 
 
-\subsection{SHEATH:Support-based HElp AquisiTion from Humans}
+\subsection{The \acro~algorithm}
 
 Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately predict the supervisor's control,which we define as the region of low risk.  In the statistics community, a known property is that estimators are function will likely mis-classify if they are evaluated at points not in the distribution sampled from.Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  Thus, we try to estimate the level set of the training distribution, which is explained in \ref{sec:level} and only have the supervisor provide labels when the robot leaves this boundary. Furthermore to avoid entering pathological states that are far from the supervisor's demonstrations, we terminate the roll-out when it is a certain distance or risk factor from the decision boundary, which is given by $r(\bx) = \sum_i^n \alpha_i \bx_i k(\bx_i,\bx)-\rho$. The risk threshold, $r_0$, is user defined based on the task. 
 
@@ -369,7 +530,7 @@ An implicit trade off exists between what how much of the distribution is contai
 
 
 \section{Theoretical Analysis}
-
+{\color{blue} [-- TEXT FROM HERE IS STILL ROUGH AND CHANGING --]}
 \subsection{Convergence Rate}
 \todo{These are ideas still in progress}
 The convergence rate of DAgger is dependent on the probability of the expert taking over at each iteration $\beta_i$ \cite{ross2010reduction}. For SHEATH, this corresponds to the probability of leaving the support or $p(g(\mathbf{x}) = -1|\pi_{\theta_i})$ . The intuition is that the larger the level set parameter $\nu$ is the lower the probability of leaving is and thus faster convergence rate, but potentially less safe exploration. Not sure if a formal proof is going to be possible though with assuming known dynamics, still looking into it. However, we can experimentally demonstrate this. 

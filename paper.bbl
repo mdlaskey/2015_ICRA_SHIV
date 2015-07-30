@@ -45,26 +45,10 @@ F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
   \emph{Robotics and Automation (ICRA), 2013 IEEE International Conference
   on}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2013, pp. 1047--1053.
 
-\bibitem{garcia2012safe}
-J.~Garcia and F.~Fern{\'a}ndez, ``Safe exploration of state and action spaces
-  in reinforcement learning,'' \emph{Journal of Artificial Intelligence
-  Research}, pp. 515--564, 2012.
-
 \bibitem{gilad2005query}
 R.~Gilad-Bachrach, A.~Navot, and N.~Tishby, ``Query by committee made real,''
   in \emph{Advances in neural information processing systems}, 2005, pp.
   443--450.
-
-\bibitem{gillula2013reducing}
-J.~H. Gillula, ``Reducing conservativeness in safety guarantees by learning
-  disturbances online: iterated guaranteed safe online learning,''
-  \emph{Robotics}, p.~81, 2013.
-
-\bibitem{gillula2012guaranteed}
-J.~H. Gillula and C.~J. Tomlin, ``Guaranteed safe online learning via
-  reachability: tracking a ground target using a quadrotor,'' in \emph{Robotics
-  and Automation (ICRA), 2012 IEEE International Conference on}.\hskip 1em plus
-  0.5em minus 0.4em\relax IEEE, 2012, pp. 2723--2730.
 
 \bibitem{NIPS2014_5421}
 X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
@@ -73,10 +57,6 @@ X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
   Z.~Ghahramani, M.~Welling, C.~Cortes, N.~Lawrence, and K.~Weinberger,
   Eds.\hskip 1em plus 0.5em minus 0.4em\relax Curran Associates, Inc., 2014,
   pp. 3338--3346.
-
-\bibitem{hans2008safe}
-A.~Hans, D.~Schneega{\ss}, A.~M. Sch{\"a}fer, and S.~Udluft, ``Safe exploration
-  for reinforcement learning.'' in \emph{ESANN}, 2008, pp. 143--148.
 
 \bibitem{huang2006correcting}
 J.~Huang, A.~Gretton, K.~M. Borgwardt, B.~Sch{\"o}lkopf, and A.~J. Smola,
@@ -92,10 +72,6 @@ K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
 K.~Judah, A.~Fern, and T.~G. Dietterich, ``Active imitation learning via
   reduction to iid active learning,'' \emph{arXiv preprint arXiv:1210.4876},
   2012.
-
-\bibitem{kaelbling1996reinforcement}
-L.~P. Kaelbling, M.~L. Littman, and A.~W. Moore, ``Reinforcement learning: A,''
-  \emph{Journal of artificial intelligence research}, pp. 237--285, 1996.
 
 \bibitem{knox1998algorithms}
 E.~M. Knox and R.~T. Ng, ``Algorithms for mining distancebased outliers in
@@ -114,6 +90,11 @@ W.~Liu, G.~Hua, and J.~R. Smith, ``Unsupervised one-class learning for
 \bibitem{manevitz2002one}
 L.~M. Manevitz and M.~Yousef, ``One-class svms for document classification,''
   \emph{the Journal of machine Learning research}, vol.~2, pp. 139--154, 2002.
+
+\bibitem{markou2003novelty}
+M.~Markou and S.~Singh, ``Novelty detection: a review—part 1: statistical
+  approaches,'' \emph{Signal processing}, vol.~83, no.~12, pp. 2481--2497,
+  2003.
 
 \bibitem{nadaraya1964estimating}
 E.~A. Nadaraya, ``On estimating regression,'' \emph{Theory of Probability \&
