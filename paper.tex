@@ -104,7 +104,7 @@
 \title{\LARGE \bf \acro: Reducing Supervisor Burden using SVM-based Risk to Efficiently Learn Robot Control Policies
 from Demonstrations {\color{blue}(v.10)} }
 
-\author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Ken Goldberg$^2$% <-this % stops a space
+\author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Anca Dragan, Ken Goldberg$^2$% <-this % stops a space
 \thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, ftpokorny\}@berkeley.edu}}%
 \thanks{$^2$Department of Industrial Engineering and Operations Research and Department of Electrical Engineering and Computer Sciences; {\small goldberg@berkeley.edu}}%
 \thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
@@ -131,7 +131,7 @@ We propose a novel algorithm, \acro~ based on DAgger which estimates the riskine
 encountered by the policy roll-outs by means of an approximate quantile super-levelset estimate of the distribution of
 states used for training the current policy and which additionally takes empirical surrogate loss of the current policy
 into account. Since learning a quantile function for high-dimensional input data is
-challenging, we instead modify an SVN-based approach to quantile estimation that employs regularization to solve this
+challenging, we instead modify an SVM-based approach to quantile estimation that employs regularization to solve this
 problem approximately. Our algorithm considers roll-outs with early termination as soon as a state outside a
 user-defined quantile super-levelset is encountered. Our approach empirically reduces the amount of neccessary
 supervisor demonstrations by only collecting supervisor control inputs at states outside the current quantile estimate.
