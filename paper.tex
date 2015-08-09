@@ -101,10 +101,19 @@
 \newcolumntype{L}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
 \newcolumntype{R}[1]{>{\RaggedLeft\hspace{0pt}}p{#1}}
 
-\title{\LARGE \bf \acro: Reducing Supervision in DAgger using SVM-based Risk }
 
-\author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Ken Goldberg$^2$% <-this % stops a space
-\thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, ftpokorny\}@berkeley.edu}}%
+\newboolean{include-notes}
+\setboolean{include-notes}{true}
+\newcommand{\adnote}[1]{\ifthenelse{\boolean{include-notes}}%
+ {\textcolor{green}{\textbf{AD: #1}}}{}}
+
+
+
+
+\title{Iterative Imitation Learning with Reduced Human Supervision}
+
+\author{Michael Laskey$^1$,Wesley Yu-Shu Hsieh, Jeff Mahler, Florian T. Pokorny$^1$, Anca Dragan$^1$, Ken Goldberg$^2$% <-this % stops a space
+\thanks{$^1$Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, ftpokorny, anca\}@berkeley.edu}}%
 \thanks{$^2$Department of Industrial Engineering and Operations Research and Department of Electrical Engineering and Computer Sciences; {\small goldberg@berkeley.edu}}%
 \thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
 } 
@@ -121,6 +130,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
+In traditional Imitation Learning, a human expert provides a few demonstrations to the robot, which then extrapolates these examples to new situations. One challenge is that during execution, any small but inevitable error will amplify, taking the robot further and further away from the regions of state space for which it has seen examples. Iterative imitation learning algorithms such as DAgger \cite{}\adnote{cite} address this by iteratively executing a trained policy, and asking the expert for examples along the visited states, which are then aggregated with the previous training data. However, such algorithms rely much more heavily on extensive human supervision.
+
+Our goal is to reduce the amount of human supervision required in imitation learning, without harming performance, thus bridging traditional and iterative imitation learning. \emph{Our key insight is that the robot should ask for supervision only when its current trained policy has high risk.}
+
+We introduce a method for iterative imitation learning that evaluates risk based on novelty of a state, as well as prior difficulty in labeling a nearby states. Our experiments with a toy car domain, as well as with non-prehensile grasping in clutter, suggest that our method can better utilize a human supervision budget, achieving higher succhess rates for the same number of queries to the expert.
+
+
+
+%A trained policy can have a high risk of predicting the wrong action for a state for two reasons: 1) the state is too far away from the training states, and 2) the state is in an area in which the learner has historically struggled. We introduce a method for iterative imitation learning that estimates regions of high risk based on these two criteria, and limits queries to the supervisor to only high risk states. Our method instantiates stream based active learning, with a query selection strategy that generalizes novelty detection to querying in areas that are inherently difficult to correctly label.
+
+\adnote{Old abstract:}
+
+
 For robot control problems where the reward function  and the dynamics of the environment are not specified, the
 learning from demonstrations approach provides an algorithmic paradigm for learning a policy from supervisor-provided
 demonstrations. Dataset Aggregation (DAgger) in particular yields a state of the art method in this context which treats
@@ -269,12 +291,20 @@ provide control inputs that the expert would have applied for every state encoun
 algorithm. Providing these control inputs can be very tedious or expensive both in the case where the `supervisor' is a
 human or an algorithm with a high computational demand.
 
-In prior work, Judah et al. proposed applying active learning techniques to only query the supervisor for states that are likely to be
-visited under the current policy and are likely to be mis-predicted under the current policy
+In prior work, Judah et al. proposed applying active learning techniques to improve the learninng ability of an algorithm given a fixed budget. 
 \cite{judah2011active,judah2012active}. A drawback of this approach is that it requires us to estimate a complete
 density of states from the samples, which can be difficult especially in high dimensions. Furthermore, the  
-approach is based on `query by committee', and considers only non-kernelized linear classifiers to represent the
-learned policy~\cite{gilad2005query}, thus restricting the class of policies which can be modelled with the approach.
+at each iteration only one labeled state was given. Thus, the robot could potentially be required to try out many more iterations of learning in order to successfully accomplished the task.  
+
+\begin{enumerate}
+\item Our work is different than traditional pool base active learning for two reasons 1) the data comes in as a stream (i.e. we decided whether to label or not label the sample vs. using a pool base methods) 2) the estimator being trained is part of the parametrization of the distribution of states being encountered at run time, thus violating the i.i.d assumption common in these methods. 
+\item Some techniques that can handle these approaches are 1) uncertainty sampling , or measuring some confidence level in a classifier and deciding whether to label or not. 2) Query by committee, which involves sampling a committee of hypothesises from a version space of consistent classifiers 3) Density weighted model, which fitting a density to the unlabeled pool and then using a technique such as uncertainty sampling or query by committee to chose the label with the highest uncertainity times the density under the model. The reason for density weighted model is because the previous approaches are prone to labeling outliers \cite{settles2008analysis}. 
+\item Our approach can be considered a query selective strategy that uses the ideas of density weighted models. The level set estimation of the One Class SVM is a binary decision metric of how close a point is to the global support points that define its neighbors. Then our hole punching technique places a "prior" on points that are likely to be misclassified condition on the fact that points nearby are misclassified. Thus, encapsulating both a notion of uncertainity and distance to relative points. 
+\item One point that I've been thinking about is that traditional active learning is about training an estimator on some fix distribution and then trying to predict how the estimator will change given new points sampled from the same distribution. Thus most approaches work on the estimator themselves (query by committee sampling different hypotheses or uncertainty sampling measuring confidence). This assumption is violated in DAgger because you are sampling from a new distribution each iteration different from what is trained on. Thus, a confidence threshold such as (distance to hyperplane for an svm) would be misleading because if the point was drawn from a different distribution it could be very far from the hyperplane, but have a different label than that side of the hyperplane. Thus, we purpose not looking at the estimator but at the data itself. We make an assumption that points close to other points in our feature space will have similar labels, but the outliers are unknown and will need new labels. I suggest we run a uncertainty sampling technique vs. SHIV to verify all this. 
+
+\end{enumerate}
+
+
 
 %[Let's discuss this part]
 {\color{blue}[-- IMPROVE THIS PARAGRAPH --]} In order to determine state space regions where a policy is likely to determine
@@ -550,8 +580,7 @@ We compare performance in terms of minimization of the underlying cost function 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=8cm, height=6cm]{figures/dagger_shiv_one_class.eps}
-\caption{ We compare performance in terms of optimization of the underlying cost function $c(\bx,\bu)$, which is the number of times the car left the track. Initial results averaged over 30$\%$ level shown suggest an $70\%$ reduction in the number of queries needed for SHEATH compared to DAgger. }
-
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV only using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
 \label{fig:car_cost}
 \end{figure}
