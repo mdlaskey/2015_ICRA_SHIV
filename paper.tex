@@ -107,7 +107,7 @@
 \newcommand{\adnote}[1]{\ifthenelse{\boolean{include-notes}}%
  {\textcolor{green}{\textbf{AD: #1}}}{}}
 
-
+\renewcommand{\baselinestretch}{.99}
 
 
 \title{Iterative Imitation Learning with Reduced Human Supervision}
@@ -130,45 +130,99 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-In traditional Imitation Learning, a human expert provides a few demonstrations to the robot, which then extrapolates these examples to new situations. One challenge is that during execution, any small but inevitable error will amplify, taking the robot further and further away from the regions of state space for which it has seen examples. Iterative imitation learning algorithms such as DAgger \cite{}\adnote{cite} address this by iteratively executing a trained policy, and asking the expert for examples along the visited states, which are then aggregated with the previous training data. However, such algorithms rely much more heavily on extensive human supervision.
+In traditional imitation learning, a human expert provides a few demonstrations to the robot, which then offline learns a policy to extrapolate these examples to new situations. One challenge is that during execution of the learned policy, a small but inevitable error will amplify, taking the robot further and further away from the regions of state space for which it has seen examples. 
 
-Our goal is to reduce the amount of human supervision required in imitation learning, without harming performance, thus bridging traditional and iterative imitation learning. \emph{Our key insight is that the robot should ask for supervision only when its current trained policy has high risk.}
+Online imitation learning algorithms such as DAgger address this by iteratively executing a trained policy, and asking the expert for examples along the states visted by that policy. These new examples are then aggregated with the previous training data. Such algorithms perform well in new situations, but rely much more heavily on extensive human supervision.
 
-We introduce a method for iterative imitation learning that evaluates risk based on novelty of a state, as well as prior difficulty in labeling a nearby states. Our experiments with a toy car domain, as well as with non-prehensile grasping in clutter, suggest that our method can better utilize a human supervision budget, achieving higher succhess rates for the same number of queries to the expert.
+Our goal is to reduce the amount of human supervision required in imitation learning, without sacrificing performance, thus combining the benefits of both online and offline imitation learning approaches. \emph{Our key insight is that the robot should ask for supervision only when its current trained policy has high risk.}
+
+We introduce a method for online imitation learning that evaluates risk based on novelty of a state, as well as prior difficulty in labeling a nearby states. Our algorithm, SHIV (\adnote{spell it out}), follows the trained policy when evaluated risk is low, and asks for human supervision otherwise. Our experiments with a toy car domain, as well as with non-prehensile grasping in clutter, suggest that our method can better utilize a human supervision budget, achieving higher success rates for the same number of queries to the expert.
 
 
 
 %A trained policy can have a high risk of predicting the wrong action for a state for two reasons: 1) the state is too far away from the training states, and 2) the state is in an area in which the learner has historically struggled. We introduce a method for iterative imitation learning that estimates regions of high risk based on these two criteria, and limits queries to the supervisor to only high risk states. Our method instantiates stream based active learning, with a query selection strategy that generalizes novelty detection to querying in areas that are inherently difficult to correctly label.
 
-\adnote{Old abstract:}
+% \adnote{Old abstract:}
 
 
-For robot control problems where the reward function  and the dynamics of the environment are not specified, the
-learning from demonstrations approach provides an algorithmic paradigm for learning a policy from supervisor-provided
-demonstrations. Dataset Aggregation (DAgger) in particular yields a state of the art method in this context which treats
-the problem of determining a policy as an iterative supervised learning problem which alternates between executing a
-trained policy and acquiring new supervisor control inputs for roll-outs of a current best policy estimator. In this
-work, we propose a novel algorithm, \acro~which is based on DAgger and which estimates the riskiness of states
-encountered by the policy roll-outs by means of an approximate quantile super-levelset estimate of the distribution of
-states used for training the current policy. Since learning a quantile function for high-dimensional input data is
-challenging, we instead modify an SVM-based approach to quantile estimation that employs regularization to solve this
-problem approximately. Our algorithm considers roll-outs with early termination as soon as a state outside a
-user-defined quantile super-levelset is encountered. Our approach furthermore reduces the amount of neccessary
-supervisor demonstrations by only collecting supervisor control inputs at states outside the current quantile estimate.
-In experiments involving a simulated race track and in a Super Mario Atari game benchmark considered by the authors of
-DAgger, our approach results in similar performance levels as DAgger while reducing the amount of required supervisor
-control inputs by more than {\color{blue}[-- TODO --]} percent.
-\end{abstract}
+% For robot control problems where the reward function  and the dynamics of the environment are not specified, the
+% learning from demonstrations approach provides an algorithmic paradigm for learning a policy from supervisor-provided
+% demonstrations. Dataset Aggregation (DAgger) in particular yields a state of the art method in this context which treats
+% the problem of determining a policy as an iterative supervised learning problem which alternates between executing a
+% trained policy and acquiring new supervisor control inputs for roll-outs of a current best policy estimator. In this
+% work, we propose a novel algorithm, \acro~which is based on DAgger and which estimates the riskiness of states
+% encountered by the policy roll-outs by means of an approximate quantile super-levelset estimate of the distribution of
+% states used for training the current policy. Since learning a quantile function for high-dimensional input data is
+% challenging, we instead modify an SVM-based approach to quantile estimation that employs regularization to solve this
+% problem approximately. Our algorithm considers roll-outs with early termination as soon as a state outside a
+% user-defined quantile super-levelset is encountered. Our approach furthermore reduces the amount of neccessary
+% supervisor demonstrations by only collecting supervisor control inputs at states outside the current quantile estimate.
+% In experiments involving a simulated race track and in a Super Mario Atari game benchmark considered by the authors of
+% DAgger, our approach results in similar performance levels as DAgger while reducing the amount of required supervisor
+% control inputs by more than {\color{blue}[-- TODO --]} percent.
+ \end{abstract}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction} 
+
+
+We focus on \emph{model-free imitation learning} problems. In this problem domain, the robot learns a task, such as grasping an object while pushing clutter out of the way \adnote{we need to put this in fig 1 and refer to it here}, from \emph{examples} provided by a human \emph{expert}. The robot does not have direct access to a reward function that describes the task, nor to a dynamics model informing it how its actions will affect the world.   
+
+Thus, instead of planning for the task, the robot directly learns a \emph{policy}, mapping states (or in some cases observations) to actions. It does this based on examples, which are state-action pairs performed by the expert while demonstrating the task. See section 4.1 of \cite{} \adnote{cite Argall LfD survey} for more details.
+
+Traditional approaches work \emph{offline}, passively receiving examples from the expert first, and then approximating a state-action mapping in a second phase. One challenge that these approaches face is that when the robot is executing its trained policy, its actions affect the resulting next state, meaning the visited states are not independent random variables. The practical consequence is that small but often inevitable differences from the supervisor's policy cause the sequence of visited states to drift far from the region of space where the robot has seen training examples, leading to poor performance. 
+
+For example, when training an autonomous car to drive on the highway, the car will deviate form the middle of the road and will not be able to recover, because all the trainign examples are from the middle of the road \cite{pomerleau1989alvinn}. Theoretically, the number of mistakes made by the robot in such cases may not scale just linearly, but \emph{quadratically} with the time horizon of the task \cite{} \adnote{cite ross first paper}.
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=12cm, height=6cm]{figures/teaser.eps}
+\caption{ 
+Given a set of states corresponding to images of a race-track simulation (visualized in $\mathbb{R}^2$) with expert
+control inputs, we consider a quantile super levelset estimate (shaded) as an approximation of the riskiness of
+executing the trained policy at a given state. By varying the quantile threshold, we can increase or decrease the size
+of the quantile super-levelset area. In our approach, points outside the super-levelset are considered risky and, during
+training, roll-outs of the policy that leave the super-levelset require control demonstrations from the supervisor,
+while roll-outs within the super-levelset can be performed autonomously. \adnote{figure and caption need work}
+}
+\vspace*{-10pt}
+\label{fig:dis_traveled}
+\end{figure}
+
+\emph{Online} imitation learning approaches address this by iteratively gathering more examples form the expert \cite{}\adnote{cite Dagger and precusors or follow ups that fit this, e.g. the previous paper form ross}. DAgger is such an algorithm, and works by training a policy on existing examples, but then ``rolling it out'' (execute it) to see what states are likely to occur under this new policy. The expert then provides examples in the new states, correcting the robot's policy, and these examples are aggregated with the previous ones in a training set for the next iteration. 
+
+With such algorithms, the number of mistakes has indeed been proven to scale only linearly with the time horizon, as opposed to quadratically \cite{}. DAgger and related algorithms have seen a wide range of applications, from quadrotor flight to natural languge to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
+
+On the other hand, online algorithms also place significantly more burden on the expert. DAgger requires the expert to manually provide controls or actions that the robot should have taken for each and every state it visits when rolling out the current best policy estimate. 
+
+Our goal is to reduce the burden on the expert without harming performance, by more carefully selecting when to ask for examples:
+\begin{quote}
+\emph{The robot should not bother the human expert when its policy has low risk of error. Instead, it should only ask for new examples in regions of high risk.}
+\end{quote}
+
+\adnote{talk about how we define risk}
+
+\adnote{list contributions: }
+
+\adnote{1. an online active imitation learning algorithm that actively decided whether to query the expert or not; we generalize novelty detection, and talk about relation to active learning}
+
+\adnote{2. a theoretical analysis?}
+
+\adnote{3. an experiment in two parts: an indepth analysis on a simple domain, and a comparison to state of the art in a complex nonprehensile manipulation domain}
+
+\adnote{loop back to beginning, we enable the robot to be actively decide when to ask for examples, reducing expert burden}
+
+
+
+\adnote{Old intro:}
+
 Consider the problem of teaching a robot a complex task such cooking a meal or as racing a toy car around a track
 against human opponents. When the robot is only provided with visual demonstrations without the knowledge or an
 underlying cost function describing the task, traditional model based control approaches are often not applicable. In
 these situations, the learning from demonstrations (LfD) approach provides a paradigmn for teaching a robot how to
-accomplish the task \cite{ross2013learning,pomerleau1989alvinn,schulman2013case}.
+accomplish the task \cite{ross2013learning,pomerleau1989alvinn,schulman2013case}.\adnote{these are very random things to cite for LfD, FYI - there is a survey by Argall that usually gets cited}
 
 One approach to LfD is to train a policy, or a function estimator (either a classifier or regressor), to predict a
 supervisor's behavior given training data consisting of pairs of observations (input) and actions (output) performed
@@ -188,20 +242,7 @@ through a forest~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
 
 
 
-\begin{figure}[t!]
-\centering
-\includegraphics[width=12cm, height=6cm]{figures/teaser.eps}
-\caption{ 
-Given a set of states corresponding to images of a race-track simulation (visualized in $\mathbb{R}^2$) with expert
-control inputs, we consider a quantile super levelset estimate (shaded) as an approximation of the riskiness of
-executing the trained policy at a given state. By varying the quantile threshold, we can increase or decrease the size
-of the quantile super-levelset area. In our approach, points outside the super-levelset are considered risky and, during
-training, roll-outs of the policy that leave the super-levelset require control demonstrations from the supervisor,
-while roll-outs within the super-levelset can be performed autonomously.
-}
-\vspace*{-10pt}
-\label{fig:dis_traveled}
-\end{figure}
+
 
 During learning, implementations of DAgger require the supervisor to manually provide control inputs that the robot
 should have applied for each states it visits when rolling out the current best policy estimate. If the supervisor is a
@@ -251,6 +292,8 @@ averaged over 20 levels.
 {\color{blue}[-- FINALIZE --]}
 
 \section{Related Work}
+\adnote{Should eliminate this section and bring in the important bits in the intro and in the description of the method. For things that belog in the intro, this is a restatement and takes up space. For things that pertain to our method, this is too early and thus hard to explain yet. As a result, the related work section is kind of useless as a section, although much of the content in it can be very useful in other parts of the paper.}
+
 The field of learning from demonstrations has achieved state of the art performance in a variety of areas within robotics
 \cite{argall2009survey}. Abbeel et al.~used an iLQR controller based on helicopter trajectories demonstrated by a human expert
 to successfully learn a series of aerobatics stunts \cite{abbeel2007application}. Billard and Matari used a hierarchy of
