@@ -185,7 +185,7 @@ control inputs, we consider a quantile super levelset estimate (shaded) as an ap
 executing the trained policy at a given state. By varying the quantile threshold, we can increase or decrease the size
 of the quantile super-levelset area. In our approach, points outside the super-levelset are considered risky and, during
 training, roll-outs of the policy that leave the super-levelset require control demonstrations from the supervisor,
-while roll-outs within the super-levelset can be performed autonomously. \adnote{figure and caption need work}
+while roll-outs within the super-levelset can be performed autonomously. 
 }
 \vspace*{-10pt}
 \label{fig:dis_traveled}
@@ -193,7 +193,7 @@ while roll-outs within the super-levelset can be performed autonomously. \adnote
 
 \emph{Online} imitation learning approaches address this by iteratively gathering more examples form the expert \cite{}\adnote{cite Dagger and precusors or follow ups that fit this, e.g. the previous paper form ross}. DAgger is such an algorithm, and works by training a policy on existing examples, but then ``rolling it out'' (execute it) to see what states are likely to occur under this new policy. The expert then provides examples in the new states, correcting the robot's policy, and these examples are aggregated with the previous ones in a training set for the next iteration. 
 
-With such algorithms, the number of mistakes has indeed been proven to scale only linearly with the time horizon, as opposed to quadratically \cite{}. DAgger and related algorithms have seen a wide range of applications, from quadrotor flight to natural languge to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
+With such algorithms, the number of mistakes has indeed been proven to scale only linearly with the time horizon, as opposed to quadratically \cite{}. DAgger and related algorithms have seen a wide range of applications, from quadrotor flight to natural language to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}.
 
 On the other hand, online algorithms also place significantly more burden on the expert. DAgger requires the expert to manually provide controls or actions that the robot should have taken for each and every state it visits when rolling out the current best policy estimate. 
 
@@ -601,19 +601,39 @@ Similar to DAgger at iteration $k$ the algorithm estimates a policy, $\pi_{\thet
 
 \section{Experiments}
 \subsection{Driving Example}
-A common benchmark in RL is a car driving around a track avoiding other cars \cite{argall2009survey}. In our driving simulator, the car must stay on the road of polygonal track. If the car falls off the track, it is placed back on to the center. We sample the polygonal track by sampling points from a Gaussian with a mean that is the centered of the video game work space. The convex hull of the sampled points is then computed. The car's control space $u = \lbrace -15^\circ, 0, 15^\circ \rbrace$ or 3 discrete commands that change the angle of the car. The internal state space of the car is xy-coordinates and the angle it is facing. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
+A common benchmark in Reinforcement Learning  is a car driving around a track avoiding other cars \cite{argall2009survey}. To illustrate our methods ability in high dimensions, the car must follow a polygonal track using only HOG features extracted from images. If the car falls off the track, it is placed back on the center facing the angle of the polygonal track piece. We sample the polygonal track by drawing points from a Gaussian with a mean that is the centered of the video game work space. The convex hull of the sampled points is then computed. The car's control space $u = \lbrace -15^\circ, 0, 15^\circ \rbrace$ or 3 discrete commands that change the angle of the car. The internal state space of the car is xy-coordinates and the angle it is facing. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
 
-We have the supervisor drive around the track 2 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV. For both DAgger and SHIV, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our expert. For the optimization of Eq. \ref{eq:dual_sup} in SHIV we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
+We have the supervisor drive around the track 2 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV,  where the size of $\bx$ is $27926$. For both DAgger and SHIV, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our expert. For the optimization of Eq. \ref{eq:dual_sup} in SHIV we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
 
-We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV only using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
+To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks and shown in Table \ref{table:active_comp}. 
 
 
+We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
+ 
+
+\begin{table}[t]
+\centering
+\begin{tabular}{ R{4cm}||R{1.65cm}|R{1.65cm}|R{1.65cm}  }
+ %\hline
+ %\multicolumn{4}{|c|}{Sensitivity Analysis for Convergence to Best Grasp for Thompson sampling} \\
+ %\hline 
+ & \multicolumn{1}{c}{Mis-Prediction Error} \\
+ \hline
+ Risk Sensitive One Class SVM &  $16 \pm 2\%$\\
+Estimated Confidence & $59 \pm 3\%$\\
+ %\hline
+\end{tabular}
+   \caption { \footnotesize  To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 randomly generated tracks. 
+   }
+		\tablabel{opt-p-comparison}
+\label{table:active_comp}
+\end{table}
 
 
 \begin{figure}[t!]
 \centering
-\includegraphics[width=6cm, height=6cm]{figures/race_car_track_example.png}
-\caption{ An example image from the racing simulator. The car is meant to drive around a rectangular track and dodge other cars. The supervisor drives around the track for 3 iterations and HOG features are extracted from the images.}
+\includegraphics[width=8cm, height=6cm]{figures/race_car.png}
+\caption{ An example image from the racing simulator of a sampled polygonal track.. The car is meant to drive around an not fall off. It is placed back on the center if it does fall off. The supervisor drives around the track for 2 iterations and HOG features are extracted from the images to form a feature space of }
 
 \vspace*{-10pt}
 \label{fig:race_car}
@@ -623,42 +643,30 @@ We compare performance in terms of minimization of the underlying cost function 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=8cm, height=6cm]{figures/dagger_shiv_one_class.eps}
-\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV only using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
 \label{fig:car_cost}
 \end{figure}
 
 
-\subsection{Super Mario Bros}
-Super Mario Bros. is a platform video game where the character, Mario, must move across each stage by avoiding being hit by enemies and falling into gaps, and before running out of time. We used the simulator from a recent Mario Bros. AI competition which can randomly generate stages of varying difficulty (more difficult gaps and types of enemies) \cite{marioAI}. Our goal is to train the computer to play the game based on current game features as input. Our expert is a near optimal $A^*$ search algorithm that plans ahead using the game simulator. An action consists of 4 binary variables indicating which subset of buttons we should press in $\lbrace \mbox{left},\mbox{right},\mbox{jump},\mbox{speed} \rbrace$. For both DAgger and SHEATH, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $C\gamma=0.01$, which was set via cross validation on the initial training examples from our expert.. We initialized both Dagger and SHEATH with two expert demonstrations for each level. For the optimization of Eq. \ref{eq:dual_sup} in SHEATH we used a radial basis function as well for the kernel with a bandwidth of $c=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
+\subsection{Grasping In Clutter}
+To illustrate how our technique can be used in the continuous case and with a human demonstrator. 
+We look at having a human demonstrator control a robot arm in 2D to reach a target object with out knocking other objects off a table. We used Box2D a physics simulator to model the virtual world. The arm, shown in Fig. \ref{fig:box2d_arm}, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The left and right joystick determined the x and y velocity of the center of the end effector. The left bumper of the controller provided a binary input for opening and closing the gripper. 
 
-\begin{figure}[t!]
-\centering
-\includegraphics[width = 6cm ]{figures/mario.png}
-\caption{ An example image from the Mario AI simulator. Mario faces many challenges to reach an end of a level, such as gaps, jumps and enemies.  }
+\todo{double check this section with Sammy}
+Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and scaler value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. For our representation of $\pi_{\theta}$, we used linear ridge regression. We defined two cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table and 1 for not successfully grasping the target object. 
 
-\vspace*{-10pt}
-\label{fig:dis_traveled}
-\end{figure}
+In experiment, we had our human demonstrator provide one demonstration and then iterated both  DAgger and SHIV until the cost function was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $5\%$ of the width of the table. 
 
-
-
-\begin{figure}[ht]
-\centering
-
-\includegraphics[width=8cm, height = 4.5cm]{figures/dagger_sheath_mario.eps}
-
-
-\caption{We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the number of labels provided by the supervisor. Initial results, averaged over 20 levels, suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.   \todo{I think these results are promising but want to make clear they are very preliminary and want to run more experiments on Mario and the self driving car to ensure that we can actually do this reliable. Also, the jaggedness is concerning and needs to be looked in to, my intuition is telling me that Mario is just a very chaotic environment though. I am going to average over more levels to see if it improves}}
-\label{fig:mario_results}
-\end{figure}
-
-We compare performance in terms of average distance traveled by Mario per stage before dying, running out of time or completing the stage, on randomly generated stages of difficulty 1 with a time limit of 35s to complete the stage.  Stages of difficulty 1 are fairly easy for an average human player but contain most types of enemies and gaps, except with fewer enemies and gaps than stages of harder difficulties. We compare performance of our method and DAgger. In Fig. \ref{fig:mario_results}, we report the performance of distance traveled vs. the amount of time a level was tried.  Initial results, averaged over 20 levels,  suggest SHEATH was able to reach DAgger's peak performance of a distance around 2200 with only 1200 labels, while DAgger required 2800.  
+In Figure , we show both the cost function associated with knocking an object off the table and the one associated with being able to successfully grasp an object or not. \todo{Finalize results then discuss them}
 
 
 
-\subsection{Other Experiment}
-\todo{Florian and I are discussing different ideas for this one, maybe a controller for an arm or something along the lines of learning to grasp in clutter}
+
+
+
+\subsection{Surigcal Experiment}
+
 
 
 \section{Discussion and Future Work}
