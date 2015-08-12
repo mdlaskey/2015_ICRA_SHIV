@@ -632,7 +632,7 @@ Estimated Confidence & $59 \pm 3\%$\\
 
 \begin{figure}[t!]
 \centering
-\includegraphics[width=8cm, height=6cm]{figures/race_car.png}
+\includegraphics[width=6cm, height=6cm]{figures/race_car.png}
 \caption{ An example image from the racing simulator of a sampled polygonal track.. The car is meant to drive around an not fall off. It is placed back on the center if it does fall off. The supervisor drives around the track for 2 iterations and HOG features are extracted from the images to form a feature space of }
 
 \vspace*{-10pt}
@@ -654,14 +654,21 @@ To illustrate how our technique can be used in the continuous case and with a hu
 We look at having a human demonstrator control a robot arm in 2D to reach a target object with out knocking other objects off a table. We used Box2D a physics simulator to model the virtual world. The arm, shown in Fig. \ref{fig:box2d_arm}, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The left and right joystick determined the x and y velocity of the center of the end effector. The left bumper of the controller provided a binary input for opening and closing the gripper. 
 
 \todo{double check this section with Sammy}
-Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and scaler value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. For our representation of $\pi_{\theta}$, we used linear ridge regression. We defined two cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table and 1 for not successfully grasping the target object. 
+Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. For our representation of $\pi_{\theta}$, we used linear ridge regression. We defined two cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table and 1 for not successfully grasping the target object. 
 
 In experiment, we had our human demonstrator provide one demonstration and then iterated both  DAgger and SHIV until the cost function was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $5\%$ of the width of the table. 
 
 In Figure , we show both the cost function associated with knocking an object off the table and the one associated with being able to successfully grasp an object or not. \todo{Finalize results then discuss them}
 
 
+\begin{figure}[t!]
+\centering
+\includegraphics[width=6cm, height=6cm]{figures/box2D_arm.png}
+\caption{  The arm, modeled with Box2D, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The left and right joystick determined the x and y velocity of the center of the end effector. The left bumper of the controller provided a binary input for opening and closing the gripper. Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. }
 
+\vspace*{-10pt}
+\label{fig:box2D_arm.png}
+\end{figure}
 
 
 
