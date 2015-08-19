@@ -540,16 +540,8 @@ To handle high dimensional densities $P$, work by Scholk{\"o}pf et al.  looked a
 
 \begin{figure*}[ht]
 \centering
-\subfigure[Kernel Density Estimation of Sampled Data]{%
-\vspace{-0.5ex}\includegraphics[width=5.5cm , height = 4.5cm]{figures/kde_gmm.eps}
-\label{fig:subfigure1}}
-\quad
-\subfigure[One Class SVM]{%
-\includegraphics[width=5.5cm, height = 4.5cm]{figures/kde_gmm_ocm.eps}
-\label{fig:subfigure2}}
-\subfigure[Risk Sensitive One Class SVM]{%
-\includegraphics[width=5.5cm, height = 4.5cm]{figures/kde_gmm_mocm.eps}
-\label{fig:subfigure3}}
+
+\includegraphics[width=16cm , height = 5cm]{figures/active_learning/Slide1.jpg}
 
 \caption{Data is sampled from a Gaussian Mixture Model and in Fig. \ref{fig:subfigure1}, the red points are those that the trained policy, $\pi_{theta}$ will mis-predict. In Fig. \ref{fig:subfigure2} the One Class SVM is fit to the data and tries to estimate the areas of low risk (the light green region), while it is able to estimates the area where the majority of the data lies it also encloses the points the trained policy is mis-predicting. In Fig. \ref{fig:subfigure3}, the Risk Sensitive One Class SVM is able to effectively remove the red points from the region of low risk.}
 \label{fig:support_example}
@@ -643,23 +635,14 @@ To compare our method against a traditional confidence based active learning app
 We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
  
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\begin{tabular}{ R{4cm}||R{1.65cm}|R{1.65cm}|R{1.65cm}  }
- %\hline
- %\multicolumn{4}{|c|}{Sensitivity Analysis for Convergence to Best Grasp for Thompson sampling} \\
- %\hline 
- & \multicolumn{1}{c}{Mis-Prediction Error} \\
- \hline
- Risk Sensitive One Class SVM &  $16 \pm 2\%$\\
-Estimated Confidence & $59 \pm 3\%$\\
- %\hline
-\end{tabular}
+\includegraphics[width=9cm, height=8cm]{figures/risk_bar.eps}
    \caption { \footnotesize  To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 randomly generated tracks. 
    }
-		\tablabel{opt-p-comparison}
-\label{table:active_comp}
-\end{table}
+
+\label{fig:active_comp}
+\end{figure}
 
 
 \begin{figure}[t!]
