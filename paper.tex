@@ -135,15 +135,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-The SHIV algorithm proposes an alternative to previous query selection methods for stream-based active learning to the non-stationary distributions encountered in robot control.  To reduce operator burden, the Svm-based reduction in Human InterVention (SHIV) algorithm only requests supervision for sufficiently risky or novel states.
+Algorithms such as DAgger for robot learning from demonstrations can be very effective for problems where system dynamics and reward functions are unknown, but can impose a burden on supervisors to provide labels (control signals) as states are encountered during policy rollouts.   To reduce this burden we introduce a new query selection method for stream-based active learning. The SHIV algorithm (Svm-based reduction in Human InterVention) only requests supervision for risky stater.  To facilitate scaling and outlier rejection, risk is based on distance to an approximate level set boundary defined by a One Class support vector machine.  We compare SHIV with DAgger in three policy learning experiments: 1) a driving simulator, 2) multi-joint robot arm grasping in clutter simulation with Box2D, and 3) surgical needle insertion.  Results suggest that SHIV can learn policies and reduce operator burden significantly  (by a factor of 3x to 5x).
 
-In traditional imitation learning, a human expert provides a few demonstrations to the robot, which then \emph{offline} learns a policy to extrapolate these examples to new situations. One challenge is that during execution of the learned policy, a small but inevitable error will amplify, taking the robot further and further away from the regions of state space for which it has seen examples. 
+%In traditional imitation learning, a human expert provides a few demonstrations to the robot, which then \emph{offline} learns a policy to extrapolate these examples to new situations. One challenge is that during execution of the learned policy, a small but inevitable error will amplify, taking the robot further and further away from the regions of state space for which it has seen examples. 
 
-\emph{Online} imitation learning algorithms such as DAgger address this challenge by iteratively executing a trained policy, and asking the expert for additional examples along the states visited by that policy. Such algorithms perform well in new situations, but rely much more heavily on extensive human supervision.
+%\emph{Online} imitation learning algorithms such as DAgger address this challenge by iteratively executing a trained policy, and asking the expert for additional examples along the states visited by that policy. Such algorithms perform well in new situations, but rely much more heavily on extensive human supervision.
 
-Our goal is to reduce the amount of human supervision required in imitation learning, without sacrificing performance. \emph{Our key insight is that the robot should ask for supervision only when its current trained policy has high risk.}
+%Our goal is to reduce the amount of human supervision required in imitation learning, without sacrificing performance. \emph{Our key insight is that the robot should ask for supervision only when its current trained policy has high risk.}
 
-We introduce a method for online imitation learning that evaluates risk based on novelty of a state, as well as prior difficulty in labeling a nearby states. Our algorithm, SHIV (SVM-Based Reduction in Human Intervention), follows the trained policy when evaluated risk is low, and asks for human supervision otherwise. Our experiments with a toy car domain, as well as with non-prehensile grasping in clutter, suggest that our method can better utilize a human supervision budget, achieving higher success rates for the same number of queries to the expert.
+%We introduce a method for online imitation learning that evaluates risk based on novelty of a state, as well as prior difficulty in labeling a nearby states. Our algorithm, SHIV (SVM-Based Reduction in Human Intervention), follows the trained policy when evaluated risk is low, and asks for human supervision otherwise. 
+
+
 
 
 
