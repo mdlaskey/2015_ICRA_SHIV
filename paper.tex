@@ -185,7 +185,7 @@ For example, when training an autonomous car to drive on the highway, the car wi
 
 \begin{figure}[t!]
 \centering
-\includegraphics[width=12cm, height=6cm]{figures/teaser.eps}
+\includegraphics[width=\columnwidth]{figures/teaser.pdf}
 \caption{ 
 Given a set of states corresponding to images of a race-track simulation (visualized in $\mathbb{R}^2$) with expert
 control inputs, we consider a quantile super levelset estimate (shaded) as an approximation of the riskiness of
@@ -407,7 +407,6 @@ image data.
 
 \section{Problem Statement}
 \subsection{Notation and Background}
-{\color{blue} [-- TODO: SENSOR MODEL --]}
 We denote by $\mathcal{X}$ the set consisting of \emph{observable states} for a robot task, consisting, for example of
 high-dimensional vectors corresponding to images from a camera, or joint angles and object poses in the environment.
 We furthermore consider a set $\mathcal{U}$ of \emph{allowable control inputs} for the robot, which can be discrete or continuous in
@@ -502,8 +501,7 @@ requires rolling out the policy at each iteration, one way to terminate the algo
 rolled out policy matches the intended behavior, or more formally when the surrogate loss is below some predefined
 threshold $\gamma$ \footnote{In the orginal DAgger the policy rolled out was stochastically mixed with the expert, thus with probability $\beta$ it would either take the expert's action or the robots. The use of this stochasitically mix policy was for theoretical analysis. In practice, it is recommended to set $\beta = 0$ to avoid biasing the sampling~\cite{NIPS2014_5421,ross2010reduction}}
 
-Dagger has been experimentally shown to perform  well in both simulation and real world experiments and furthermore
-has guarantees guarantees the convergence to the supervisor's policy {\color{blue} [-- F: ONLY AN ERROR BOUND, RIGHT? --]}. 
+Dagger has been experimentally shown to perform  well in both simulation and real world experiments and furthermore under the assumption of the policy being no regret has theoretical properties of being linearly in time horizon T to the supervisor's policy. 
 However, policy rollouts can result in the robot entering dangerous states. For example, when DAgger was used on a
 quad-copter the robot repeatedly crashed into trees before successfully learning to avoid them \cite{ross2013learning}.
 We work under the assumption that a state can be risky for 2 reasons: 1) it lies in an area with a low density of
@@ -524,7 +522,6 @@ a density representing the training data in $\mathcal{X}$ \cite{scholkopf2001est
 
 
 \subsection{Estimation of Quantile Level Sets}\label{sec:level}
-{\color{blue} [-- REVISED UP TO HERE --]}
 Support estimation can be defined as minimizing a function that contains the volume of a given probability distribution. Formally we define it as follows let $\mathbf{x}_1,...,\mathbf{x}_n $ be i.i.d. random variables in a set $\mathcal{X}$ with distribution $P$. Let $\mathcal{G}$ be a class of measurable subsets of $\mathcal{X}$ and let $\lambda$ be a real function defined on $\mathcal{G}$. The quantile function with respect to $(P,\lambda,\mathcal{G})$ is 
 
 \vspace{-2ex}
@@ -541,7 +538,7 @@ To handle high dimensional densities $P$, work by Scholk{\"o}pf et al.  looked a
 \begin{figure*}[ht]
 \centering
 
-\includegraphics[width=16cm , height = 5cm]{figures/active_learning/Slide1.jpg}
+\includegraphics[width=\textwidth]{figures/active_learning.pdf}
 
 \caption{Data is sampled from a Gaussian Mixture Model and in Fig. \ref{fig:subfigure1}, the red points are those that the trained policy, $\pi_{theta}$ will mis-predict. In Fig. \ref{fig:subfigure2} the One Class SVM is fit to the data and tries to estimate the areas of low risk (the light green region), while it is able to estimates the area where the majority of the data lies it also encloses the points the trained policy is mis-predicting. In Fig. \ref{fig:subfigure3}, the Risk Sensitive One Class SVM is able to effectively remove the red points from the region of low risk.}
 \label{fig:support_example}
@@ -645,20 +642,11 @@ We compare performance in terms of minimization of the underlying cost function 
 \end{figure}
 
 
-\begin{figure}[t!]
-\centering
-\includegraphics[width=6cm, height=6cm]{figures/race_car.png}
-\caption{ An example image from the racing simulator of a sampled polygonal track.. The car is meant to drive around an not fall off. It is placed back on the center if it does fall off. The supervisor drives around the track for 2 iterations and HOG features are extracted from the images to form a feature space of }
-
-\vspace*{-10pt}
-\label{fig:race_car}
-\end{figure}
-
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=8cm, height=6cm]{figures/dagger_shiv_one_class.eps}
-\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $70\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
 \label{fig:car_cost}
 \end{figure}
@@ -676,22 +664,36 @@ In experiment, we had our human demonstrator provide one demonstration and then 
 In Figure , we show both the cost function associated with knocking an object off the table and the one associated with being able to successfully grasp an object or not. \todo{Finalize results then discuss them}
 
 
+
+
+\subsection{Surgical Experiment}
+\todo{Need help discussing this better}
+In this experiment, we look at the task of inserting a needle into tissue in preparation for suturing. Needle insertion can be a challenging task for surgeons and learning a controller to do so could alleviate some of the burden placed on surgeons. We collected data from a surgeon, Dr. Douglas Boyd, on the Da Vince Research Kit. 
+
+Dr. Boyd demonstrated a series of trajectories that started at an initial attempted needle insertion pose and applied the neccesary corrections to achieve a correct pose. We used three of these demonstrations as our initial dataset $\mathcal{D}_0$. Dr. Boyd couldn't be around for the interactive labeling of both SHIV and DAgger, so we had to hardcore and expert controller that computed the transformation between the desired insertion pose and the current pose. We did this by calculating the inverse of a transformation matrix. 
+
 \begin{figure}[t!]
 \centering
-\includegraphics[width=6cm, height=6cm]{figures/box2D_arm.png}
-\caption{  The arm, modeled with Box2D, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The left and right joystick determined the x and y velocity of the center of the end effector. The left bumper of the controller provided a binary input for opening and closing the gripper. Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. }
-
+\includegraphics[width=\columnwidth, height=6cm]{figures/needle_insertion_results.eps}
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
-\label{fig:box2D_arm.png}
+\label{fig:car_cost}
 \end{figure}
 
 
 
-\subsection{Surigcal Experiment}
+\section{Discussions and Future Work}
+SHIV currently provides a way to apply active learning to online imitation learning, however its use of level set estimation of the underlying distribution introduces several hyper parameters. As Fig. shown these can significantly effect performance if not tuned correctly. Future work will look at using cross validation on a hold out set of data to more effectively tune parameters. 
+
+Another potential issue is that each iteration of SHIV requires solving a quadratic program with the Gram matrix. As we scale to harder tasks that require significantly more data, this can become problematic. Future work will look at using techniques like PCA and random feature projections to scale efficiently \todo{cite something}. 
+
+Lastly, our approach is promising in simulation. However we need to evaluate how our active learning method will work on a real robot with noisy sensor observations. Future work will be doing the grasping in clutter experiments on an actual robot. 
+
+\section{Acknowledgments} 
+This work is supported in part by the U.S. National Science Foundation under Award IIS-1227536 and NSF-Graduate Research Fellowship.. 
+We thank UC Berkeley and our colleagues who gave feedback and suggestions, in particular Sanjay Krishnan, Siddarth Sen, Steve McKinley and Sergey Levine.
 
 
-
-\section{Discussion and Future Work}
 
 
 \bibliographystyle{IEEEtranS}
