@@ -21,23 +21,30 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
-\bibitem{marioAI}
-\emph{Mario AI Competition}.
-
-\bibitem{abbeel2007application}
-P.~Abbeel, A.~Coates, M.~Quigley, and A.~Y. Ng, ``An application of
-  reinforcement learning to aerobatic helicopter flight,'' \emph{Advances in
-  neural information processing systems}, vol.~19, p.~1, 2007.
-
 \bibitem{argall2009survey}
 B.~D. Argall, S.~Chernova, M.~Veloso, and B.~Browning, ``A survey of robot
   learning from demonstration,'' \emph{Robotics and autonomous systems},
   vol.~57, no.~5, pp. 469--483, 2009.
 
-\bibitem{billard2001learning}
-A.~Billard and M.~J. Matari{\'c}, ``Learning human arm movements by imitation::
-  Evaluation of a biologically inspired connectionist architecture,''
-  \emph{Robotics and Autonomous Systems}, vol.~37, no.~2, pp. 145--160, 2001.
+\bibitem{atlas1990training}
+L.~E. Atlas, D.~A. Cohn, and R.~E. Ladner, ``Training connectionist networks
+  with queries and selective sampling,'' in \emph{Advances in neural
+  information processing systems}, 1990, pp. 566--573.
+
+\bibitem{burbidge2007active}
+R.~Burbidge, J.~J. Rowland, and R.~D. King, ``Active learning for regression
+  based on query by committee,'' in \emph{Intelligent Data Engineering and
+  Automated Learning-IDEAL 2007}.\hskip 1em plus 0.5em minus 0.4em\relax
+  Springer, 2007, pp. 209--218.
+
+\bibitem{chernova2009interactive}
+S.~Chernova and M.~Veloso, ``Interactive policy learning through
+  confidence-based autonomy,'' \emph{Journal of Artificial Intelligence
+  Research}, vol.~34, no.~1, p.~1, 2009.
+
+\bibitem{cohn1994improving}
+D.~Cohn, L.~Atlas, and R.~Ladner, ``Improving generalization with active
+  learning,'' \emph{Machine learning}, vol.~15, no.~2, pp. 201--221, 1994.
 
 \bibitem{duvallet2013imitation}
 F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
@@ -45,10 +52,10 @@ F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
   \emph{Robotics and Automation (ICRA), 2013 IEEE International Conference
   on}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2013, pp. 1047--1053.
 
-\bibitem{gilad2005query}
-R.~Gilad-Bachrach, A.~Navot, and N.~Tishby, ``Query by committee made real,''
-  in \emph{Advances in neural information processing systems}, 2005, pp.
-  443--450.
+\bibitem{grollman2007dogged}
+D.~H. Grollman and O.~C. Jenkins, ``Dogged learning for robots,'' in
+  \emph{Robotics and Automation, 2007 IEEE International Conference on}.\hskip
+  1em plus 0.5em minus 0.4em\relax IEEE, 2007, pp. 2483--2488.
 
 \bibitem{NIPS2014_5421}
 X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
@@ -58,10 +65,9 @@ X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
   Eds.\hskip 1em plus 0.5em minus 0.4em\relax Curran Associates, Inc., 2014,
   pp. 3338--3346.
 
-\bibitem{huang2006correcting}
-J.~Huang, A.~Gretton, K.~M. Borgwardt, B.~Sch{\"o}lkopf, and A.~J. Smola,
-  ``Correcting sample selection bias by unlabeled data,'' in \emph{Advances in
-  neural information processing systems}, 2006, pp. 601--608.
+\bibitem{hodge2004survey}
+V.~J. Hodge and J.~Austin, ``A survey of outlier detection methodologies,''
+  \emph{Artificial Intelligence Review}, vol.~22, no.~2, pp. 85--126, 2004.
 
 \bibitem{judah2011active}
 K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
@@ -69,7 +75,7 @@ K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
   Strategies to Reduce Label Cost}, 2011.
 
 \bibitem{judah2012active}
-K.~Judah, A.~Fern, and T.~G. Dietterich, ``Active imitation learning via
+K.~Judah, A.~Fern, and T.~G. ietterich, ``Active imitation learning via
   reduction to iid active learning,'' \emph{arXiv preprint arXiv:1210.4876},
   2012.
 
@@ -86,15 +92,6 @@ W.~Liu, G.~Hua, and J.~R. Smith, ``Unsupervised one-class learning for
   automatic outlier removal,'' in \emph{Computer Vision and Pattern Recognition
   (CVPR), 2014 IEEE Conference on}.\hskip 1em plus 0.5em minus 0.4em\relax
   IEEE, 2014, pp. 3826--3833.
-
-\bibitem{manevitz2002one}
-L.~M. Manevitz and M.~Yousef, ``One-class svms for document classification,''
-  \emph{the Journal of machine Learning research}, vol.~2, pp. 139--154, 2002.
-
-\bibitem{markou2003novelty}
-M.~Markou and S.~Singh, ``Novelty detection: a review—part 1: statistical
-  approaches,'' \emph{Signal processing}, vol.~83, no.~12, pp. 2481--2497,
-  2003.
 
 \bibitem{nadaraya1964estimating}
 E.~A. Nadaraya, ``On estimating regression,'' \emph{Theory of Probability \&
@@ -131,17 +128,15 @@ B.~Sch{\"o}lkopf and A.~J. Smola, \emph{Learning with kernels: Support vector
   machines, regularization, optimization, and beyond}.\hskip 1em plus 0.5em
   minus 0.4em\relax MIT press, 2002.
 
-\bibitem{schulman2013case}
-J.~Schulman, A.~Gupta, S.~Venkatesan, M.~Tayson-Frederick, and P.~Abbeel, ``A
-  case study of trajectory transfer through non-rigid registration for a
-  simplified suturing scenario,'' in \emph{Intelligent Robots and Systems
-  (IROS), 2013 IEEE/RSJ International Conference on}.\hskip 1em plus 0.5em
-  minus 0.4em\relax IEEE, 2013, pp. 4111--4117.
-
 \bibitem{tokdar2010importance}
 S.~T. Tokdar and R.~E. Kass, ``Importance sampling: a review,'' \emph{Wiley
   Interdisciplinary Reviews: Computational Statistics}, vol.~2, no.~1, pp.
   54--60, 2010.
+
+\bibitem{tong2002support}
+S.~Tong and D.~Koller, ``Support vector machine active learning with
+  applications to text classification,'' \emph{The Journal of Machine Learning
+  Research}, vol.~2, pp. 45--66, 2002.
 
 \bibitem{vert2006consistency}
 R.~Vert and J.-P. Vert, ``Consistency and convergence rates of one-class svms
