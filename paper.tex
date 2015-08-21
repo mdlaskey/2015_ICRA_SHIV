@@ -680,41 +680,17 @@ areas and obtain more labels from the supervisor in those regions.
 
 
 \section{Experiments}
-\fpnote{Michael, please also compare my comments/changes git version 273ecde - all these changes got overwritten when merging}
+\fpnote{Michael, please also compare my comments git version 273ecde - those changes got overwritten when merging and
+had some improvements in style}
 \subsection{Driving Example}
-%A common benchmark in Reinforcement Learning  is a car driving around a track avoiding other cars
-%\cite{argall2009survey}. To illustrate our methods ability in high dimensions, the car must follow a polygonal track
-%using only HOG features extracted from images. If the car falls off the track, it is placed back on the center facing
-%the angle of the polygonal track piece. We sample the polygonal track by drawing points from a Gaussian with a mean that
-%is the centered of the video game work space. The convex hull of the sampled points is then computed. The car's control
-%space $\mathcal{U} = \lbrace -15^\circ, 0, 15^\circ \rbrace$ or 3 discrete commands that change the angle of the car. The internal state space of the car is xy-coordinates and the angle it is facing. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
+A common benchmark in Reinforcement Learning  is a car driving around a track avoiding other cars \cite{argall2009survey}. To illustrate our methods ability in high dimensions, the car must follow a polygonal track using only HOG features extracted from images. If the car falls off the track, it is placed back on the center facing the angle of the polygonal track piece. We sample the polygonal track by drawing points from a Gaussian with a mean that is the centered of the video game work space. The convex hull of the sampled points is then computed. The car's control space $u = \lbrace -15^\circ, 0, 15^\circ \rbrace$ or 3 discrete commands that change the angle of the car. The internal state space of the car is xy-coordinates and the angle it is facing. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
 
-\fpnote{Previous commit:
-A common benchmark in Reinforcement Learning is that of a car driving around a track while avoiding collisions with
-other cars \cite{argall2009survey}. We implemented a car simulator where the car must stay on a rectangular track and
-avoid autonomously controlled cars that drive on the same track. If the car accidentally leaves the track, it is placed
-back on the center of the track at a nearby position. The car's control input space is  $\mathcal{U} = \lbrace -15^\circ, 0, 15^\circ \rbrace$
-instantly changing the angle of the car that drives at a unit speed. The internal state space of the car is given by the
-xy-coordinates and the angle it is facing. In our experiments, the supervisor is provided by an algorithm that uses
-state space search through the driving simulator to plan the next control {\color{blue} [-- F: be more precise --]}.
-    The supervisor drives around the track twice. We collect raw images of the simulation from a 2D bird's eye view
-and use Gaussian Pyramids to down-sample the images to $125 \times 125$ RGB pixels and then extract Histogram of
-Oriented Gradients (HOG) features using OpenCV. These histograms serve as the \emph{observable state space}
-$\mathcal{X}$. For both DAgger and \acro, we use a Linear Support Vector Machine (SVM) to parameterize allowable
-policies $\pi_{\theta}$, with $\gamma=0.01$ as a regularization term on the slack variables, which was set via cross
-validation on the initial training examples. For the optimization of Eq. \ref{eq:dual_sup} in \acro, we used an
-exponential kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
-[what about $r_0$?] We compare the policy's performance in terms of minimization of an underlying cost function $c(\bx,\bu)$, which is
-defined to be total number of times the car left the track or collided with the other cars on the track. We compare the
-cost to the number of control input demonstrations queried from the supervisor. Initial results over 1 level shown in Fig.  suggest an $75\%$ reduction in the number of queries needed for SHEATH compared to DAgger. 
-}
-%We have the supervisor drive around the track 2 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV,  where the size of $\bx$ is $27926$. For both DAgger and SHIV, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our supervisor. For the optimization of Eq. \ref{eq:dual_sup} in SHIV we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
+We have the supervisor drive around the track 2 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV,  where the size of $\bx$ is $27926$. For both DAgger and SHIV, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our supervisor. For the optimization of Eq. \ref{eq:dual_sup} in SHIV we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
+
+To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks and shown in Table \ref{table:active_comp}. 
 
 
-%To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks and shown in Table \ref{table:active_comp}. 
-
-
-%We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
+We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
  
 
 \begin{figure}[t]
