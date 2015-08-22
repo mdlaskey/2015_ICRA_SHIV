@@ -533,7 +533,7 @@ can be considered as present in policy's output. We employ a regularization tech
 used to control the smoothness of the function that is fit to the sampled data. In practice this regularization corresponds to a penalty term on either the L2 norm on the weights for regression based techniques or the slack coefficient for support vector machines \cite{scholkopf2002learning}.\adnote{is this just us or also dagger?}
  
  \subsection{Step 2}
-The second step starts in boht SHIV and DAgger by rolling out the policy $\pi_{\theta_{k}}$ to sample states that are likely to occur under $\theta_{k}$. 
+The second step starts in both SHIV and DAgger by rolling out the policy $\pi_{\theta_{k}}$ to sample states that are likely to occur under $\theta_{k}$. 
 
 What happens next, however, differs. For every state visited, DAgger requests the supervisor to provide the appropriate control/label. Formally, for a given sampled trajectory  $\hat{\tau} = (\bx_0,\bu_0,...,\bx_T,\bu_T )$, the supervisor provides labels $\tilde{\bu}_t$, where $\tilde{\bu}_t \sim \pi(\bx_t) + \epsilon$ for $t\in \{0, \ldots, T\}$.
 The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_{k+1}$:
@@ -556,7 +556,7 @@ to set $\beta = 0$ to avoid biasing the sampling~\cite{NIPS2014_5421,ross2010red
 
 Dagger has been experimentally shown to perform well in both simulation and real world
     experiments\cite{}\adnote{cite}. Under a `no regret' assumption, Ross et al.\cite{ross2013learning} furthermore
-deduced error bounds on the expected loss, which scale linearly in the time horizon $T$ --- as opposed to offline methods which scale quadratically. For a conservative threshold $\rho$ on risk, the SHIV performance is analogous to DAgger without asking the expert when it is absolutely not necessary. However, if $\rho$ is too high, then SHIV will not collect new that that is needed and revert back to the performance of offline methods. We analyze the dependence on $\rho$ in our experimental section. Our results suggest that SHIV is robust to this parameter selection. \adnote{must add this experiment!}
+deduced error bounds on the expected loss, which scale linearly in the time horizon $T$ --- as opposed to offline methods which scale quadratically. For a conservative $\sigma$, the SHIV performance is analogous to DAgger without asking the expert when it is absolutely not necessary. However, if $\sigma$ is too high, then SHIV will not collect new data that is needed and revert back to the performance of offline methods. We analyze the dependence on $\sigma$ in our experimental section. Our results suggest that SHIV is robust to this parameter selection. \adnote{must add this experiment!}
 
 \subsection{Measuring Risk}
 
@@ -629,8 +629,9 @@ function, determining point membership in the approximate quantile levelset is g
 
 \vspace{-2ex}
 \begin{align}\label{eq:decision_func}
-g(x) = \mbox{sgn}(\langle w,\Phi(x) \rangle-\rho).
+g_{\sigma}(x) = \mbox{sgn}(\langle w,\Phi(x) \rangle-\rho).
 \end{align}
+\adnote{let's make sure we define $\sigma$ above}
 
 Here, for $x\in \mathcal{X}$, $g(x)=0$ if $x$ lies on the quantile levelset,
 $g(x) = 1$ if $x$ is strictly in the interior of the quantile super-levelset and $g(x) = -1$ 
@@ -672,7 +673,7 @@ The dual formulation to the modified optimization problem, which is solved in pr
 \mbox{s.t} \: 0 \leq \alpha \leq \frac{1}{\nu n} \:, \sum_i^n \alpha_i = 1.
 \end{align}
 
-Our corresponding decision function $g:\mathcal{X}\to \mathbb{R}$ is then derived in terms of the support vectors as $$g(\bx) = \sum_i^n
+Our corresponding decision function $g_{\sigma}:\mathcal{X}\to \mathbb{R}$ is then derived in terms of the support vectors as $$g_{\sigma}(\bx) = \sum_i^n
 \alpha_i y_i k(\bx_i,\bx) - \rho$$
 To compute the $\rho$ term, we leverage the fact that for an optimal solution the
 inequalities in Eq. \ref{eq:ineq} are equal for any $\alpha_j$ such that $0 < \alpha_j < \frac{1}{\nu n}$. Therefore we
@@ -681,40 +682,40 @@ explain this more --]}.
 
 Our experiments analyze the performance of risk as a query selection strategy, with our without the addition of the second risk criteria --- regions of space where the surrogate loss is high.
 
-\subsection{The \acro~algorithm}
+% \subsection{The \acro~algorithm}
 
-Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately
-predict the supervisor's control, by means of the thresholded surrogate just discussed.  
-% Too vague:
-%In the statistics community, a known property is that estimators are function will likely mis-classify if they are evaluated at points not in the distribution sampled from.
-%Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  
-To reduce the burden on the supervisor, we estimate the training data's quantile level-set for a user-defined threshold
-$\nu$ and further modify the corresponding super-levelset estimate by excluding neighborhoods of states that incur a loss
-above a threshold $\varepsilon$ chosen by the user.
-The user then only provides control input demonstrations for states of trajectory roll-outs that lie outside the
-resulting risk-aware quantile super-levelset.
+% Our proposed method trains a policy, $\pi_{\theta_k}$, but also estimates where the policy is likely to accurately
+% predict the supervisor's control, by means of the thresholded surrogate just discussed.  
+% % Too vague:
+% %In the statistics community, a known property is that estimators are function will likely mis-classify if they are evaluated at points not in the distribution sampled from.
+% %Techniques such as importance sampling use this results to train estimators on data drawn from a different distribution \cite{tokdar2010importance}.  
+% To reduce the burden on the supervisor, we estimate the training data's quantile level-set for a user-defined threshold
+% $\nu$ and further modify the corresponding super-levelset estimate by excluding neighborhoods of states that incur a loss
+% above a threshold $\varepsilon$ chosen by the user.
+% The user then only provides control input demonstrations for states of trajectory roll-outs that lie outside the
+% resulting risk-aware quantile super-levelset.
 
-{\color{blue} [-- F: use formal algorithm and explain here instead --]} 
-\subsubsection{Step 1}
+% {\color{blue} [-- F: use formal algorithm and explain here instead --]} 
+% \subsubsection{Step 1}
 
-Similar to DAgger, at iteration $k$, the algorithm estimates a policy, $\pi_{\theta_k}$ on the dataset $\mathcal{D}_k$
-by solving the optimization problem in Eq. \ref{eq:super_objj}. We then estimate the quantile super-levelset of the
-training data state-distribution solving the optimization for the modified One Class SVM using the dataset $\mathcal{D}_k$. 
-This yields a decision boundary $g_k(\bx)$, where is $g(\bx)\ge 0$ if a state $\bx$ is to be considered of `low risk' and $-1$ otherwise. 
+% Similar to DAgger, at iteration $k$, the algorithm estimates a policy, $\pi_{\theta_k}$ on the dataset $\mathcal{D}_k$
+% by solving the optimization problem in Eq. \ref{eq:super_objj}. We then estimate the quantile super-levelset of the
+% training data state-distribution solving the optimization for the modified One Class SVM using the dataset $\mathcal{D}_k$. 
+% This yields a decision boundary $g_k(\bx)$, where is $g(\bx)\ge 0$ if a state $\bx$ is to be considered of `low risk' and $-1$ otherwise. 
  
  
- \subsubsection{Step 2}
- In DAgger, the policy $\pi_{\theta_k}$ is rolled out for a fixed number of time steps, however this could lead to the
- robot entering pathological states that are risky. To prevent this, we terminate the rolled out policy if the risk, is
- above some threshold $r(\bx_t) > r_0$.  Furthermore, instead of providing control inputs for every state, the supervisor is only required to 
- provide demonstrations of control inputs for states for which $g(\bx)=-1$.  These demonstrations are then added to the
- dataset $\mathcal{D}_{k+1}$ and the algorithm returns to Step 1. 
+%  \subsubsection{Step 2}
+%  In DAgger, the policy $\pi_{\theta_k}$ is rolled out for a fixed number of time steps, however this could lead to the
+%  robot entering pathological states that are risky. To prevent this, we terminate the rolled out policy if the risk, is
+%  above some threshold $r(\bx_t) > r_0$.  Furthermore, instead of providing control inputs for every state, the supervisor is only required to 
+%  provide demonstrations of control inputs for states for which $g(\bx)=-1$.  These demonstrations are then added to the
+%  dataset $\mathcal{D}_{k+1}$ and the algorithm returns to Step 1. 
 
-We note that the choise of user-defined thresholds $\nu$, $\epsilon$, $r_0$ yield an implicit trade-off
-between exploration and exploitation. For large quantile super-levelsets, the robot is confident and asks the
-supervisor only rarely for demonstrations. Similarly, large $\varepsilon$ values allow the robot to be tolerant to
-incorrectly trained policies with large surrogate loss, while large $r_0$ settings allow the robot to explore risky
-areas and obtain more labels from the supervisor in those regions.
+% We note that the choise of user-defined thresholds $\nu$, $\epsilon$, $r_0$ yield an implicit trade-off
+% between exploration and exploitation. For large quantile super-levelsets, the robot is confident and asks the
+% supervisor only rarely for demonstrations. Similarly, large $\varepsilon$ values allow the robot to be tolerant to
+% incorrectly trained policies with large surrogate loss, while large $r_0$ settings allow the robot to explore risky
+% areas and obtain more labels from the supervisor in those regions.
 
 
 \section{Experiments}
