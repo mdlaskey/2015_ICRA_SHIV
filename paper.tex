@@ -612,21 +612,24 @@ Similar to DAgger at iteration $k$ the algorithm estimates a policy, $\pi_{\thet
 
 
 \section{Experiments}
+All experiments were run on a machine with OS X with a 2.7 GHz Intel core i7 processor and 16 GB
+1600 MHz memory in Python 2.7. The policies, $\pi_\theta$ were represented using either the linear SVM or  kernelized ridge regression classes in Scikit-Learn~\cite{scikit-learn}.
+
 \subsection{Driving Example}
 A common benchmark in Reinforcement Learning  is a car driving around a track avoiding other cars \cite{argall2009survey}. To illustrate our methods ability in high dimensions, the car must follow a polygonal track using only HOG features extracted from images. If the car falls off the track, it is placed back on the center facing the angle of the polygonal track piece. We sample the polygonal track by drawing points from a Gaussian with a mean that is the centered of the video game work space. The convex hull of the sampled points is then computed. The car's control space $u = \lbrace -15^\circ, 0, 15^\circ \rbrace$ or 3 discrete commands that change the angle of the car. The internal state space of the car is xy-coordinates and the angle it is facing. Our supervisor is a solver that uses state space search through the driving simulator to plan the next control.
 
 We have the supervisor drive around the track 2 times and then collect the raw images observed. We use a Gaussian Pyramids to down sample the images to $125 \times 125$ RGB pixels and then extract Histogram of Oriented Gradients (HOG) features using OpenCV,  where the size of $\bx$ is $27926$. For both DAgger and SHIV, we use a Linear Support Vector Machine (SVM) as the policy representation, with the regularization term on the slack variable $\gamma=0.01$, which was set via cross validation on the initial training examples from our supervisor. For the optimization of Eq. \ref{eq:dual_sup} in SHIV we used a radial basis function as well for the kernel with a bandwidth of $\lambda=0.01$ and $\nu = 0.95$ to account for $95\%$ of the training distribution. 
 
-To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks and shown in Table \ref{table:active_comp}. 
+To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane \cite{tong2002support}. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We further compared against Query By Committee, which was trained via bagging \cite{}. Our data set was uniformly divided up into 3 overlapping subsets each with $80\%$ of the data then for each subset a Linear SVM was trained on. If the three classifiers agreed with each other the point was determined low risk and if they disagree it was determined high risk. We finally compared our combined risk approach against the traditional One Class SVM without the "hole-punching". We measured the performance in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks and shown in Fig. \ref{fig:active_comp}. 
 
 
-We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
+We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest a $70\%$ reduction in the number of queries needed for SHIV compared to DAgger. 
  
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=9cm, height=8cm]{figures/risk_bar.eps}
-   \caption { \footnotesize  To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyperplane. The threshold was set to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We measured the performance of our modified One Class SVM to the confidence measure, in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 randomly generated tracks. 
+   \caption { \footnotesize To compare our method against a traditional confidence based active learning approach, we use a confidence measure  of distance from the hyper plane \cite{tong2002support}. The threshold was set to the average distance from the hyper plane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. We further compared against Query By Committee, which was trained via bagging \cite{}. Our data set was uniformly divided up into 3 overlapping subsets each with $80\%$ of the data then for each subset a Linear SVM was trained on. If the three classifiers agreed with each other the point was determined low risk and if they disagree it was determined high risk. We finally compared our combined risk approach against the traditional One Class SVM without the "hole-punching". We measured the performance in terms of how many states are estimated to be of low risk (i.e. correctly classified) and are of actually high risk on the first policy roll out. Results  are averaged over 50 tracks.
    }
 
 \label{fig:active_comp}
@@ -645,30 +648,43 @@ We compare performance in terms of minimization of the underlying cost function 
 
 \subsection{Grasping In Clutter}
 To illustrate how our technique can be used in the continuous case and with a human demonstrator. 
-We look at having a human demonstrator control a robot arm in 2D to reach a target object with out knocking other objects off a table. We used Box2D a physics simulator to model the virtual world. The arm, shown in Fig. \ref{fig:box2d_arm}, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The left and right joystick determined the x and y velocity of the center of the end effector. The left bumper of the controller provided a binary input for opening and closing the gripper. 
+We look at having a human demonstrator control a robot arm in 2D to reach a target object with out knocking other objects off a table. Grasping in clutter can be a challenging task because as shown in Kiteav et al. traditional motion planning techniques require knowledge of how the objects will behave when in contact. They used iLQR with a hand tuned cost function and dynamics given by a physics simulator to successfully grab an object without displacing the other movable objects on the table off \cite{kitaevphysics}. We are interested in learning such a policy via human demonstrations.   We used Box2D a physics simulator to model the virtual world. The arm, shown in Fig. \ref{fig:box2d_arm}, consists of 3 degrees of freedom and has a parallel jaw gripper. For input the human demonstrator provides controls through an XBox controller. The right joystick contains two principle components that determine the x and y velocity of the center of the end effector. The left bumper is a binary value for opening the gripper and the right bumper is a binary value for closing the gripper. Thus, the set of controls is the following tuple $\mathcal{U} = \lbrace [-1,1],[-1,1],\lbrace 0,1 \rbrace, \lbrace 0, 1\rbrace \rbrace$.  
 
-\todo{double check this section with Sammy}
-Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, 1 being opened and zero being closed. For our representation of $\pi_{\theta}$, we used linear ridge regression. We defined two cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table and 1 for not successfully grasping the target object. 
+Our state $\bx$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, $1$ being fully closed and $0$ being opened. For our representation of $\pi_{\theta}$, we used kernelized ridge regression with the radial basis function as the kernel with the default Sci-Kit learn parameters. We defined the cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table plus $10$ times the binary value indicating if the object is grasped or not. The order of magnitude difference in cost for grasping the object is to place emphasize on that portion of the task.  
 
-In experiment, we had our human demonstrator provide one demonstration and then iterated both  DAgger and SHIV until the cost function was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $3\%$ of the width of the table. 
+In our experiment, we had our human demonstrator provide one demonstration and then iterated both  DAgger and SHIV until the cost function was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $3\%$ of the width of the table. 
 
 In Figure , we show both the cost function associated with knocking an object off the table and the one associated with being able to successfully grasp an object or not. \todo{Finalize results then discuss them}
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=\columnwidth, height=6cm]{figures/grasp_clutter.eps}
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV without the modification.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\vspace*{-10pt}
+\label{fig:car_cost}
+\end{figure}
 
 
 
 
 \subsection{Surgical Experiment}
-\todo{Need help discussing this better}
-In this experiment, we look at the task of inserting a needle into tissue in preparation for suturing. Needle insertion can be a challenging task for surgeons and learning a controller to do so could alleviate some of the burden placed on surgeons. We collected data from a surgeon, Dr. Douglas Boyd, on the Da Vince Research Kit. 
+\todo{Getting a paper from Animesh to motivate this}
+In this experiment, we look at the task of inserting a needle into tissue in preparation for suturing.  Needle insertion can be a challenging task for surgeons and learning a controller to do so could alleviate some of the burden placed on surgeons. We collected data from a surgeon, Dr. Douglas Boyd, on the Da Vince Research Kit. 
 
-Dr. Boyd demonstrated a series of trajectories that started at an initial attempted needle insertion pose and applied the neccesary corrections to achieve a correct pose. We used three of these demonstrations as our initial dataset $\mathcal{D}_0$. Dr. Boyd couldn't be around for the interactive labeling of both SHIV and DAgger, so we had to hardcore and expert controller that computed the transformation between the desired insertion pose and the current pose. We did this by calculating the inverse of a transformation matrix. 
+Dr. Boyd demonstrated a series of trajectories that started at an initial attempted needle insertion pose $P_0$ and applied the necessary corrections to achieve a goal pose $P_G$. We used three of these demonstrations as our initial dataset $\mathcal{D}_0$. Dr. Boyd couldn't be around for the interactive labeling of both SHIV and DAgger, so we had to hand design an expert controller that computed the transformation between the desired insertion pose and the current pose. We did this by calculating the inverse of a transformation matrix, $C = P_0P_G^{-1}$. We then converted $C$ to the associated lie algebra vector $c \in \mathcal{R}^6$ for $SE(3)$ and normalize it to the average magnitude of the control $c_D$ Doug Boyd applied to the robot. 
+
+For trials we sample a start position from a Gaussian on the translational component of $P_0$ with isotropic variance of  $0.1$ cm. The distance between initial $P_0$ and $P_G$ is roughly $3$ cm. Our cost function $c(\bx,\bu)$ is measured in terms of Euclidean distance in translational component, which is in centimeters. We run DAgger and SHIV both for 20 iterations and average over 40 rounds. Initial results show in Fig. \ref{figures/needle_insertion_results.eps} suggest a reduction $67\%$ in the amount of human inquiries needed. 
+
+
+
+
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=6cm]{figures/needle_insertion_results.eps}
-\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger, SHIV and SHIV using only the traditional One-Class SVM without the modification.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV without the modification.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
-\label{fig:car_cost}
+\label{fig:needle}
 \end{figure}
 
 
@@ -682,7 +698,7 @@ Lastly, our approach is promising in simulation. However we need to evaluate how
 
 \section{Acknowledgments} 
 This work is supported in part by the U.S. National Science Foundation under Award IIS-1227536 and NSF-Graduate Research Fellowship.. 
-We thank UC Berkeley and our colleagues who gave feedback and suggestions, in particular Sanjay Krishnan, Siddarth Sen, Steve McKinley and Sergey Levine.
+We thank UC Berkeley and our colleagues who gave feedback and suggestions, in particular Sanjay Krishnan, Siddarth Sen, Steve McKinley, Sachin Patil and Sergey Levine.
 
 
 
