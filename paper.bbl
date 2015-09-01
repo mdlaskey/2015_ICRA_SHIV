@@ -31,6 +31,10 @@ L.~E. Atlas, D.~A. Cohn, and R.~E. Ladner, ``Training connectionist networks
   with queries and selective sampling,'' in \emph{Advances in neural
   information processing systems}, 1990, pp. 566--573.
 
+\bibitem{breiman1996bagging}
+L.~Breiman, ``Bagging predictors,'' \emph{Machine learning}, vol.~24, no.~2,
+  pp. 123--140, 1996.
+
 \bibitem{burbidge2007active}
 R.~Burbidge, J.~J. Rowland, and R.~D. King, ``Active learning for regression
   based on query by committee,'' in \emph{Intelligent Data Engineering and
@@ -72,6 +76,12 @@ X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
 \bibitem{hodge2004survey}
 V.~J. Hodge and J.~Austin, ``A survey of outlier detection methodologies,''
   \emph{Artificial Intelligence Review}, vol.~22, no.~2, pp. 85--126, 2004.
+
+\bibitem{AnnualReport2014}
+\BIBentryALTinterwordspacing
+{Intuitive Surgical}, ``Annual report 2014.'' [Online]. Available:
+  \url{http://investor.intuitivesurgical.com/phoenix.zhtml?c=122359&p=irol-IRHome}
+\BIBentrySTDinterwordspacing
 
 \bibitem{judah2011active}
 K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
