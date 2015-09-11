@@ -120,7 +120,7 @@
 %\title{Iterative Imitation Learning with Reduced Human Supervision [v11]}
 %\title{SHIV:  Reducing Human Supervision for Robot Active Learning [v11]}
 
-\title{SHIV: Reducing Supervisor Burden using Support Vectors to Efficiently Learn Robot Control Policies from Demonstrations [v20]}
+\title{SHIV: Reducing Supervisor Burden using Support Vectors to Efficiently Learn Robot Control Policies from Demonstrations [v21]}
 
 
 
@@ -320,9 +320,9 @@ Providing correct control inputs or ``labeling'' for all states encountered at e
 iteration can impose a large burden on the supervisor.
 Instead of asking the supervisor for labels at all visited states, SHIV uses a measure of risk to actively decide whether a label is necessary. 
 
-We define a state as "risky" for 2 reasons: 1) it lies in an area with a low density of
+In contrast to the standard measure risk based purely on variance, we define a state as "risky" for 2 reasons: 1) it lies in an area with a low density of
 previously trained states, which can cause the current policy to mis-predict the supervisor and incur high surrogate
-loss \cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the state is unlikely to model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe". 
+loss \cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the state is unlikely to model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe" .Our definition of risk can be visualized in Fig. \ref{fig:support_example}(d).  
 
 The amount of data needed to estimate the density, scales exponentially in the dimension of the state space \cite{nadaraya1964estimating}. 
 Thus, to evaluate risk in high-dimensional state spaces , such as the HOG features in our driving simulator, Fig. \ref{fig:teaser}(a), we use
@@ -468,7 +468,7 @@ We compare SHIV with DAgger on three domains: the driving simulator from above, 
 
 The independent variables are two variables. First, we manipulate the online learning from demonstration algorithm we use: SHIV vs. DAgger. Second, we manipulate how many examples the algorithms are allowed to ask for: we set a budget of labeled states, and analyze performance as this budget increases.
 
-For each algorithm and budget of states labeled, we measure the real cost that the learned policy attains (e.g. number of crashes in the driving domain).
+For each algorithm and budget of states labeled, we measure the normalized performance (e.g. 1 corresponds to matching the supervisor's performance on a task). Performance is a domain specific term, such as number of times the car crashes in the driving simulator. 
 
 
 
@@ -496,7 +496,7 @@ results from these experiments, suggesting a $71\%$ reduction in the number of q
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/dagger_shiv_one_class.eps}
-\caption{We compare performance for the Driving Simulator in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the  number of times the car left the track versus the number of queries made to the supervisor. We plot the performance of DAgger and SHIV, the teal and orange lines. We also plot the performance of our supervisor, who makes non-optimal decisions and has an average performance of 5.4 crashes. Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $71\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
+\caption{We compare normalized performance (i.e. matching the performance of the supervisor) for the Driving Simulator , performance is defined as the number of times the car left the track versus the number of queries made to the supervisor. We plot the performance of DAgger and SHIV, the teal and orange lines. We also plot the performance of our supervisor, who makes non-optimal decisions and has an average performance of 5.4 crashes. Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $71\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
 \vspace*{-10pt}
 \label{fig:car_cost}
 \end{figure}
@@ -514,16 +514,16 @@ For input the human demonstrator provides controls through an XBox game controll
 robot arm motions by means of a Jacobian transpose controller for the 3 main joint angles. The left `bumper' button on the joystick was used to provide a binary control signal to close the parallel jaw
 gripper. The control inputs are hence modeled by the set $\mathcal{U} = \lbrace [-1,1],[-1,1],\lbrace 0,1 \rbrace \rbrace$.  
 
-A state $\bx\in \mathcal{X}$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, $1$ being fully closed and $0$ being opened. For our representation of $\pi_{\theta}$, we used kernelized ridge regression with the radial basis function as the kernel with the default Sci-Kit learn parameters. We defined the cost functions, $C(\bx,\bu)$, as the sum of the number of objects knocked off the table plus $10$ times the binary value indicating if the object is grasped or not. The order of magnitude difference in cost for grasping the object is to place emphasize on that portion of the task. The bandwidth parameters for SHIV were set to $\sigma_r = 5$ and $\sigma = 6$. For the $\epsilon$ term in the our risk method, we used the median in regression error which was the L2 distance between the predicted control and the true supervisor's control. 
+A state $\bx\in \mathcal{X}$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, $1$ being fully closed and $0$ being opened. For our representation of $\pi_{\theta}$, we used kernelized ridge regression with the radial basis function as the kernel with the default Sci-Kit learn parameters. We defined performance as the sum of the number of objects knocked off the table plus $10$ times the binary value indicating if the object is grasped or not. The order of magnitude difference in cost for grasping the object is to place emphasize on that portion of the task. The bandwidth parameters for SHIV were set to $\sigma_r = 5$ and $\sigma = 6$. For the $\epsilon$ term in the our risk method, we used the median in regression error which was the L2 distance between the predicted control and the true supervisor's control. 
 
-In our experiment, a human demonstrator provided one demonstration and then iterated until the cost function was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $3\%$ of the width of the table. 
+In our experiment, a human demonstrator provided one demonstration and then iterated until the performance was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $3\%$ of the width of the table. 
 
- In Fig. \ref{fig:grasp_cost} , we show the cost function $c(\bx,\bu)$ averaged over 8 rounds for SHIV and DAgger. Supporting our hypothesis, our results suggests that SHIV can achieve the same performance with a 64\% reduction in the number of examples needed.
+ In Fig. \ref{fig:grasp_cost} , we show the normalized performance averaged over 8 rounds for SHIV and DAgger. Supporting our hypothesis, our results suggests that SHIV can achieve the same performance with a 64\% reduction in the number of examples needed.
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/grasp_clutter.eps}
-\caption{We compare performance for Grasping in Clutter in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is the sum of the number of objects knocked off the table plus 10 times the binary value indicating if the object is grasped or not. Initial results, which are averaged over 8 different trials suggest a $64\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\caption{We compare normalize performance (i.e. mathcing the performance of the supervisor) for Grasping in Clutter domain, performance is defined as the sum of the number of objects knocked off the table plus 10 times the binary value indicating if the object is grasped or not. Initial results, which are averaged over 8 different trials suggest a $64\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
 \vspace*{-10pt}
 \label{fig:grasp_cost}
 \end{figure}
@@ -551,16 +551,16 @@ For the $\epsilon$ term in the our risk method, we used the median in regression
 regions respectively. The bandwidth, $\sigma$, in the rbf kernel was set to $2$ and $\sigma_b = 1$.
 
 For trials we sample a start position from a Gaussian on the translational component of $P_0$ with isotropic variance of
-$0.1$ cm. The distance between initial $P_0$ and $P_G$ is roughly $3$ cm. Our cost function $c(\bx,\bu)$ is measured in
+$0.1$ cm. The distance between initial $P_0$ and $P_G$ is roughly $3$ cm. Performance is measured in
 terms of Euclidean distance in translational component, which is in centimeters. We run DAgger and SHIV both for 20 iterations and average over 40 different starting positions.
 
- In Fig. \ref{fig:grasp_cost} , we show the cost function $c(\bx,\bu)$ averaged over 40 rounds for SHIV and DAgger. Supporting our hypothesis, our results suggests that SHIV can achieve the same performance with a $67\%$ reduction in the number of examples needed.
+ In Fig. \ref{fig:grasp_cost} , we show the normalized performance (i.e. 1 corresponds to matching the supervisor) averaged over 40 rounds for SHIV and DAgger. Supporting our hypothesis, our results suggests that SHIV can achieve the same performance with a $67\%$ reduction in the number of examples needed.
 
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/needle_insertion_results.eps}
-\caption{We compare performance in terms of minimization of the underlying cost function $c(\bx,\bu)$, which is euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
+\caption{We compare normalized performance (i.e. matching the performance of the supervisor), performance is defined as the euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
 \vspace*{-10pt}
 \label{fig:needle}
 \end{figure}
@@ -587,7 +587,7 @@ We measured the percentage of truly risky states, encountered during the first p
 
  To analyze the sensitivity of our method we varied the risk sensitivity  parameter or $\sigma$ of the decision function $g_{\sigma}$, or Eq. $\ref{eq:decision_func}$. $\sigma$ is a measure of how much risk we allow, with smaller $\sigma$s leading to more risk-adverse behavior. SHIV was ran for 6 iterations and averaged over 40 different randomized polygonal tracks. 
 
- For each  $\sigma$, we measure the final cost function for the policy $\pi_{\theta}$ after 6 iterations and the number of examples SHIV requested from the supervisor. 
+ For each  $\sigma$, we measure the final cost performance of the policy $\pi_{\theta}$ after 6 iterations and the number of examples SHIV requested from the supervisor. 
 
  As shown in Table \ref{tab:sens}, small $\sigma$, $\sigma = 1$, corresponds to always asking for help (many states labeled) and very large sigma, $\sigma = 350$, relates to  less data being used, but worse performance. However, $\sigma$ values between $150$ and $250$ all achieve similarly good performance, suggesting that SHIV is robust to the choice of a particular $\sigma$.
 
@@ -599,7 +599,7 @@ We measured the percentage of truly risky states, encountered during the first p
  %\multicolumn{4}{|c|}{Sensitivity Analysis for Convergence to Best Grasp for Thompson sampling} \\
  %\hline 
  \hline
-\specialcell{\bf Risk  Sensitivity ($\sigma$)} & \specialcell{\bf Final  Cost} & \specialcell{\bf States  Labeled} \\
+\specialcell{\bf Risk  Sensitivity ($\sigma$)} & \specialcell{\bf Performance} & \specialcell{\bf States  Labeled} \\
  \hline
  1 & 5.8 & 4122 \\
  50 & 5.7&  3864 \\
