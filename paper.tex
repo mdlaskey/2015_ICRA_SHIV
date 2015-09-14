@@ -104,7 +104,7 @@
 
 
 \newboolean{include-notes}
-\setboolean{include-notes}{false}
+\setboolean{include-notes}{true}
 \newcommand{\adnote}[1]{\ifthenelse{ \boolean{include-notes}}%
  {\textcolor{blue}{\textbf{AD: #1}}}{}}
  
@@ -142,9 +142,9 @@
 
 \begin{abstract}
 Online learning from demonstration algorithms, such as DAgger, can learn policies for problems where the system
-dynamics and the cost function are unknown. However, during learning they impose a burden on supervisors to provide labels (control
-signals) as the robot encounters new states when executing its current best policy. We introduce the SHIV
-algorithm (Svm-based reduction in Human InterVention), which reduces this burden by only requesting supervision for risky states. SHIV uses stream-based active learning with a query selection method that evaluates risk in a manner tailored to non-stationary high dimensional state distributions.  To facilitate scaling and outlier rejection, risk is based on distance to an approximate level set boundary defined by a One Class support vector machine.  We compare SHIV with DAgger in three policy learning experiments: 1) a driving simulator with a 27936 dimension visual HOG feature state representation, 2) 4DOF robot arm push-grasping in clutter simulation with Box2D with a 22 dimension state representation  of joint angles and the pose of each object, and 3) surgical needle insertion with a 16 dimension state represented spatial transform.  Results suggest that SHIV can learn equivalent policies with up to $70\%$ fewer queries.
+dynamics and the cost function are unknown. However, during learning, they impose a burden on supervisors to provide labels (control
+signals) as the robot encounters new states while executing its current best policy. We introduce the SHIV
+algorithm (Svm-based reduction in Human InterVention), which reduces this burden by only requesting supervision for risky states. SHIV uses stream-based active learning with a query selection method that evaluates risk in a manner tailored to non-stationary high dimensional state distributions.  To facilitate scaling and outlier rejection, risk is based on distance to an approximate level set boundary defined by a One Class support vector machine.  We compare SHIV with DAgger in three policy learning experiments: 1) a driving simulator with a 27936 dimension visual HOG feature state representation, 2) a push-grasping in clutter simulation for a 4DOF robot arm, using Box2D, with a 22 dimension state representation  of joint angles and the pose of each object, and 3) a surgical needle insertion task with a 16 dimension state represented spatial transform.  Results suggest that SHIV can learn equivalent policies with up to 70\% fewer queries.
 
  \end{abstract}
 
@@ -154,9 +154,11 @@ algorithm (Svm-based reduction in Human InterVention), which reduces this burden
 \section{Introduction} 
 
 
-In model-free robot learning from demonstration, a robot learns to perform a task, such as driving or grasping an object in a cluttered environment, from examples provided by a  supervisor, usually a human.  In such problems, the robot does not have access to either the cost function that it should optimize, nor the dynamics model. The former occurs when it is difficult to specify how to trade-off various aspects that matter, like when the robot is reaching for a goal object while not pushing objects off a table.  The latter occurs when either the system or the interaction with the world is difficult to characterize based on observations, as in Fig. \ref{fig:teaser}(a) the robot drives on the track but only has access to visual information from a bird's eye view. 
+In model-free robot Learning from Demonstration (LfD), a robot learns to perform a task, such as driving or grasping an object in a cluttered environment, from examples provided by a  supervisor, usually a human.  In such problems, the robot does not have access to either the cost function that it should optimize, nor the dynamics model. The former occurs when it is difficult to specify how to trade-off various aspects that matter, like when the robot is reaching for a goal object while not pushing objects off a table.  The latter occurs when either the system or the interaction with the world is difficult to characterize based on observations, as in Fig. \ref{fig:teaser}(a) the robot drives on the track but only has access to visual information from a bird's eye view.\adnote{these are both pretty bad examples; i'd use the typical driving example for the first point, taken from abeeel and ng, and i'd use the pushing for the second point, because it is very hard to write down accurate dynamics models for pushing -- took Mehmet 3 years to do push grasping with a single object, still can't do with arbitrary objects; Jen uses Box2d but the real world is uncertain; it's a perfect example in whihc writing down the dynamics model is very difficult;} 
 
-Rather than explicitly learning the cost function, like in inverse reinforcement learning, and the dynamics model, and then using optimization to produce a policy for the task, the robot learns the policy directly from supervisor examples mapping states to controls~\cite{argall2009survey}. Learning from demonstrations algorithms can be categorized as offline, where the robot only observes demonstrations, or online, where the robot interacts with the world and receives feedback from the supervisor. 
+Rather than explicitly learning the cost function, like in Inverse Reinforcement Learning\adnote{cite}, and the dynamics model, and then using optimization to produce a policy for the task, in model-free LfD the robot learns the policy directly from supervisor examples mapping states to controls~\cite{argall2009survey}. 
+
+ 
 
 
 \begin{figure}[ht]
@@ -164,7 +166,7 @@ Rather than explicitly learning the cost function, like in inverse reinforcement
    
 \includegraphics[width=0.5\textwidth]{figures/teaser.pdf}
 \caption{ 
-SHIV  reduces the number of queries to the supervisor in our three test domains: a) a driving simulator where the goal is to learn a controller on HOG features extracted from synthetic images to keep a car on a polygonal track; b) push-grasping in clutter in a physics simulator, where the goal is to learn a controller from human demonstrations to grasp the green object while not letting the red square objects fall off the gray boundary representing a table; c) learning a controller for the Da Vinci Research Kit from a master surgeon's demonstrations of correcting a needle before suturing in surgery; d) normalized performance of SHIV and DAgger's policy on the grasping in clutter example versus states labeled.
+SHIV  reduces the number of queries to the supervisor in our three test domains: a) a driving simulator where the goal is to learn a controller on HOG features extracted from synthetic images to keep a car on a polygonal track; b) push-grasping in clutter in a physics simulator, where the goal is to learn a controller from human demonstrations to grasp the green object while not letting the red square objects fall off the gray boundary representing a table; c) learning a controller for the Da Vinci Research Kit from a master surgeon's demonstrations of correcting a needle before suturing in surgery; d) normalized performance of SHIV and DAgger's policy on the grasping in clutter example versus states labeled \adbote{by the supervisor}.
 }
 \vspace*{-10pt}
 \label{fig:teaser}
@@ -173,15 +175,15 @@ SHIV  reduces the number of queries to the supervisor in our three test domains:
 
 
 
-
-In offline learning from demonstration, the robot learns the policy based on a batch of examples, and then executes it to achieve the task.  During execution, a small error can accumulate, leading the robot away from the region of the state space where it was given examples, leading to unrecoverable failures.  For example, a robot driving may be trained on examples driving safely down the center of a lane, but even slight deviations will put the robot into states near the side of the road where its policy could  fail~\cite{pomerleau1989alvinn}. Ross and Bagnell showed the number of errors made by the robot, in the worst case,  can scale quadratically with the time horizon of the task~\cite{ross2010efficient}.
-
-
+LfD algorithms can be categorized as offline, where the robot only observes demonstrations, or online, where the robot interacts with the world and receives feedback from the supervisor.
+In offline LfD, the robot learns the policy based on a batch of examples, and then executes it to achieve the task.  During execution, a small error can accumulate, leading the robot away from the region of the state space where it was given examples, leading to unrecoverable failures.  For example, a robot driving may be trained on examples driving safely down the center of a lane, but even slight deviations will \adnote{eventually} put the robot into states near the side of the road where its policy could  fail~\cite{pomerleau1989alvinn}. Ross and Bagnell showed the number of errors made by the robot, in the worst case,  can scale quadratically with the time horizon of the task~\cite{ross2010efficient}.
 
 
-Online learning from demonstration addresses this issue by iteratively gathering more examples from the supervisor in states the robot encounters~\cite{grollman2007dogged,ross2010efficient,ross2010reduction}. One such algorithm, DAgger learns a series of policies. At each iteration, the robot trains a policy based on the existing examples, then rolls out (executes) that policy and the supervisor provides demonstrations for all states the robot visits. The new state/control examples are aggregated with the old examples for the next iteration. DAgger and related algorithms have been applied in a wide range of applications, from quadrotor flight to natural language to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}. In DAgger, it was proved under certain conditions, the number of errors scales only linearly with the time horizon of the task.
 
-DAgger significantly increases the burden on the supervisor, who now labels all states that the robot visits during training.  Our goal is to reduce supervisor burden without degrading robot performance.
+
+Online LfD addresses this issue by iteratively gathering more examples from the supervisor in states the robot encounters~\cite{grollman2007dogged,ross2010efficient,ross2010reduction}. One such algorithm, DAgger, learns a series of policies. At each iteration, the robot trains a policy based on the existing examples, then rolls out (executes) that policy, and the supervisor provides demonstrations for all states the robot visits. The new state/control examples are aggregated with the old examples for the next iteration. DAgger and related algorithms have been applied in a wide range of applications, from quadrotor flight to natural language to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}. In DAgger, \adnote{delted it was proved, unnecessary} under certain conditions, the number of errors scales only linearly with the time horizon of the task\adnote{cite}.
+
+\adnote{there needs to be a lead up to this, like yay dagger is cool. however, }DAgger significantly increases the burden on the supervisor, who now labels all states that the robot visits during training.  Our goal is to reduce supervisor burden without degrading robot performance.
 
 Our key insight is that the robot only needs to request demonstrations for risky states. Risk arises because:  (1) states are sufficiently different than the states previously encountered, i.e., they can be considered novel or outliers~\cite{hodge2004survey}; or (2) states are in a region that has been misclassified in previous training data.
 %\adnote{Ken's version below does not seem to represent what we actually do.}
@@ -191,30 +193,30 @@ Our key insight is that the robot only needs to request demonstrations for risky
 We present an algorithm for online learning from demonstration that can actively decide whether it is necessary to ask the supervisor to label the new states that the robot encounters. SHIV  (Svm-based reduction in Human InterVention) reduces supervisor burden by only requesting supervision for risky states. SHIV uses stream-based active learning with a query selection method that evaluates risk in a manner tailored to the non-stationary state distributions the robot encounters as it iteratively executes learned policies. We build on the One Class SVM method for approximating quantile level sets \cite{scholkopf2001estimating} to provide a classification method for deciding if a state is risky or safe.
 
 
-
+\adnote{nothing about experiements and resutls? how do i know if it worked? also how do i know that you didn;t just compare to dagger, but ran an indepth analysis of the algorithm? i thought i put a paragraph like that here at some point}
 
 
 
 \section{Related Work}
-Below we summarize related work in active approaches to robot learning from demonstration and risk evaluation techniques.. 
+Below we summarize related work in active approaches to robot learning from demonstration and risk evaluation techniques.
 
 \noindent\textbf{Active Learning from Demonstration}
-Online learning from demonstration can be formulated as a stream-based active learning problem ~\cite{atlas1990training,cohn1994improving}. In stream based active learning, the decision of whether to query the supervisor (for a label or control signal) or not is not over the entire state space (like in traditional pool-based active learning), but on states drawn one at a time from some data source. In  online learning  from demonstration, the data source is the states encountered during learning. 
+Online LfD\adnote{been replacing with "LfD" for simplicity, no need to say the same expression 100 times in the paper especially since everyone calls it that} can be formulated as a stream-based active learning problem ~\cite{atlas1990training,cohn1994improving}\adnote{NO!! Your approach of asking only when risky instantiates stream based active learning. In general, online lfd is NOT an active learning problem, that is the proble we are fixing here! sorry for the "!!" but this is crucial}. In stream based active learning, the decision of whether to query the supervisor (for a label or control signal) or not is not over the entire state space (like in traditional pool-based active learning), but on states drawn one at a time from some data stream. In  online LfD, the\adnote{this} data stream is the states encountered during learning\adnote{encountered when the robot is executing the current best policy.}
 
-Stream-based active learning has two ingredients: a stream, given here by executing the current best policy, and a query selection method deciding whether or not to query. Typical query selection methods are estimator-centric:  evaluating risk using the estimator, e.g. distance from the classification hyperplane \cite{tong2002support}, as in Fig. \ref{fig:support_example}(a). An alternative to distance-based measures of  risk is query by committee  \cite{breiman1996bagging}, which uses a committee of hypothesized estimators that are trained on different subsets of the training data. Risk here is based on the level of agreement or disagreement among these hypotheses, with higher levels of disagreement for a state leading to higher chances of querying that state (Fig. \ref{fig:support_example}(b)).
+Stream-based active learning has two ingredients: a stream, given here by executing the current best policy,\adnote{Aside from the data strea, stream-based active learning has another ingredient: a query selection method.} and a query selection method deciding whether or not to query. Typical query selection methods are estimator-centric, evaluating risk using the estimator, e.g. distance from the classification hyperplane \cite{tong2002support}, as in Fig. \ref{fig:support_example}(a); or query by committee  \cite{breiman1996bagging}, which uses a committee of hypothesized estimators that are trained on different subsets of the training data. Risk in query by committee is based on the level of agreement or disagreement among these hypotheses, with higher levels of disagreement for a state leading to higher chances of querying that state (Fig. \ref{fig:support_example}(b)).
 
-Both approaches implicitly assume a stationary state distribution --- that the new data is sampled from the same distribution as the previous training data. Although such methods have been previously proposed for online learning from demonstration (see \cite{chernova2009interactive,grollman2007dogged} for the former and \cite{judah2011active,judah2012active} for the latter),
-online learning from demonstration violates the stationary distribution assumption because each new policy induces a new distribution of states. This can have negative consequences for learning: it has been shown that when training and test distributions are different, query by committee can perform worse than randomly selecting  which states to query \cite{burbidge2007active}.
+Both approaches implicitly assume a stationary state distribution --- that the new data is sampled from the same distribution as the previous training data. Although such methods have been previously proposed for online LfD (see \cite{chernova2009interactive,grollman2007dogged} for the former and \cite{judah2011active,judah2012active} for the latter),
+online LfD violates the stationary distribution assumption because each new policy induces a new distribution of states. This can have negative consequences for learning: it has been shown that when training and test distributions are different, query by committee can perform worse than randomly selecting  which states to query \cite{burbidge2007active}.
 
-The  estimator is a function of the current distribution. Therefore, it no longer provides a good measure of confidence when that distribution changes, as it does when the robot is rolling out a learned policy and starts encountering further away states. Instead of relying on the estimator, our measure of risk explicitly identifies when states are drawn from a different distribution, i.e. when they are novel. 
+The problem lies in being estimator-centric. The  estimator is a function of the current distribution. Therefore, it no longer provides a good measure of confidence when that distribution changes, as it does when the robot is rolling out a learned policy and starts encountering further away states. Instead of relying on the estimator, our measure of risk explicitly identifies when states are drawn from a different distribution, i.e. when they are novel. 
 
 %%In SHIV, we use a query selection method that allows for a non-stationary distribution, evaluating risk based on novelty (is the state an outlier to the training distribution), as in Fig. \ref{fig:support_example}(c). Additionally, we also assign higher risk to  historically mislabeled regions, as in Fig. \ref{fig:support_example}(d). We then use a classification method based on the One Class SVM \cite{scholkopf2001estimating} to predict if a state is risky or not risky, which we we define as safe.%Our approach builds on the One Class SVM method for approximating quantile level sets \cite{}, which has already been used in novelty detection on high-dimensional image data \cite{}. 
 
 
-
+\adnote{replace learning from demonstration with LfD from here onwards}
 
 \noindent\textbf{Risk via Novelty Detection.}
-One part of our risk definition is the notion that a trained model will be able to generalize within the distribution it is
+The main motivation for our risk definition is the notion that a trained model will be able to generalize within the distribution it is
 trained on \cite{tokdar2010importance}, making states outside of this distribution risky. Novelty detection \cite{hodge2004survey} is concerned with recognizing when this happens: recognizing that a sample is outside of this distribution.
 
 One approach to novelty detection is to directly estimate the underlying probability density function from which the data is sampled. If the probability of that point is low with respect to the underlying density, it will be marked as novel. However, the amount of data needed to accurately do so scales exponentially in the number of dimensions \cite{nadaraya1964estimating}.
@@ -227,6 +229,8 @@ vectors~\cite{scholkopf2001estimating}. The method has been theoretically shown 
 asymptotically for correctly chosen bandwidth settings and in the case of a normalized Gaussian kernel function \cite{vert2006consistency}. 
 In \cite{liu2014unsupervised}, the One Class SVM has furthermore been used for novelty detection in high-dimensional image data. To our knowledge the use of One Class SVM to online learning from demonstration has never been done before. \mlnote{Ken, wanted to our knowledge in the last part} \adnote{you can say this to me, but not really write it in a paper; I think that perhaps you want to say, and in a new paragraph so that it stands out, "Our contribution is the addition of stream-based active learning to online learning from demonstration. To do so, we use a query selection method based on the One Class SVM.}
 
+\adnote{OK fiiiiiine. Then maybe To our knowledge, incorporating a query selection method for nonstationary distributions, such as the One Class SVM, into online LfD is a novel contribution.}
+
 
 
 
@@ -234,16 +238,18 @@ In \cite{liu2014unsupervised}, the One Class SVM has furthermore been used for n
 The goal of this work is to learn a policy that matches that of the supervisor's while asking the supervisor for as few examples as possible.
 
 
-\noindent\textbf{Modeling Choices and Assumptions}  We model the system dynamics as Markovian, stochastic, and stationary. Stationary dynamics meaning  given a state and a control the probability of the next state doesn't change over time. Note this is different then the non-stationary distribution over the states the robot encounters during learning. We model the initial state as sampled from a distribution over the state space.
+\noindent\textbf{Modeling Choices and Assumptions}  We model the system dynamics as Markovian, stochastic, and stationary. Stationary dynamics meaning\adnote{this sentence is missing a predicate; Stationary dynamics occur when, given..}  given a state and a control, the probability of the next state doesn't\adnote{does not} change over time. Note this is different then\adnote{from} the non-stationary distribution over the states the robot encounters during learning. \adnote{very good addition here!}
 
-We assume a known state space and set of controls. We assume access to a robot or simulator, such that we  can sample from the state sequences induced by a sequence of controls.   Lastly, we assume access to a supervisor who can, given a state, provide a control signal label. We assume the supervisor can be noisy and imperfect. Noting that the robot cannot surpass the level of performance of the supervisor. 
+We model the initial state as sampled from a distribution over the state space.
+We assume a known state space and set of controls. We also assume access to a robot or simulator, such that we  can sample from the state sequences induced by a sequence of controls.   Lastly, we assume access to a supervisor who can, given a state, provide a control signal label. We assume the supervisor can be noisy and imperfect, noting that the robot cannot surpass the level of performance of the supervisor. \adnote{not in general just in our work}
 
+\adnote{again, this would be better at the same time with introducing the basic notation, like states and controls, so that you can state mathematically what these mean; for instance, you restate the markovian modelling anyway}
 
 \noindent\textbf{Policies and State Densities.}
 Following conventions from control theory, we denote by $\mathcal{X}$ the set consisting of observable states for a robot task, consisting, for example, of \mlnote{We should discuss if we are going to consider images states or not}
 high-dimensional vectors corresponding to images from a camera, or robot joint angles and object poses in the environment.
 We furthermore consider a set $\mathcal{U}$ of allowable control inputs for the robot, which can be discrete or
-continuous. We model dynamics, as Markovian, such that the probability of state $\mathbf{x_{t+1}}\in
+continuous. We model dynamics as Markovian, such that the probability of state $\mathbf{x_{t+1}}\in
 \mathcal{X}$ can be determined from the previous state $\mathbf{x}_t\in\mathcal{X}$ and control input $\mathbf{u}_t\in
 \mathcal{U}$: 
 $$p(\bx_{t+1}|\bu_{t},\bx_{t}, \ldots, \bu_{0}, \bx_{0})=p(\bx_{t+1}|\bu_{t}, \bx_t)$$
@@ -275,16 +281,16 @@ Therefore, when 'rolling out' trajectories under a policy
 $\pi_{\theta}$, we utilize the robot or a simulator to sample the resulting stochastic trajectories rather than
 estimating $p(\bx|\theta)$ itself.
 
-\noindent\textbf{Objective.} The objective of  policy learning is to find a policy that minimizes some known cost function $C(\hat{\tau}) = \sum^T_{t=1} c(\bx_t,\bu_t)$ of a trajectory $\hat{\tau}$. The cost function $c:\mathcal{X}\times \mathcal{U}\to \mathbb{R}$ is typically user defined and task specific. 
+\noindent\textbf{Objective.} The objective of  policy learning is to find a policy that minimizes some known cost function $C(\hat{\tau}) = \sum^T_{t=1} c(\bx_t,\bu_t)$ of a trajectory $\hat{\tau}$. The cost $c:\mathcal{X}\times \mathcal{U}\to \mathbb{R}$ is typically user defined and task specific. 
 For example, in the task of inserting a peg into a hole, a function on the distance between the peg's current and desired final state can
-be considered \cite{levine2015end}.  
+be considered \cite{levine2015end}.  \adnote{can be considered? like you'll allow it? maybe For example, in the task... , the cost function could be ...}
 
-However in this case, we do not have access to the cost function itself. Instead, we only have access to 
-a supervisor that can achieve a desire level of performance on the task.  We are furthermore given
+In our problem, we do not have access to the cost function itself. Instead, we only have access to 
+a supervisor that can achieve a desire\adnote{d} level of performance on the task. \adnote{furthermore doesnt make sense here because the supervisor is providing these; say instead The supervisor provides the robot an initial set..} We are furthermore given
 an initial set of $N$ stochastic demonstration trajectories $\lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
-which are the result of the supervisor applying this policy. This induces a training dataset $\mathcal{D}$ of all state-control input pairs from the demonstrated trajectories. 
+which are the result of the supervisor applying this policy. This induces a training data set $\mathcal{D}$ of all state-control input pairs from the demonstrated trajectories. 
 
-We define a `surrogate' loss function $l:\mathcal{U}\times \mathcal{U}\to \mathbb{R}$, which provides a distance
+We define a `surrogate' loss function \adnote{as in \cite{ross2010reduction}, }$l:\mathcal{U}\times \mathcal{U}\to \mathbb{R}$, which provides a distance
 measure between any pair of control values. In the continuous case, we consider $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2$,
 while in the discrete case $l(\bu_0,\bu_1) = 1$ if $\bu_0 \neq \bu_1$ and $l(\bu_0, \bu_1)=0$ otherwise.
 
@@ -299,12 +305,12 @@ Following \cite{ross2010reduction}, our objective is to find a policy $\pi_{\the
 \begin{align}\label{eq:LFD_obj}
 \underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))]
 \end{align}
-with $p(\bx|\theta)$ from Eq. \ref{eq:density}.
+with $p(\bx|\theta)$ from Eq. \ref{eq:density}.\adnote{fix}
 
  If the robot could learn the policy  perfectly, this state density would match the one encountered in user examples. But if the robot makes an error, that error changes the distribution of states that the robot will visit, which can lead to states that are far away from any examples and difficult to generalize to \cite{pomerleau1989alvinn}.This motivates iterative algorithms like DAgger, which iterate between learning a policy and the supervisor providing feedback. The feedback is in the form of control signals on states sampled from the robot's new distribution of states. 
 
 \section{Risky and Safe States}
-
+\adnote{I don't like the flow of this coming before the algorithm. You can understand the algorithm without understanding the specifics of risk, but here I read this and still don't know how the algorithm is going to work and it's like keeping me in (bad) suspense until the next section. It also breaks flow because the last section set up the optimization problem that shiv and dagger are solving}
 \begin{figure*}[t]
 \centering
 
@@ -316,8 +322,8 @@ with $p(\bx|\theta)$ from Eq. \ref{eq:density}.
 
 
 
-Providing correct control inputs or ``labeling'' for all states encountered at each
-iteration can impose a large burden on the supervisor.
+Providing correct control inputs for (or ``labeling'')  all states encountered at each
+iteration can impose a large burden on the supervisor.\adnote{but you haven't described the algorithm yet so how am i supposed to know what that means; this is no longer intro land so stuff should be precise not handwavy; that is why this section doesnt fit here}
 Instead of asking the supervisor for labels at all visited states, SHIV uses a measure of risk to actively decide whether a label is necessary. 
 
 In contrast to the standard measure risk based purely on variance, we define a state as "risky" for 2 reasons: 1) it lies in an area with a low density of
@@ -458,7 +464,7 @@ All experiments were run on a machine with OS X with a 2.7 GHz Intel core i7 pro
 
 We compare SHIV and DAgger in three domains: a driving simulator, push-grasping in clutter with a 4DOF arm, and surgical needle insertion using demonstrations from Dr. Douglas Boyd, a surgeon and professor at UC Davis. Each domain test different aspects of our algorithm: the driving simulator has a high dimensional visual state space, grasping in clutter has a human demonstrator provide the labels and is a challenging manipulation problem, surgical needle insertion uses data from a real robot and has an expert demonstrator. 
 
-We then  compare our query selection method with those typically used in active learning. We show that for a non-stationary state distribution like ours, the notion of risk based on novelty and misclassified regions performs better than a confidence and query-by-committee based methods. We continue with a sensitivity analysis, which suggests that the performance of SHIV is robust to the choice of how risky the robot is allowed to be (the $\sigma$ parameter from Eq. \ref{eq:decision_func}).
+We then  compare our query selection method with those typically used in active learning. We show that for a non-stationary state distribution like ours, the notion of risk based on novelty and misclassified regions performs better than a confidence and query-by-committee based methods.\adnote{also: We also test whether SHIV actually benefits from measuring both forms of risk (novelty and ???).} We continue with a sensitivity analysis, which suggests that the performance of SHIV is robust to the choice of how risky the robot is allowed to be (the $\sigma$ parameter from Eq. \ref{eq:decision_func}).
 
 
 
@@ -568,7 +574,9 @@ terms of Euclidean distance in translational component, which is in centimeters.
 
 \subsection{SHIV Analysis}\label{sec:car}
 
-\subsubsection{Comparison to active learning approaches.}\
+
+
+\subsubsection{Comparison to active learning approaches.}
 
  We compare four active learning methods. We compare our combined notion of risk (Fig. \ref{fig:support_example}(d)), with risk based on novelty alone (Fig. \ref{fig:support_example}(c)) in order to test whether carving out regions that have been misclassified previously is valuable. 
 
