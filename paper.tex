@@ -43,6 +43,7 @@
 \usepackage{subfigure}
 \usepackage{benktools}
 \usepackage{bbm}
+\renewcommand{\baselinestretch}{.5}
 
 \usepackage{caption}
 \usepackage{epstopdf}
@@ -104,7 +105,7 @@
 
 
 \newboolean{include-notes}
-\setboolean{include-notes}{true}
+\setboolean{include-notes}{false}
 \newcommand{\adnote}[1]{\ifthenelse{ \boolean{include-notes}}%
  {\textcolor{blue}{\textbf{AD: #1}}}{}}
  
@@ -114,18 +115,19 @@
   \newcommand{\mlnote}[1]{\ifthenelse{ \boolean{include-notes}}%
  {\textcolor{purple}{\textbf{ML: #1}}}{}}
 
-\renewcommand{\baselinestretch}{.99}
+\renewcommand{\baselinestretch}{.92}
 
 
 %\title{Iterative Imitation Learning with Reduced Human Supervision [v11]}
 %\title{SHIV:  Reducing Human Supervision for Robot Active Learning [v11]}
 
-\title{SHIV: Reducing Supervisor Burden using Support Vectors to Efficiently Learn Robot Control Policies from Demonstrations [v21]}
+\title{SHIV: Reducing Supervisor Burden using Support Vectors for Efficient
+Learning from Demonstrations in High Dimensional State Spaces }
 
 
 
-\author{Michael Laskey$^1$, Sam Staszak$^3$, Wesley Yu-Shu Hsieh$^1$, Jeffrey Mahler$^1$, \\ Florian T. Pokorny$^1$, Anca D. Dragan$^1$, and Ken Goldberg$^{1,2}$% <-this % stops a space
-\thanks{$^1$ Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey,iamwesleyhsieh, ftpokorny, anca\}@berkeley.edu}}%
+\author{Michael Laskey$^1$, Sam Staszak$^1$, Wesley Yu-Shu Hsieh$^1$, Jeffrey Mahler$^1$, \\ Florian T. Pokorny$^1$, Anca D. Dragan$^1$, and Ken Goldberg$^{1,2}$% <-this % stops a space
+\thanks{$^1$ Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey,iamwesleyhsieh,ftpokorny,anca\}@berkeley.edu, \small staszass@rose-hulman.edu} }%
 \thanks{$^2$ Department of Industrial Engineering and Operations Research; {\small goldberg@berkeley.edu}}%
 \thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
 }
@@ -154,9 +156,9 @@ algorithm (Svm-based reduction in Human InterVention), which reduces this burden
 \section{Introduction} 
 
 
-In model-free robot Learning from Demonstration (LfD), a robot learns to perform a task, such as driving or grasping an object in a cluttered environment, from examples provided by a  supervisor, usually a human.  In such problems, the robot does not have access to either the cost function that it should optimize, nor the dynamics model. The former occurs when it is difficult to specify how to trade-off various aspects that matter, like when the robot is reaching for a goal object while not pushing objects off a table.  The latter occurs when either the system or the interaction with the world is difficult to characterize based on observations, as in Fig. \ref{fig:teaser}(a) the robot drives on the track but only has access to visual information from a bird's eye view.\adnote{these are both pretty bad examples; i'd use the typical driving example for the first point, taken from abeeel and ng, and i'd use the pushing for the second point, because it is very hard to write down accurate dynamics models for pushing -- took Mehmet 3 years to do push grasping with a single object, still can't do with arbitrary objects; Jen uses Box2d but the real world is uncertain; it's a perfect example in whihc writing down the dynamics model is very difficult;} 
+In model-free robot Learning from Demonstration (LfD), a robot learns to perform a task, such as driving or grasping an object in a cluttered environment, from examples provided by a  supervisor, usually a human.  In such problems, the robot does not have access to either the cost function that it should optimize, nor the dynamics model. The former occurs when it is difficult to specify how to trade-off various aspects that matter, like a car trying to drive on the road and dodge other cars \cite{abbeel2004apprenticeship}.  The latter occurs when either the system or the interaction with the world is difficult to characterize like when a robot is trying to grasp an object in clutter and doesn't have an accurate model of the objects dynamics. 
 
-Rather than explicitly learning the cost function, like in Inverse Reinforcement Learning \cite{ng2000algorithms}, and the dynamics model, and then using optimization to produce a policy for the task, in model-free LfD the robot learns the policy directly from supervisor examples mapping states to controls~\cite{argall2009survey}. 
+Rather than explicitly learning the cost function, like in Inverse Reinforcement Learning \cite{ng2000algorithms}, and the dynamics model, and then using optimization to produce a policy for the task, in model-free LfD the robot learns the policy directly from supervisor examples mapping states to controls~\cite{argall2009survey}. Learning from demonstration has been used successfully in recent year for a large number of robotic tasks, including helicopter maneuvering \cite{abbeel2007application},car parking \cite{abbeel2008apprenticeship},  and robotic surgery \cite{van2010superhuman}. 
 
  
 
@@ -165,10 +167,10 @@ Rather than explicitly learning the cost function, like in Inverse Reinforcement
 \centering
    
 \includegraphics[width=0.5\textwidth]{figures/teaser.pdf}
-\caption{ 
+\caption{ \footnotesize
 SHIV  reduces the number of queries to the supervisor in our three test domains: a) a driving simulator where the goal is to learn a controller on HOG features extracted from synthetic images to keep a car on a polygonal track; b) push-grasping in clutter in a physics simulator, where the goal is to learn a controller from human demonstrations to grasp the green object while not letting the red square objects fall off the gray boundary representing a table; c) learning a controller for the Da Vinci Research Kit from a master surgeon's demonstrations of correcting a needle before suturing in surgery; d) normalized performance of SHIV and DAgger's policy on the grasping in clutter example versus states labeled by the supervisor.
 }
-\vspace*{-10pt}
+\vspace*{-20pt}
 \label{fig:teaser}
 \end{figure}
 
@@ -183,14 +185,14 @@ In offline LfD, the robot learns the policy based on a batch of examples, and th
 
 Online LfD addresses this issue by iteratively gathering more examples from the supervisor in states the robot encounters~\cite{grollman2007dogged,ross2010efficient,ross2010reduction}. One such algorithm, DAgger, learns a series of policies. At each iteration, the robot trains a policy based on the existing examples, then rolls out (executes) that policy, and the supervisor provides demonstrations for all states the robot visits. The new state/control examples are aggregated with the old examples for the next iteration. DAgger and related algorithms have been applied in a wide range of applications, from quadrotor flight to natural language to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}. In DAgger, under certain conditions, the number of errors scales only linearly with the time horizon of the task\cite{ross2010reduction}.
 
-However one drawback is that DAgger significantly increases the burden on the supervisor, who now labels all states that the robot visits during training.  Our goal is to reduce supervisor burden without degrading robot performance.
+However one drawback is that DAgger significantly increases the burden on the supervisor, who now labels all states that the robot visits during training.  Our goal is to reduce supervisor burden without degrading performance.
 
 Our key insight is that the robot only needs to request demonstrations for risky states. Risk arises because:  (1) states are sufficiently different than the states previously encountered, i.e., they can be considered novel or outliers~\cite{hodge2004survey}; or (2) states are in a region that has been misclassified in previous training data.
 %\adnote{Ken's version below does not seem to represent what we actually do.}
 %the action associated with a state under the current policy yield a resulting state that is inconsistent with the expected next state. [how do we measure 2? - Ken]
 
 
-We present an algorithm for online learning from demonstration that can actively decide whether it is necessary to ask the supervisor to label the new states that the robot encounters. SHIV  (Svm-based reduction in Human InterVention) reduces supervisor burden by only requesting supervision for risky states. SHIV uses stream-based active learning with a query selection method that evaluates risk in a manner tailored to the non-stationary state distributions the robot encounters as it iteratively executes learned policies. We build on the One Class SVM method for approximating quantile level sets \cite{scholkopf2001estimating} to provide a classification method for deciding if a state is risky or safe.
+We present an algorithm for online LfD that can actively decide whether it is necessary to ask the supervisor to label the new states that the robot encounters. SHIV  (Svm-based reduction in Human InterVention) reduces supervisor burden by only requesting supervision for risky states. SHIV uses stream-based active learning with a query selection method that evaluates risk in a manner tailored to the non-stationary state distributions the robot encounters as it iteratively executes learned policies. We build on the One Class SVM method for approximating quantile level sets \cite{scholkopf2001estimating} to provide a classification method for deciding if a state is risky or safe.
 
 
 \adnote{nothing about experiements and resutls? how do i know if it worked? also how do i know that you didn;t just compare to dagger, but ran an indepth analysis of the algorithm? i thought i put a paragraph like that here at some point}
@@ -198,7 +200,7 @@ We present an algorithm for online learning from demonstration that can actively
 
 
 \section{Related Work}
-Below we summarize related work in active approaches to robot learning from demonstration and risk evaluation techniques.
+Below we summarize related work in active approaches to robot LfD and risk evaluation techniques.
 
 \noindent\textbf{Active Learning from Demonstration}
 We formulate applying active learning to Online Lfd as a stream-based active learning problem ~\cite{atlas1990training,cohn1994improving}. In stream based active learning, the decision of whether to query the supervisor (for a label or control signal) or not is not over the entire state space (like in traditional pool-based active learning), but on states drawn one at a time from some data stream. In  online LfD, this data stream is the states encountered when the robot is executing the current best policy.
@@ -213,13 +215,12 @@ The problem lies in being estimator-centric. The  estimator is a function of the
 %%In SHIV, we use a query selection method that allows for a non-stationary distribution, evaluating risk based on novelty (is the state an outlier to the training distribution), as in Fig. \ref{fig:support_example}(c). Additionally, we also assign higher risk to  historically mislabeled regions, as in Fig. \ref{fig:support_example}(d). We then use a classification method based on the One Class SVM \cite{scholkopf2001estimating} to predict if a state is risky or not risky, which we we define as safe.%Our approach builds on the One Class SVM method for approximating quantile level sets \cite{}, which has already been used in novelty detection on high-dimensional image data \cite{}. 
 
 
-\adnote{replace learning from demonstration with LfD from here onwards}
-
-\noindent\textbf{Risk via Novelty Detection.}
+\noindent\textbf{Risk via Novelty Detection}
 The main motivation for our risk definition is the notion that a trained model will be able to generalize within the distribution it is
 trained on \cite{tokdar2010importance}, making states outside of this distribution risky. Novelty detection \cite{hodge2004survey} is concerned with recognizing when this happens: recognizing that a sample is outside of this distribution.
 
-One approach to novelty detection is to directly estimate the underlying probability density function from which the data is sampled. If the probability of that point is low with respect to the underlying density, it will be marked as novel. However, the amount of data needed to accurately do so scales exponentially in the number of dimensions \cite{nadaraya1964estimating}.
+Our work builds on Kim et al. \cite{kim2013maximum} who apply novelty detection for safe online learning from demonstrations to enable a supervisor to take over and prevent unsafe states.  In their MMD-LI algorithm, risk is evaluated with Maximal Mean Discrepancy, which for a single point is the sum of a kernel density estimate and variance on the dataset, which works well in low dimensional state spaces.  MMD-LI also reduces supervisor burden because the supervisor only takes control and provides demonstrations in risky states. However, having the supervisor take over can bias the states sampled, which can in practice lead to a loss in performance \cite{ross2010reduction}.  In contrast, we focus on active learning for online LfD for high-dimensional state spaces, do not assume the supervisor is always available, and propose an alternative to non-parametric density estimation which can require data exponential in the dimension of the state-space
+\cite{nadaraya1964estimating}.
 
 An alternative to evaluating the probability of a data point is to measure distance to its nearest neighbors \cite{knox1998algorithms}. However, this approach was shown to be
 susceptible to issues, since nearest neighbors  incorporates only local information about the data. For example, a group of outliers can be close together, but significantly far from the majority of the data and nearest neighbors would mark them as not novel \cite{hodge2004survey}.
@@ -278,19 +279,18 @@ $\pi_{\theta}$, we utilize the robot or a simulator to sample the resulting stoc
 estimating $p(\bx|\theta)$ itself.
 
 \noindent\textbf{Objective.} The objective of  policy learning is to find a policy that minimizes some known cost function $C(\hat{\tau}) = \sum^T_{t=1} c(\bx_t,\bu_t)$ of a trajectory $\hat{\tau}$. The cost $c:\mathcal{X}\times \mathcal{U}\to \mathbb{R}$ is typically user defined and task specific. 
-For example, in the task of inserting a peg into a hole, a function on the distance between the peg's current and desired final state can
-be used \cite{levine2015end}.  
+For example, in the task of inserting a peg into a hole, a function on distance between the peg's current and desired final state is used \cite{levine2015end}.  
 
 In our problem, we do not have access to the cost function itself. Instead, we only have access to 
-a supervisor that can achieve a desired} level of performance on the task. The supervisor provides the robot an initial set
+a supervisor that can achieve a desired level of performance on the task. The supervisor provides the robot an initial set
 an initial set of $N$ stochastic demonstration trajectories $\lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
 which are the result of the supervisor applying this policy. This induces a training data set $\mathcal{D}$ of all state-control input pairs from the demonstrated trajectories. 
 
 We define a `surrogate' loss function as in \cite{ross2010reduction}, $l:\mathcal{U}\times \mathcal{U}\to \mathbb{R}$, which provides a distance
-measure between any pair of control values. In the continuous case, we consider $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2$,
+measure between any pair of control values. In the continuous case, we consider $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2_2$,
 while in the discrete case $l(\bu_0,\bu_1) = 1$ if $\bu_0 \neq \bu_1$ and $l(\bu_0, \bu_1)=0$ otherwise.
 
-Given a candidate policy $\pi_{\theta}$, we then use the surrogate loss function to approximately measure how "close" the policy's
+Given a candidate policy $\pi_{\theta}$, we then use the surrogate loss function to approximately measure how `close' the policy's
 returned control input $\pi_{\theta}(\bx)\in \mathcal{U}$ at a given state $\bx\in \mathcal{X}$ is to the supervisor's policy's control output
 $\tilde{\pi}(\bx)\in \mathcal{U}$. The goal is to produce a policy that minimizes the surrogate loss relative to the supervisor's policy.
 
@@ -301,9 +301,8 @@ Following \cite{ross2010reduction}, our objective is to find a policy $\pi_{\the
 \begin{align}\label{eq:LFD_obj}
 \underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))]
 \end{align}
-with $p(\bx|\theta)$ from Eq. \ref{eq:density}.
 
- If the robot could learn the policy  perfectly, this state density would match the one encountered in user examples. But if the robot makes an error, that error changes the distribution of states that the robot will visit, which can lead to states that are far away from any examples and difficult to generalize to \cite{pomerleau1989alvinn}.This motivates iterative algorithms like DAgger, which iterate between learning a policy and the supervisor providing feedback. The feedback is in the form of control signals on states sampled from the robot's new distribution of states. 
+ If the robot could learn the policy  perfectly, this state density would match the one encountered in user examples. But if the robot makes an error, that error changes the distribution of states that the robot will visit, which can lead to states that are far away from any examples and difficult to generalize to ~\cite{pomerleau1989alvinn}.This motivates iterative algorithms like DAgger, which iterate between learning a policy and the supervisor providing feedback. The feedback is in the form of control signals on states sampled from the robot's new distribution of states. 
 
 \section{Risky and Safe States}
 
@@ -312,7 +311,8 @@ with $p(\bx|\theta)$ from Eq. \ref{eq:density}.
 
 \includegraphics[width=\textwidth]{figures/active_learning.pdf}
 
-\caption{A comparison of different query selection strategies for active learning on a non-stationary distribution. The shaded and empty circles are training data from two classes, $1$ and $0$ respectively. The red empty circles are samples from a new distribution (produced by executing the learned policy), and belong to class $0$. Typical strategies classify states close the decision boundary as risky(a), or for which a set of estimators disagree (b). Neither of these apply to our new samples in red. In contrast, we use a strategy that is amenable to non-stationary distributions by classifying  novel states as safe (i.e not risky) (c) and states in historically mislabeled regions. }
+\caption{\footnotesize A comparison of different query selection strategies for active learning on a non-stationary distribution. The shaded and empty circles are training data from two classes, $1$ and $0$ respectively. The red empty circles are samples from a new distribution (produced by executing the learned policy), and belong to class $0$. Typical strategies classify states close the decision boundary as risky(a), or for which a set of estimators disagree (b). Neither of these apply to our new samples in red. In contrast, we use a strategy that is amenable to non-stationary distributions by classifying  novel states as safe (i.e not risky) (c) and states in historically mislabeled regions. }
+\vspace*{-20pt}
 \label{fig:support_example}
 \end{figure*}
 
@@ -324,11 +324,11 @@ Instead of asking the supervisor for labels at all visited states, SHIV uses a m
 
 In contrast to the standard measure risk based purely on variance, we define a state as "risky" for 2 reasons: 1) it lies in an area with a low density of
 previously trained states, which can cause the current policy to mis-predict the supervisor and incur high surrogate
-loss \cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the state is unlikely to model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe" .Our definition of risk can be visualized in Fig. \ref{fig:support_example}(d).  
+loss~\cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the state is unlikely to model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe" .Our definition of risk can be visualized in Fig. \ref{fig:support_example}(d).  
 
-The amount of data needed to estimate the density, scales exponentially in the dimension of the state space \cite{nadaraya1964estimating}. 
-Thus, to evaluate risk in high-dimensional state spaces , such as the HOG features in our driving simulator, Fig. \ref{fig:teaser}(a), we use
-a modified version of the technique known as the One Class SVM that  estimates a regularized boundary of a user defined quantile on the training data in $\mathcal{X}$ \cite{scholkopf2001estimating}.
+The amount of data needed to estimate the density, scales exponentially in the dimension of the state space~\cite{nadaraya1964estimating}. 
+Thus, to evaluate risk in high-dimensional state spaces, such as the HOG features in our driving simulator, Fig. \ref{fig:teaser}(a), we use
+a modified version of the technique known as the One Class SVM that  estimates a regularized boundary of a user defined quantile on the training data in $\mathcal{X}$~\cite{scholkopf2001estimating}.
 %\fpnote{Refer to figure, replace "one way to do"  by "an approach to this problem is to" or similar - less informal}
 
 
@@ -377,7 +377,7 @@ if $x$ lies strictly in the quantile sub-levelset.
 
 
 The dual form of the optimization yields a Quadratic Program 
-that has worst case computational complexity of $O(n^3)$. However, Sch{\"o}lkopf et al. developed an improved optimization method that has empirically been shown to be as low as $O(n^2)$ \cite{scholkopf2001estimating}. In the dual, the decision function is given by $g(\bx) = \mbox{sgn}(\sum^N_{i=1}\alpha_i k(\bx_i,\bx)-\rho)$ where $\alpha_i$ corresponds to the dual variables.  The novelty detection method can be visualized in Fig. \ref{fig:support_example}(c). 
+that has worst case computational complexity of $O(n^3)$. However, Sch{\"o}lkopf et al. developed an improved optimization method that has empirically been shown to scale quadratically \cite{scholkopf2001estimating}. In the dual, the decision function is given by $g(\bx) = \mbox{sgn}(\sum^N_{i=1}\alpha_i k(\bx_i,\bx)-\rho)$ where $\alpha_i$ corresponds to the dual variables.  The novelty detection method can be visualized in Fig. \ref{fig:support_example}(c). 
 However, even when sufficient data is available, the associated control inputs may be inconsistent or noisy and a resulting policy
 optimizing Eq. \ref{eq:super_objj} may still incur a large surrogate loss. To account for this, we propose a
 modification to the One Class SVM:
@@ -397,25 +397,28 @@ case, $\varepsilon$ is a user defined threshold specifying allowable surrogate l
 We use $y_i$ to modify the One Class SVM decision function as follows: 
 
 
-We divide up our data in to two sets those correctly classified: $\mathcal{D}_{s}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y=1\}$ and those states incorrectly classified: $\mathcal{D}_{r}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y=-1\}$
+We divide up our data in to two sets those correctly classified: $\mathcal{D}_{s}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y_i=1\}$ and those states incorrectly classified: $\mathcal{D}_{r}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y_i=-1\}$
 A separate One-Class SVM is then trained on each set of states, ($D_{s}$ and $D_{r}$) and providing measures of the level sets, $g_{s}$ and $g_{r}$. Specified by parameters $(\nu,\sigma)$ and $(\nu_r,\sigma_r)$, respectively. 
 
 We then define the overall decision function as:
 
 \vspace{-2ex}
 \begin{align}\label{eq:decision_func}
-g_{\sigma}(\bx) = g_{r} (\bx)+ g_{s}(\bx)
+g_{\sigma}(\bx) = \left\{
+     \begin{array}{ll}
+         0 & : g_s(\bx) == 1 \: \mbox{and} \: g_r(\bx) == -1\\
+         -1 & : \mbox{otherwise}
+     \end{array}
+   \right.
 \end{align}
 points are deemed risky if $g_{\sigma}(\bx) \neq 0$.  Practically, this modification corresponds to
 `carving out holes' in the estimated quantile super-levelset such that neighborhoods around states with $y_i=-1$ are
 excluded from the super-levelset. An illustration of this can be seen in Fig. \ref{fig:support_example}(d).
 
 
+The decision function parametrization consists of the kernel bandwidth $\sigma$ in $g_s$. We treat $\sigma$ as a "risk sensitivity" parameter. For two reasons: 1)The expected number of examples, after a policy roll out, the supervisor can be asked is  $T*\int_\bx \mathbf{1}(g_{\sigma}(\bx) == 0) p(\bx|\theta)d\bx$. Thus, smaller $\sigma$ corresponds to asking for more examples. 2) A relation exists between how smooth the supervisor's policy, $\tilde{\pi}$ and how many examples are needed to learn it. Thus, a large $\sigma$ can be dangerous for policies with sharp variation because it will treat points as safe that are really risky. 
 
-
-The decision function parametrization consists of the kernel bandwidth $\sigma$ in $g_s$. We treat $\sigma$ as a "risk sensitivity" parameter. For two reasons: 1)The expected number of examples, after a policy roll out, the supervisor can be asked is  $T*\int_\bx \mathbbm{1}(g_{\sigma}(\bx) == 0) p(\bx|\theta)d\bx$. Thus, smaller $\sigma$ corresponds to asking for more examples. 2) A relation exists between how smooth the supervisor's poilcy, $\tilde{\pi}$ and how many examples are needed to learn it. Thus, a large $\sigma$ can be dangerous for policies with sharp variation because it will treat points as safe that are really risky. 
-
-\section{SHIV} \label{sec:SHIV}
+\section{SHIV:Svm-based reduction in Human InterVention} \label{sec:SHIV}
 
 Both SHIV and DAgger \cite{ross2010reduction} solve the minimization in Eq. \ref{eq:LFD_obj} by iterating two steps: 1) compute a $\theta$ using the training data $\mathcal{D}$ thus far, and 2) execute the policy induced by the current $\theta$, and ask for labels for the encountered states. However, instead of querying the supervisor for every new state, SHIV actively decides whether the state is risky enough to warrant a query. 
 
@@ -456,9 +459,9 @@ to set $\beta = 0$ to avoid biasing the sampling~\cite{NIPS2014_5421,ross2010red
 \section{Experiments}
 
 All experiments were run on a machine with OS X with a 2.7 GHz Intel core i7 processor and 16 GB
-1600 MHz memory in Python 2.7. The policies, $\pi_\theta$ are either the linear SVM or  kernelized ridge regression classes in Scikit-Learn~\cite{scikit-learn}. Our modified One Class SVM contains two different $\nu$ parameters, $\nu$ and $\nu_r$. We set $\nu = 0.1$ and $\nu_r =10^{-3}$ for all experiments. We tuned $\sigma$ and $\sigma_r$ by performing a grid search over different values on the surrogate loss for a single trial of SHIV for 3 iterations for each domain.
+1600 MHz memory in Python 2.7. The policies, $\pi_\theta$ are trained using Scikit-Learn~\cite{scikit-learn}. Our modified One Class SVM contains two different $\nu$ parameters, $\nu$ and $\nu_r$. We set $\nu = 0.1$ and $\nu_r =10^{-3}$ for all experiments. We tuned $\sigma$ and $\sigma_r$ by performing a grid search over different values on the surrogate loss for a single trial of SHIV for 3 iterations.
 
-We compare SHIV and DAgger in three domains: a driving simulator, push-grasping in clutter with a 4DOF arm, and surgical needle insertion using demonstrations from Dr. Douglas Boyd, a surgeon and professor at UC Davis. Each domain test different aspects of our algorithm: the driving simulator has a high dimensional visual state space, grasping in clutter has a human demonstrator provide the labels and is a challenging manipulation problem, surgical needle insertion uses data from a real robot and has an expert demonstrator. 
+We compare SHIV and DAgger in three domains: a driving simulator, push-grasping in clutter with a 4DOF arm, and surgical needle insertion using demonstrations from Dr. Douglas Boyd, a surgeon and professor at UC Davis. Each domain test different aspects of our algorithm: the driving simulator has a high dimensional visual state space, grasping in clutter has a human demonstrator provide the labels and is a challenging manipulation problem, surgical needle insertion uses data from a real robot. 
 
 We then  compare our query selection method with those typically used in active learning. We show that for a non-stationary state distribution like ours, the notion of risk based on novelty and misclassified regions performs better than confidence, query-by-committee based methods and the One Class SVM with out the hole carving out modification. We continue with a sensitivity analysis, which suggests that the performance of SHIV is robust to the choice of how risky the robot is allowed to be (the $\sigma$ parameter from Eq. \ref{eq:decision_func}).
 
@@ -468,7 +471,7 @@ We then  compare our query selection method with those typically used in active 
 \subsection{Comparing SHIV with DAgger}
 We compare SHIV with DAgger on three domains: the driving simulator from above, push-grasping in clutter, and needle insertion. We hypothesize that SHIV achieves the same performance as DAgger, but by asking for fewer examples and thus reducing supervisor burden.
 
-The independent variables are two variables. First, we manipulate the online learning from demonstration algorithm we use: SHIV vs. DAgger. Second, we manipulate how many examples the algorithms are allowed to ask for: we set a budget of labeled states, and analyze performance as this budget increases.
+The independent variables are two variables. First, we manipulate the online LfD algorithm we use: SHIV vs. DAgger. Second, we manipulate how many examples the algorithms are allowed to ask for: we set a budget of labeled states, and analyze performance as this budget increases.
 
 For each algorithm and budget of states labeled, we measure the normalized performance (e.g. 1 corresponds to matching the supervisor's performance on a task). Performance is a domain specific term, such as number of times the car crashes in the driving simulator. 
 
@@ -498,8 +501,8 @@ results from these experiments, suggesting a $71\%$ reduction in the number of q
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/dagger_shiv_one_class.eps}
-\caption{We compare normalized performance (i.e. matching the performance of the supervisor) for the Driving Simulator , performance is defined as the number of times the car left the track versus the number of queries made to the supervisor. We plot the performance of DAgger and SHIV, the teal and orange lines. We also plot the performance of our supervisor, who makes non-optimal decisions and has an average performance of 5.4 crashes. Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $71\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
-\vspace*{-10pt}
+\caption{ \footnotesize We compare normalized performance (i.e. matching the performance of the supervisor) for the Driving Simulator , performance is defined as the number of times the car left the track versus the number of queries made to the supervisor. We plot the performance of DAgger and SHIV, the teal and orange lines. We also plot the performance of our supervisor, who makes non-optimal decisions and has an average performance of 5.4 crashes. Initial results, which are run for 6 iterations each and are averaged over 40 levels, shown in Fig. \ref{fig:car_cost} suggest an $71\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
+\vspace*{-20pt}
 \label{fig:car_cost}
 \end{figure}
 
@@ -518,15 +521,15 @@ gripper. The control inputs are hence modeled by the set $\mathcal{U} = \lbrace 
 
 A state $\bx\in \mathcal{X}$ consisted of the 3 dimensional pose of the six objects on the table (translation and rotation), the 3 joint angles of the arm and a scalar value in the range $[0,1]$ that measured the position of the gripper, $1$ being fully closed and $0$ being opened. For our representation of $\pi_{\theta}$, we used kernelized ridge regression with the radial basis function as the kernel with the default Sci-Kit learn parameters. We defined performance as the sum of the number of objects knocked off the table plus $10$ times the binary value indicating if the object is grasped or not. The order of magnitude difference in cost for grasping the object is to place emphasize on that portion of the task. The bandwidth parameters for SHIV were set to $\sigma_r = 5$ and $\sigma = 6$. For the $\epsilon$ term in the our risk method, we used the median in regression error which was the L2 distance between the predicted control and the true supervisor's control. 
 
-In our experiment, a human demonstrator provided one demonstration and then iterated until the performance was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is equal to $3\%$ of the width of the table. 
+In our experiment, a human demonstrator provided one demonstration and then iterated until the performance was zero during the policy roll out. At each iteration, we sampled the pose of the target object from an isotropic Gaussian with a standard deviation that is  $3\%$ of the width of the table. 
 
  In Fig. \ref{fig:grasp_cost} , we show the normalized performance averaged over 8 rounds for SHIV and DAgger. Supporting our hypothesis, our results suggests that SHIV can achieve the same performance with a 64\% reduction in the number of examples needed.
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/grasp_clutter.eps}
-\caption{We compare normalize performance (i.e. mathcing the performance of the supervisor) for Grasping in Clutter domain, performance is defined as the sum of the number of objects knocked off the table plus 10 times the binary value indicating if the object is grasped or not. Initial results, which are averaged over 8 different trials suggest a $64\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
-\vspace*{-10pt}
+\caption{ \footnotesize We compare normalize performance (i.e. mathcing the performance of the supervisor) for Grasping in Clutter domain, performance is defined as the sum of the number of objects knocked off the table plus 10 times the binary value indicating if the object is grasped or not. Initial results, which are averaged over 8 different trials suggest a $64\%$ reduction in the number of queries needed for SHIV compared to DAgger,}
+\vspace*{-20pt}
 \label{fig:grasp_cost}
 \end{figure}
 
@@ -535,17 +538,17 @@ In our experiment, a human demonstrator provided one demonstration and then iter
 
 \subsubsection{Surgical Needle Insertion}
 
-Robotic Surgical Assistants (RSAs) are frequently used for procedures such as: prostectomy, uterectomy, and tumorectomies within the abdominal and thoracic cavities with high success rates~\cite{van2013laparoscopic,darzi2004impact}. Currently, these devices are controlled by surgeons via physical tele-operation at all times; introducing autonomy of surgical sub-tasks has the potential to reduce cognitive load and facilitate supervised autonomy for remote tele-surgerical procedures.
+Robotic Surgical Assistants (RSAs) are frequently used for procedures such as: prostectomy, uterectomy, and tumorectomies within the abdominal and thoracic cavities with high success rates~\cite{van2013laparoscopic,darzi2004impact}. Introducing autonomy of surgical sub-tasks has the potential to reduce cognitive load and facilitate supervised autonomy for remote tele-surgerical procedures.
 
 Suture tying in surgery is a manually intensive task that can occur frequently through out a surgery. One important step
 in suture tying is properly placing a needle in an initial configuration for insertion. Misplacement of this the needle
 can lead to suture failure and potentially rupture the surrounding tissue \cite{liu2015optimal}. In this experiment, we
-are interested in learning a policy to correct bad initial poses to the proper insertion pose as shown in Fig.
+are interested in learning to correct bad initial poses to the proper pose as shown in Fig.
 \ref{fig:support_example}. Dr. Douglas Boyd, a surgeon and professor at UC Davis, provided us with a collection of demonstrations on a Intuitive Surgical Da Vinci Research Kit \cite{AnnualReport2014}.
 
 Dr. Boyd demonstrated a set of trajectories that each started at an initial attempted needle insertion pose $P_0$ and
 applied the necessary corrections to achieve a goal pose $P_G$. The time horizon, $T$ of each trajectory was on average 80.  We used three of these demonstrations as our initial
-dataset $\mathcal{D}_0$, thus $|\mathcal{D}_0| = 240$. In order to study convergence of both SHIV and DAgger, we chose to create a synthetic expert for online learning part. The expert controller computed the transformation between the desired insertion pose and the current pose  by calculating the inverse of a transformation matrix, $C = P_0P_G^{-1}$. Then converted $C$ to the associated lie algebra vector $c \in \mathbb{R}^6$ for $SE(3)$ and normalize it to the average magnitude of the control,  $||\bar{c}_D||$, Dr. Boyd applied to the robot. 
+dataset $\mathcal{D}_0$, thus $|\mathcal{D}_0| = 240$. In order to study convergence of both SHIV and DAgger, we chose to create a synthetic expert for online learning part. The expert controller computed the transformation between the desired insertion pose and the current pose  by calculating the inverse of a transformation matrix, $C = P_0P_G^{-1}$. Then converted $C$ to the associated lie algebra vector $c \in \mathbb{R}^6$ for $SE(3)$ and normalize it to the average magnitude of the control,  $||\bar{c}_D||$, Dr. Boyd applied. 
 
 The policy $\pi_{\theta}$ was represented as kernel ridge regression with the default values given in Sci-Kit learn. The state $\mathcal{X}$ was  a 16 dimensional vector consisting of the elements in the pose $P$ vector. The control space $\mathcal{U}$ was a $\mathbb{R}^6$ vector representing the Lie algebra. 
 
@@ -562,8 +565,8 @@ terms of Euclidean distance in translational component, which is in centimeters.
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/needle_insertion_results.eps}
-\caption{We compare normalized performance (i.e. matching the performance of the supervisor), performance is defined as the euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
-\vspace*{-10pt}
+\caption{ \footnotesize We compare normalized performance (i.e. matching the performance of the supervisor), performance is defined as the euclidean distance between translation in centimeters. In Fig. \ref{fig:car_cost}, we plot the performance of DAgger and SHIV.  Initial results, which are run for 20 iterations each and are averaged over 40 different initial starting positions, shown in Fig. \ref{fig:car_cost} suggest an $67\%$ reduction in the number of queries needed for SHIV compared to DAgger. Error bars in grey measure the standard error on the mean}
+\vspace*{-20pt}
 \label{fig:needle}
 \end{figure}
 
@@ -578,14 +581,14 @@ terms of Euclidean distance in translational component, which is in centimeters.
 
 We also compare against two baselines typically used in active learning. The first is confidence based on distance from the classification hyperplane \cite{tong2002support} (Fig. \ref{fig:support_example}(a)). We set the threshold distance to the average distance from the hyperplane for the mis-classified points in $\mathcal{D}_0$, which consisted of two demonstrations from our solver. 
 
-The second baseline is Query By Committee (Fig. \ref{fig:support_example}(d)), which has a committee of different hypothesis estimators and points are marked risky if the committee disagrees. Our committee which was trained via bagging \cite{breiman1996bagging}.  To obtain a committee, we divided the training data into 3 overlapping subsets, each with 80\% of the data. We trained a Linear SVM on each subset. If the three classifiers agreed with each other the point was determined low risk and if they disagree it was determined high risk. 
+The second baseline is Query By Committee (Fig. \ref{fig:support_example}(d)), which has a committee of different hypothesis estimators and points are marked risky if the committee disagrees. Our committee which was trained via bagging~\cite{breiman1996bagging}.  To obtain a committee, we divided the training data into 3 overlapping subsets, each with 80\% of the data. We trained a Linear SVM on each subset. If the three classifiers agreed with each other the point was determined low risk and if they disagree it was determined high risk. 
 %We finally compared our combined risk approach against the traditional One Class SVM without the "carving out". 
 
-We run each query selection method over 50 different car tracks in the driving simulator domain.
+We compare against another novelty detection method as well called Maximal Mean Discrepancy (MMD), which evaluates how close a point is to the distribution using kernel density estimate and adds the variance of the distribution in the dataset $\mathcal{D}$~\cite{kim2013maximum}.  We set bandwidth of the kernel as the same as our modified One Class SVM and the $\alpha$ decision boundary is set by sorting the MMD value of the states and picking an $\alpha$ such that the lowest $10\%$ are marked as risky. This is in similar spirit to $\nu = 0.1$. 
 
-We measured the percentage of truly risky states, encountered during the first policy roll out, that  are estimated to be safe by the active learning technique. The active learning techniques are trained on the initial demonstrations $\mathcal{D}_0$, which is different then the distribution being sampled from, $p(\bx|\theta_0)$, in this experiment.
+We run each query selection method over 50 different car tracks in the driving simulator domain. We measured the percentage of truly risky states, encountered during the first policy roll out, that  are estimated to be safe by the active learning technique. The active learning techniques are trained on the initial demonstrations $\mathcal{D}_0$, which is different then the distribution being sampled from, $p(\bx|\theta_0)$, in this experiment.
 
- Fig. \ref{fig:active_comp}  plots the performance for each query selection method, averaged over 50 tracks. We observe a significant performance improvement with methods based on novelty compared to confidence and query by committee. Furthermore, using the combined measure of risk performs better than relying solely on novelty. 
+ Fig. \ref{fig:active_comp}  plots the performance for each query selection method, averaged over 50 tracks. We observe a significant performance improvement with methods based on classification based novelty detection compared to confidence,query by committee and MMD. Furthermore, using the combined measure of risk performs better than relying solely on the One Class SVM. 
 
 \subsubsection{Sensitivity Analysis to Risk Sensitivity Parameter}
 
@@ -618,16 +621,16 @@ We measured the percentage of truly risky states, encountered during the first p
    }
 		\tablabel{opt-p-comparison}
 		\label{tab:sens}
-
+\vspace*{-10pt}
 \end{table}
 
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth, height=4cm]{figures/risk_bar.eps}
-\caption {  A comparison of different active learning approaches in terms of the percentage of risky states that are estimated to be safe by the active learning technique during the first policy roll out. We compare against a confidence estimate of distance to hyperplane, query by committee for 3 hypothesis classifiers, the One Class SVM, and our modified One Class SVM, marked as SHIV.  Results  are averaged over 50 tracks and the policy $\pi_\theta$ is represented as a Linear SVM. Error bars measure the standard error on the mean.
+\caption {  \footnotesize A comparison of different active learning approaches in terms of the percentage of risky states that are estimated to be safe by the active learning technique during the first policy roll out. We compare against a confidence estimate of distance to hyperplane,Maximal Mean Discrepancy, query by committee for 3 hypothesis classifiers, the One Class SVM, and our modified One Class SVM, marked as SHIV.  Results  are averaged over 50 tracks and the policy $\pi_\theta$ is represented as a Linear SVM. Error bars measure the standard error on the mean.
    }
-
+\vspace*{-20pt}
 \label{fig:active_comp}
 \end{figure}
 
@@ -636,11 +639,12 @@ We measured the percentage of truly risky states, encountered during the first p
 
 
 \section{Discussions and Future Work}
-Online imitation learning algorithms have been successful on array of tasks~\cite{NIPS2014_5421,ross2010reduction}, however can place significant burden on a supervisor. Our algorithm, SHIV, implements stream-based active learning with a query selection method that evaluates risk in a manner tailored to non-stationary state distributions. We empirically evaluated our method on three different domains: a driving simulator, grasping in clutter and surgical needle insertion. Results suggests up to a $70\%$ reduction in the number of queries to the supervisor. 
+Online LfD have been successful on array of tasks~\cite{NIPS2014_5421,ross2010reduction}, however can place significant burden on a supervisor. Our algorithm, SHIV, implements stream-based active learning with a query selection method that evaluates risk in a manner tailored to non-stationary state distributions. We empirically evaluated our method on three different domains: a driving simulator, grasping in clutter and surgical needle insertion. Results suggests up to a $70\%$ reduction in the number of queries to the supervisor. 
 
 SHIV has several limitations. For instance, the selection of the value of $\sigma$ can affect performance and a poor choice could result in the algorithm becoming offline imitation learning, as shown in Table \ref{tab:sens}. Future work will look at better understanding the relationship of $\sigma$ to the function $\pi_{\theta}$ and how to automatically select it. 
 
- Lastly, online imitation learning only allows a policy to learn to be as good as the supervisor. If the supervisor is imperfect then the robot will be as well. Future work will look at combining techniques from inverse reinforcment learning\cite{argall2009survey} with online imitation learning to allow the robot to further fine-tune the policies.  
+Furthermore, to update the decision function $g_{\sigma}$ requires solving a quadratic program, which has an upper bound computationally complexity of $O(n^3)$ in the number of data points. This can effect the ability of using our modified One Class SVM for larger problems. While, Scholk{\"o}pf et al. provides an efficient optimization that empirically scale quadratically \cite{scholkopf2001estimating} for very large datasets this can still be burdensome. Future work will look at using techniques such as random features or PCA on the kernel Gram matrix to allow for better scaling \cite{scholkopf2002learning}.
+  
  
 
 
