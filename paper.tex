@@ -220,7 +220,7 @@ The main motivation for our risk definition is the notion that a trained model w
 trained on \cite{tokdar2010importance}, making states outside of this distribution risky. Novelty detection \cite{hodge2004survey} is concerned with recognizing when this happens: recognizing that a sample is outside of this distribution.
 
 Our work builds on Kim et al. \cite{kim2013maximum} who apply novelty detection for safe online learning from demonstrations to enable a supervisor to take over and prevent unsafe states.  In their MMD-LI algorithm, risk is evaluated with Maximal Mean Discrepancy, which for a single point is the sum of a kernel density estimate and variance on the dataset, which works well in low dimensional state spaces.  MMD-LI also reduces supervisor burden because the supervisor only takes control and provides demonstrations in risky states. However, having the supervisor take over can bias the states sampled, which can in practice lead to a loss in performance \cite{ross2010reduction}.  In contrast, we focus on active learning for online LfD for high-dimensional state spaces, do not assume the supervisor is always available, and propose an alternative to non-parametric density estimation which can require data exponential in the dimension of the state-space
-\cite{nadaraya1964estimating}.
+\cite{liu2007sparse}.
 
 An alternative to evaluating the probability of a data point is to measure distance to its nearest neighbors \cite{knox1998algorithms}. However, this approach was shown to be
 susceptible to issues, since nearest neighbors  incorporates only local information about the data. For example, a group of outliers can be close together, but significantly far from the majority of the data and nearest neighbors would mark them as not novel \cite{hodge2004survey}.
@@ -326,7 +326,7 @@ In contrast to the standard measure risk based purely on variance, we define a s
 previously trained states, which can cause the current policy to mis-predict the supervisor and incur high surrogate
 loss~\cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the state is unlikely to model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe" .Our definition of risk can be visualized in Fig. \ref{fig:support_example}(d).  
 
-The amount of data needed to estimate the density, scales exponentially in the dimension of the state space~\cite{nadaraya1964estimating}. 
+The amount of data needed to estimate the density, scales exponentially in the dimension of the state space~\cite{liu2007sparse}. 
 Thus, to evaluate risk in high-dimensional state spaces, such as the HOG features in our driving simulator, Fig. \ref{fig:teaser}(a), we use
 a modified version of the technique known as the One Class SVM that  estimates a regularized boundary of a user defined quantile on the training data in $\mathcal{X}$~\cite{scholkopf2001estimating}.
 %\fpnote{Refer to figure, replace "one way to do"  by "an approach to this problem is to" or similar - less informal}
