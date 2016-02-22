@@ -68,16 +68,23 @@
 \newlabel{eq:super_objj}{{2}{3}{Step 1}{equation.4.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-A.2}Step 2}{3}{subsubsection.4.1.2}}
 \citation{scholkopf2002learning}
+\citation{ross2010reduction}
 \citation{opencv_library}
 \citation{chung2014accelerating}
 \@writefile{toc}{\contentsline {subsection}{\numberline {IV-B}Hierarchy of Supervisors}{4}{subsection.4.2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {IV-C}A Gambler's DAgger}{4}{subsection.4.3}}
 \@writefile{toc}{\contentsline {section}{\numberline {V}System for Grasping in Clutter Task}{4}{section.5}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.\relax }}{4}{figure.caption.3}}
-\newlabel{fig:robot}{{3}{4}{\footnotesize Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.\relax }{figure.caption.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {V-A}Task}{4}{subsection.5.1}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {V-B}Supervisor Hierarchy}{4}{subsection.5.2}}
 \citation{tensorflow2015-whitepaper}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table (WILL UPDATE THIS FIGURE)\relax }}{5}{figure.caption.2}}
+\newlabel{fig:overlays}{{2}{5}{\footnotesize The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table (WILL UPDATE THIS FIGURE)\relax }{figure.caption.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.\relax }}{5}{figure.caption.3}}
+\newlabel{fig:robot}{{3}{5}{\footnotesize Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.\relax }{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {V-C}Deep Neural Network Policy Architecture}{5}{subsection.5.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Planned Experiments}{5}{section.6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-A}A Gambler's DAgger}{5}{subsection.6.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-B}System Experiments}{5}{subsection.6.2}}
 \bibstyle{IEEEtranS}
 \bibdata{references}
 \bibcite{tensorflow2015-whitepaper}{1}
@@ -85,13 +92,6 @@
 \bibcite{abbeel2008apprenticeship}{3}
 \bibcite{abbeel2004apprenticeship}{4}
 \bibcite{argall2009survey}{5}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table\relax }}{5}{figure.caption.2}}
-\newlabel{fig:overlays}{{2}{5}{\footnotesize The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table\relax }{figure.caption.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {V-C}Deep Neural Network Policy Architecture}{5}{subsection.5.3}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Experiments}{5}{section.6}}
-\@writefile{toc}{\contentsline {section}{\numberline {VII}Discussions and Future Work}{5}{section.7}}
-\@writefile{toc}{\contentsline {section}{\numberline {VIII}Acknowledgments}{5}{section.8}}
-\@writefile{toc}{\contentsline {section}{References}{5}{section*.4}}
 \bibcite{chernova2009interactive}{6}
 \bibcite{duvallet2013imitation}{7}
 \bibcite{grollman2007dogged}{8}
@@ -106,3 +106,6 @@
 \bibcite{ross2013learning}{17}
 \bibcite{scholkopf2002learning}{18}
 \bibcite{van2010superhuman}{19}
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Discussions and Future Work}{6}{section.7}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Acknowledgments}{6}{section.8}}
+\@writefile{toc}{\contentsline {section}{References}{6}{section*.4}}

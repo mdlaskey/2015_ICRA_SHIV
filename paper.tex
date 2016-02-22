@@ -150,7 +150,7 @@ Online learning from demonstration algorithms such as
 DAgger can learn policies for problems where the system dynamics and
 the cost function are unknown. However they impose a
 burden on supervisors to respond to queries each time the robot
-encounters new states while executing its current best policy.  Traditionally there has only been one supervisor and it is deemed expert. However, an expert supervisor might not be needed for a large portion of the state space, which could be handled by less-skilled supervisors. We present the Gambler's DAgger, which instead of only using an expert supervisors presents a hierarchical supervisor model, which first leverages cheaper supervisors, such as analytical methods on approximate dynamics or crowdsourced Amazon Mechanical Turk workers to train the policy and then only consults an expert for harder to learn states. We demonstrate this approach in training a visuomotor deep network policy for 2D grasping in clutter on a 4-DOF Zymark Robot. We were able to reduce the number of queries to the final expert supervisor by $X$ and manage to collect $X$K examples by leveraging the hierarchical supervisor model. 
+encounters new states while executing its current best policy.  Traditionally there has only been one supervisor and it is deemed expert. However, an expert supervisor might not be needed for a large portion of the state space, which could be handled by less-skilled supervisors. We present the Gambler's DAgger, which instead of only using an expert supervisors presents a hierarchical supervisor model, that first leverages cheaper supervisors, such as analytical methods on approximate dynamics or crowdsourced Amazon Mechanical Turk workers to train the policy. Then only consults an expert supervisor for harder to learn states. We demonstrate this approach in training a visuomotor deep network policy for 2D grasping in clutter on a 4-DOF Zymark Robot. We were able to reduce the number of queries to the final expert supervisor by $X$ and manage to collect $X$K examples by leveraging the hierarchical supervisor model. 
  \end{abstract}
 
 
@@ -185,7 +185,7 @@ We propose bootstrapping a policy from a hierarchy of supervisors ranked by cost
 
 
 \section{Related Work}
-Below we summarize related work in reducing the number of queries to an expert in the Online LfD setting.\mlnote{Still a work in progress}
+Below we summarize related work in reducing the number of queries to an expert in the Online LfD setting.\mlnote{Still adding to this}
 
 \noindent \textbf{Online Lfd with an Expert Supervisor}
 Successful robotic examples of Online Learning From Demonstration where an expert have been employed have been in flying a quad-copter through a foster, navigating a wheel chair across a room and teaching a robot to follow verbal instructions and surgical needle insertion \cite{ross2013learning, kim2013maximum, duvallet2013imitation, laskey}. 
@@ -321,35 +321,36 @@ $$\frac{1}{J} \sum^J_{j=1} ||\pi_{\theta_{m,k}}(\mathbf{x}_j) - \tilde{\pi}_m(\m
 Then iterate to the next supervisor in the hierarchy or $m = m+1$. An issue arises though when performing this iterations because now the current dataset $\mathcal{D}_K$ has examples from a different supervisor that receives a smaller expected cumulative reward. This could cause a learning algorithm to try and regress to both labels and diverge from the intended performance \cite{scholkopf2002learning}.
 
 We are thus interested in not storing the dataset collected from the previous supervisor and only remembering the current $\theta_{m,K}$ weight parameters. Thus, we propose only performing DAgger for each individual supervisor in the hierarchy and using the resulting weight vector to bootstrap the learning of the next supervisor. \mlnote{the last step about the dataset is something I want to empirically validate}
+
+\mlnote{we can formally prove the following statements or point to the web similar to SHIV... it will be more trivial to write these out though if we have space}
+With respect to the theoretical analysis of DAgger's convergence rate, one can see that in our algorithm you are solving $M$ individual DAgger's ~\cite{ross2010reduction}. Thus, in the worst case you will converge to the supervisor at the top of the hierarchy $\tilde{\pi}_M$ in $\tilde{O}(M*T)$ iterations instead of DAgger's original $\tilde{O}(T)$. 
+
+It should be noted though that as you iterate through the hierarchy of supervisors, each iteration starts out with an error bounded by $\int_{\mathcal{X}_{m,m+1}} ||\pi_{\theta_{0,m+1}}(\mathbf{x}) - \tilde{\pi}_{m+1}(\mathbf{x})||^2_2 p(\mathbf{x}|\theta_{0,m+1}) d\mathbf{x} + \epsilon$. Thus, if the supervisors are able to agree on a large part of the state space, there should be less iterations with the expert supervisor than $\tilde{O}(T)$, which we experimentally show in our grasping in clutter task. 
  
 \begin{figure*}[t]
 \centering
 
 \includegraphics[width=\textwidth]{f_figs/Labeling_GUI.pdf}
 
-\caption{\footnotesize  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table}
+\caption{\footnotesize  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. Each window shows a correction in a degree of freedom a) is the rotation of the robots base b) is extending the robot's arm c) is closing the gripper and d) is rotating the turn table (WILL UPDATE THIS FIGURE)}
 \vspace*{-20pt}
 \label{fig:overlays}
 \end{figure*}
+
+
+
 
 
 \section{System for Grasping in Clutter Task}
 We now detail or experimental system for testing A Gambler's DAgger. First we describe the task itself, then each supervisor in the hierarchy and finally our deep network representation of the policy trained. 
 
 \subsection{Task}
-We are interested in training a Zymark \mlnote{need make and model} to perform a grasping in clutter task on image data taken from a Logitech 2000 camera. Examples of images from the camera can be seen in Fig. \ref{fig:teaser}.
+We are interested in training a Zymark robot to perform a grasping in clutter task on image data taken from a Logitech 2000 camera. Examples of images from the camera can be seen in Fig. \ref{fig:teaser}.
 
 The objects in clutter are made Medium Density Fiberboard and each one is on average 4" in diameter. The objects deemed cluttered are painted Red and the goal object is painted yellow. There is an inscribed circle around the work space to keep the robot from pushing the objects outside of the work space. The inscribed circle makes the task more challenging because the robot cannot simply "sweep" the cluttered objects off the table. 
 
 The robot, shown in Fig. \ref{fig:robot}, has a 4 dimensional internal state of base rotation, arm extension, gripper and turn table. The robot is commanded via state position requests, which are tracked by a tuned PID controller. The policy $\pi_\theta$ outputs delta positions that are bounded by $15\deg$ for the gripper and turntable, $1$ cm for the arm extension and $0.5$ cm for the gripper at each time step. There is $T=100$ time steps in a trajectory. 
 
-\begin{figure}[t!]
-\centering
-\includegraphics[width=\columnwidth, height=4cm]{f_figs/robot.pdf}
-\caption{ \footnotesize Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.}
-\vspace*{-10pt}
-\label{fig:robot}
-\end{figure}
 
 
 \subsection{Supervisor Hierarchy}
@@ -366,11 +367,18 @@ In order to get quality example from a CrowdSourced Supervisor, we designed an i
 
 We also design a tutorial for the work that first has them perform designated motions on a virtual robot and introduces them to a problem. We additionally provide a video of an expert providing corrections on three robot trajectories. 
 
+\begin{figure}[t!]
+\centering
+\includegraphics[width=\columnwidth, height=4cm]{f_figs/robot.pdf}
+\caption{ \footnotesize Shown above is a Zymark robot. The robot consists of an 3DOF arm that lies in a planar workspace and the ability to rotate the turn table. The inscribed circle in the work space prevents the robot from learning the trivial policy of just pushing the objects off the table.}
+\vspace*{-10pt}
+\label{fig:robot}
+\end{figure}
 
 
-\noindent \textbf{Expert Supervisor} Finally after training with the Analytical and Crowdsourced Supervisor we leverage the Expert supervisor, who is capable of achieving high cumulative reward but is a limited resource, to provide corrections for a problem that would be non-obvious for someone who doesn't understand the physical limiations of the problem. Examples of this could be joint limits of the robot or how some of the objects might respond in more advanced dynamics. \mlnote{After we run the AMT study it will become apparent where an expert is still needed}
+\noindent \textbf{Expert Supervisor} Finally after training with the Analytical and Crowdsourced Supervisor we leverage the Expert supervisor, who is capable of achieving high cumulative reward but is a limited resource, to provide corrections for states that would be non-obvious for someone who doesn't understand the physical limitations of the task. Examples of this could be joint limits of the robot or how some of the objects might respond in more advanced dynamics. \mlnote{After we run the AMT study it will become apparent where an expert is still needed}
 
-It can still be hard for an expert to provide the correct feedback without knowing the magnitude of the controls suggested, so they use the same interface as the CrowdSource Supervisor. 
+It can still be hard for an expert to provide the correct feedback without knowing the magnitude of the controls suggested, so they use the same interface as the CrowdSourced Supervisor. 
 
 \subsection{Deep Neural Network Policy Architecture}
 Our policy is represented as deep neural network, which was trained using TensorFlow~\cite{tensorflow2015-whitepaper}. Our network architecture consists of 1 convolutional layer with 5 channels, a fully connected layer with an output of 128 dimensions and a final layer that maps to a four dimensional control signal. We used ReLus to separate the different layers and a final tanh on the output to scale the output between -1 and 1. 
@@ -380,9 +388,29 @@ To determine our architecture we created a set of 32,400 different architectures
 We trained all networks on a dataset of 6K images labeled with the Analytical Supervisor on a Nvidia Tesla K40 GPU, which is able to train each network in an average of 10 minutes.  
 
 
-\section{Experiments}
+\section{Planned Experiments}
+All these experiments will be in the grasping clutter domain described above. This section is divided into experiments on reducing supervisor burden via hierarchical supervisor's and testing components on our large scale learning system.  
 
-\mlnote{We need to nail down exactly what experiments are important. I suggest 1) main one is to show expert time withouth bootstrapping vs. with 2) can be different forms of how to handle the dataset aggregation (i.e. full retrain or batch update etc.) 3) analysis of the crowd source system and how effective that was (this would be a secondary follow up experiment though, 4) Can be also comparison with a previous way to reduce supervisor burden in high dimensional states (i.e. SHIV). }
+\subsection{A Gambler's DAgger}
+
+\noindent \textbf{Reducing Supervisor Burden}
+In this experiment, we will assign some cost to each supervisor Analytical could be 0.5, Crowdsource 2, and Expert 10 for example. Then compute how many times the expert had to of been queried by using the bootstraped method. We will then do a full DAgger with our experts for comparison to when you don't bootstrap. 
+
+\noindent \textbf{When this Won't Work}
+In this experiment, we will look at using two analytical supervisors to try and teach the robot, however they will violate the definition of and not have an overlapping policy (need to think about this a bit). We should see that the supervisor deemed higher in the heirachy has to do roughly if not more queries than without bootstrapping. 
+
+\subsection{System Experiments}
+
+\noindent \textbf{Finding a Neural Network Architecture for Policy Learning}
+I want to determine if we can use our analtyical method to find the right architecture by iterating through a dataset. The hypothesis is that you do not need to do roll-outs if you change architecture slightly for better performance (i.e. can I collect a data from rolling out when network and then iterate on that dataset to find the best architecture)
+
+We will see how close a different architectures who received lower training loss on the dataset are to the original trained network in terms of euclidean distance. 
+
+\noindent \textbf{Reliability of Crowdsourced Supervisors}
+This experiment is more of a study looking for a few factors, how much data can we get, what is the price point and how lower quality is it to the expert. 
+
+Anca and I discussed an experiment to measure performance against expert. We can then just report our observations in terms of data gathered, time it took and price paid. 
+
 
  
 \section{Discussions and Future Work}
