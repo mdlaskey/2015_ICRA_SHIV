@@ -1,0 +1,517 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+%\documentclass[journal,transmag]{IEEEtran}% Comment this line out if you need a4paper
+
+\documentclass[10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\IEEEoverridecommandlockouts                              % This command is only needed if 
+                                                          % you want to use the \thanks command
+
+%\overrideIEEEmargins                                      % Needed to meet printer requirements.
+
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+% The following packages can be found on http:\\www.ctan.org
+%\usepackage{graphics} % for pdf, bitmapped graphics files
+%\usepackage{epsfig} % for postscript graphics files
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+%\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{amssymb}  % assumes amsmath package installed
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{url}
+
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
+
+\def\lc{\left\lfloor}   
+\def\rc{\right\rfloor}
+
+\usepackage{amsmath,amssymb}
+
+\usepackage{tabularx}
+\usepackage{tikz,hyperref,graphicx,units}
+\usepackage{subfigure}
+\usepackage{benktools}
+\usepackage{bbm}
+\renewcommand{\baselinestretch}{.5}
+
+\usepackage{caption}
+\usepackage{epstopdf}
+\renewcommand{\captionfont}{\footnotesize}
+\usepackage{sidecap,wrapfig}
+\usepackage[ruled,vlined]{algorithm2e}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\abs}[1]{\lvert#1\rvert} 
+\newcommand{\norm}[1]{\lVert#1\rVert}
+%\newcommand{\suchthat}{\mid}
+\newcommand{\suchthat}{\ \big|\ }
+\newcommand{\ba}{\mathbf{a}}
+\newcommand{\bb}{\mathbf{b}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bd}{\mathbf{d}}
+\newcommand{\bg}{\mathbf{g}}
+\newcommand{\bj}{\mathbf{j}}
+\newcommand{\bn}{\mathbf{n}}
+\newcommand{\bp}{\mathbf{p}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bt}{\mathbf{t}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bbf}{\mathbf{f}}
+\newcommand{\bzero}{\mathbf{0}}
+\newcommand{\bG}{\mathbf{G}}
+\newcommand{\bA}{\mathbf{A}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\mX}{\mathcal{X}}
+\newcommand{\mD}{\mathcal{D}}
+\newcommand{\mG}{\mathcal{G}}
+\newcommand{\mN}{\mathcal{N}}
+\newcommand{\mW}{\mathcal{W}}
+\newcommand{\mF}{\mathcal{F}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\mR}{\mathcal{R}}
+
+\newcommand{\bfc}{W}
+\newcommand{\Qinf}{Q_{\infty}}
+\newcommand{\st}[1]{_\text{#1}}
+\newcommand{\rres}{r\st{res}}
+\newcommand{\pos}[1]{(#1)^+}
+\newcommand{\depth}{\operatorname{depth}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\convhull}{\operatorname{ConvexHull}}
+\newcommand{\minksum}{\operatorname{MinkowskiSum}}
+
+\newcommand{\specialcell}[2][c]{ \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\newcommand{\acro}{SHIV}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\newcolumntype{L}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\hspace{0pt}}p{#1}}
+
+
+\newboolean{include-notes}
+\setboolean{include-notes}{false}
+\newcommand{\adnote}[1]{\ifthenelse{ \boolean{include-notes}}%
+ {\textcolor{blue}{\textbf{AD: #1}}}{}}
+ 
+ \newcommand{\fpnote}[1]{\ifthenelse{ \boolean{include-notes}}%
+ {\textcolor{blue}{\textbf{FP: #1}}}{}}
+ 
+  \newcommand{\mlnote}[1]{\ifthenelse{ \boolean{include-notes}}%
+ {\textcolor{purple}{\textbf{ML: #1}}}{}}
+
+\renewcommand{\baselinestretch}{.99}
+\usepackage{times}
+\usepackage{microtype}
+%\title{Iterative Imitation Learning with Reduced Human Supervision [v11]}
+%\title{SHIV:  Reducing Human Supervision for Robot Active Learning [v11]}
+
+\title{Theoretical Analysis of SHIV }
+
+
+
+\author{Michael Laskey$^1$, Jeffrey Mahler$^1$, Florian T. Pokorny$^1$, Anca D. Dragan$^1$ and Ken Goldberg$^{1,2}$% <-this % stops a space
+\thanks{$^1$ Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey,iamwesleyhsieh,ftpokorny,anca\}@berkeley.edu, \small staszass@rose-hulman.edu} }%
+\thanks{$^2$ Department of Industrial Engineering and Operations Research; {\small goldberg@berkeley.edu}}%
+\thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
+}
+\begin{document}
+
+
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{sec:Intro}
+In this report, we provide bound on the expected surrogate loss of SHIV similar to one shown earlier for DAgger. It can be shown that DAgger guarantees the expected surrogate loss is bounded linearly in terms of the task horizon $T$ as opposed to the supervisor learning approach, which is quadratic. 
+
+DAgger's analysis first introduces a policy that with some probability takes either the supervisor control or the robots, this is known as being a stochastically mixed policy. The stochastically mixed policy is then assumed to be a no regret learner (i.e. in the limit of infinite number of iterations the difference of the average expected surrogate loss compared to the expected surrogate loss of the best policy in hindsight goes to zero). A detailed analysis of when the no-regret assumption is valid can be found in \cite{ross2011stability}.
+
+ In the case of a strongly convex loss function and bounded policy class, it has been shown for no-regret learners that the number of iterations needed for convergence is linear in iterations~\cite{shalev2009mind}. DAgger then shows that in $T$ iterations the robot policies, $\pi_\theta$, approaches that of the no-regret stochastically mixed policy and achieves similar error, which is bounded linearly in $T$~\cite{ross2010reduction}. 
+
+We show how the additional hyperparameters of SHIV ($\nu$ and $\sigma$) effect the guarantees of DAgger and that the expected surrogate loss is still linear in the time horizon but now has  an additional term dependent on the hyperparameters. The intuition of the result is that active learning techniques can reduce the amount of data needed to learn, however a relation exists between how "smooth" the supervisor's policy is and how the hyperparameters are chosen. Our results suggest the less smooth a supervisor's policy is the more examples are needed to learn it.
+
+
+ We maintain the same assumptions as above plus two additional assumptions.  First, we assume that the supervisor policy $\tilde{\pi}$ and the learned policy $\pi_\theta$ is "smooth" in the sense that it is Lipschitz continuous: there exists a constant L bound on the derivative of $\tilde{\pi}$ and a separate bound on the derivative of $\pi_\theta$. Second, that a Radial Basis Function (RBF) kernel is used for the risk decision function $g_{\sigma}(\bx)$.
+
+The smoothness assumption of both the learned and supervisor policy is necessary to bound the worst case surrogate loss of our modified one class SVM query selection method (i.e. the maximum error in regression from the closest example). In many continuous control cases, like tele-operated robotic surgery~\cite{AnnualReport2014} or kinesthetically controlling a robot arm~\cite{akgun2012trajectories}, this is a reasonable assumption. However this would not hold when there is discrete controls such as learning a video game controller~\cite{NIPS2014_5421} or predicting which lane for an autonomous car to drive in~\cite{abbeel2004apprenticeship}, since the control abruptly changes between states.  The assumption can also be violated if the control space is not bounded and the policy applies a control asymptotically. 
+
+The assumption of  smooth learned policy is common for any learned function that is differentiable everywhere and has derivative of bounded magnitude, common techniques like linear or kernelized regression are capable of producing such a function~\cite{scholkopf2002learning}. Learning a policy via regression of a piecewise function  could violate this assumption because it is possible to have an unbounded derivative. 
+
+The assumption of a known kernel is needed to relate the bandwidth parameter $\sigma$ to the effects it has on DAgger's original upper bound on the expected surrogate loss. We chose to study the RBF kernel's hyperparameter because it is widely used in practice and was shown to work well in our experiments. An RBF kernel can be a poor choice in situations where the underlying function is linear or polynomial, for which there exists more data efficient kernels~\cite{scholkopf2002learning}. 
+
+
+\section{Problem Statement}
+The goal is to learn a policy that matches that of the supervisor's while asking the supervisor for as few examples as possible. 
+
+
+\noindent\textbf{Policies and State Densities.}
+Following conventions from control theory, we denote by $\mathcal{X}$ the set consisting of observable states for a robot task, consisting, for example, of 
+high-dimensional vectors corresponding to images from a camera, or robot joint angles and object poses in the environment.
+We furthermore consider a set $\mathcal{U}$ of allowable control inputs for the robot, which can be discrete or
+continuous. We model dynamics as Markovian, such that the probability of state $\mathbf{x_{t+1}}\in
+\mathcal{X}$ can be determined from the previous state $\mathbf{x}_t\in\mathcal{X}$ and control input $\mathbf{u}_t\in
+\mathcal{U}$: 
+$$p(\bx_{t+1}|\bu_{t},\bx_{t}, \ldots, \bu_{0}, \bx_{0})=p(\bx_{t+1}|\bu_{t}, \bx_t)$$
+We assume a probability density over initial states $p(\bx_0)$.
+%We denote the probability density over the initial state also by $p:\mathcal{X}\to \mathbb{R}$. 
+
+A trajectory $\hat{\tau}$ is a finite series of $T+1$ pairs of states visited and corresponding
+control inputs at these states, $\hat{\tau} = (\mathbf{x}_0,\mathbf{u}_0, ...., \mathbf{x}_T,\mathbf{u}_T)$, where $\bx_t\in \mathcal{X}$
+and $\bu_t\in \mathcal{U}$ for $t\in \{0, \ldots, T\}$ and some $T\in \mathbb{N}$.  
+For a given trajectory $\hat{\tau}$ as above, we denote by ${\tau}$ the corresponding trajectory in state space,
+${\tau} = (\bx_0,....,\bx_T)$.
+
+
+A policy is a function $\pi: \mathcal{X} \to \mathcal{U}$ from states to control inputs. 
+We consider a space of policies $\pi_{\theta}:\mathcal{X}\to \mathcal{U}$ parameterized by some $\theta\in \mathbb{R}^d$. Any such policy $\pi_{\theta}$ in an environment with probabilistic initial state density and Markovian dynamics
+induces a density on trajectories. Let $p(\bx_t|\theta)$ denote the value of the density of states visited at time $t$ if the robot follows the policy
+$\pi_{\theta}$ from time $0$ to time $t-1$.  Following~\cite{ross2010reduction}, we can compute
+the average density on states for any timepoint by $p(\bx|\theta) = \frac{1}{T} \sum^T_{t=1} p(\bx_t|\theta)$.
+
+
+While we do not assume knowledge of the distributions corresponding to: $p(\bx_{t+1}|\bx_t,\bu_t)$, $p(\bx_0)$, $p(\bx_t|
+\theta)$ or $p(\bx|\theta)$, we assume that we have a stochastic real robot or a simulator such that for any state
+$\bx_t$ and control $\bu_t$, we can sample the $\bx_{t+1}$ from the density $p(\bx_{t+1}|\pi_{\theta}(\bx_t),\bx_t)$. 
+Therefore, when 'rolling out' trajectories under a policy
+$\pi_{\theta}$, we utilize the robot or a simulator to sample the resulting stochastic trajectories rather than
+estimating $p(\bx|\theta)$ itself.
+
+\noindent\textbf{Objective.} The objective of  policy learning is to find a policy that minimizes some known cost function $C(\hat{\tau}) = \sum^T_{t=1} c(\bx_t,\bu_t)$ of trajectory $\hat{\tau}$. The cost $c:\mathcal{X}\times \mathcal{U}\to \mathbb{R}$ is typically user defined and task specific. 
+For example, in the task of inserting a peg into a hole, the distance between the peg's current and desired final state is often used~\cite{levine2015end}.  
+
+In our problem, we do not have access to the cost function itself. Instead, we only have access to 
+a supervisor that can achieve a desired level of performance on the task. The supervisor provides the robot
+an initial set of $N$ stochastic demonstration trajectories $\lbrace \tilde{\tau}^1,...,\tilde{\tau}^N \rbrace$. 
+which are the result of the supervisor applying this policy. This induces a training data set $\mathcal{D}$ of all state-control input pairs from the demonstrated trajectories. 
+
+We define a `surrogate' loss function as in~\cite{ross2010reduction}, $l:\mathcal{U}\times \mathcal{U}\to \mathbb{R}$, which provides a distance
+measure between any pair of control values. In the continuous case, we consider $l(\bu_0,\bu_1) = ||\bu_0-\bu_1||^2_2$,
+while in the discrete case $l(\bu_0,\bu_1) = 1$ if $\bu_0 \neq \bu_1$ and $l(\bu_0, \bu_1)=0$ otherwise.
+
+Given a candidate policy $\pi_{\theta}$, we then use the surrogate loss function to approximately measure how `close' the policy's
+returned control input $\pi_{\theta}(\bx)\in \mathcal{U}$ at a given state $\bx\in \mathcal{X}$ is to the supervisor's policy's control output
+$\tilde{\pi}(\bx)\in \mathcal{U}$. The goal is to produce a policy that minimizes the surrogate loss relative to the supervisor's policy.
+
+
+Following~\cite{ross2010reduction}, our objective is to find a policy $\pi_{\theta}$ minimizing the expected surrogate loss, where the expectation is taken over the distribution of states induced by the policy across any time point in the horizon:
+
+ \vspace{-2ex}
+\begin{align}\label{eq:LFD_obj}
+\underset{\theta}{\min} \: E_{p(\bx|\theta)} [l(\pi_\theta(\bx),\tilde{\pi}(\bx))]
+\end{align}
+
+ If the robot could learn the policy  perfectly, this state density would match the one encountered in user examples. But if the robot makes an error, that error changes the distribution of states that the robot will visit, which can lead to states that are far away from any examples and difficult to generalize to~\cite{pomerleau1989alvinn}. This motivates iterative algorithms like DAgger, which iterate between learning a policy and the supervisor providing feedback. The feedback is in the form of control signals on states sampled from the robot's new distribution of states. 
+
+\section{Risky and Safe States}
+
+
+Providing correct control inputs for (or ``labeling'')  all states encountered at each
+iteration can impose a large burden on the supervisor.
+Instead of asking the supervisor for labels at all visited states, SHIV uses a measure of risk to actively decide whether a label is necessary. 
+
+In contrast to the standard measure risk based purely on variance, we define a state as "risky"  if: 1) it lies in an area with a low density of
+previously trained states, which can cause the current policy to mis-predict the supervisor and incur high surrogate
+loss~\cite{tokdar2010importance}, or 2) the surrogate loss, or training error, of the current policy at the state  is high, so that the policy does not  model the supervisor's control inputs correctly. States that are not classified as "risky" are deemed "safe" .
+
+The amount of data needed to estimate the density, scales exponentially in the dimension of the state space~\cite{liu2007sparse}. 
+Thus, to evaluate risk in high-dimensional state spaces we use
+a modified version of the technique known as the One Class SVM that estimates a regularized boundary of a user defined quantile on the training data in $\mathcal{X}$~\cite{scholkopf2001estimating}.
+%\fpnote{Refer to figure, replace "one way to do"  by "an approach to this problem is to" or similar - less informal}
+
+
+
+%\subsection{Estimation of Quantile Level Sets}\label{sec:level}
+We consider the problem of estimating the quantile level-sets of a distribution $P$ on a set $\mathcal{X}$ by means of a finite set of
+independent and identically distributed samples $\mathbf{x}_1,...,\mathbf{x}_n\in \mathcal{X}$.
+In most general terms, the quantile function for $P$ and subject to a class of measurable subsets $\mathcal{G}$ of $\mathcal{X}$ is
+defined by
+\vspace{-2ex}
+\begin{align}\label{eq:quantile}
+U(\gamma) = \mbox{inf} \lbrace \lambda(G):P(G) \geq \gamma, G \in \mathcal{G} \rbrace \: 0<\gamma \leq 1
+\end{align} 
+$\lambda:\mathcal{G}\to \mathbb{R}$ above denotes a volume measure.
+Suppose furthermore that $G:[0,1]\to \mathcal{G}$ assigns a set $G(\gamma) \in \mathcal{G}$ that attains the infinum
+measure (i.e. volume) for each $\gamma\in [0,1]$ (this set is in general not necessarily unique). 
+$G(\gamma)$ denotes a set of minimum measure $G \in \mathcal{G}$ with $P(G(\gamma))\ge \gamma$.
+
+To handle distributions defined on high-dimensional spaces $\mathcal{X}$, work by Scholk{\"o}pf et al. represents the class $\mathcal{G}$ via a kernel $k$ as the set of half-spaces in the support vector (SV) feature space~\cite{scholkopf2001estimating}. 
+By minimizing a support vector regularizer controlling the smoothness of the estimated level set function this work
+derives an approximation of the quantile function described in Eq. \ref{eq:quantile}.
+
+Let $\Phi:\mathcal{X}\to \mathcal{F}$ denote the feature map corresponding to our exponential kernel, $k(\bx_0,\bx_1) = e^{-||\bx_0 - \bx_1||^2/2\sigma^2}$, mapping the
+observation space $\mathcal{X}$ into a Hilbert space $(\mathcal{F}, \langle, \rangle)$ such that $k(\bx, \bx') = \langle
+\Phi(\bx), \Phi(\bx')\rangle$.
+
+The One Class SVM proposed by~\cite{scholkopf2001estimating} determines a hyperplane in feature space $\mathcal{F}$
+maximally separating the input data from the origin:
+\vspace{-2ex}
+\begin{align}\label{eq:primal_sup}
+    \underset{w\in \mathcal{F}, \mathbf{\xi} \in \mathbb{R}, \rho \in \mathbb{R}}{\mbox{minimize}}\: \frac{1}{2}||w||^2+\frac{1}{vn} \sum^n_i \xi_i - \rho\\
+\mbox{s.t} \: \langle w,\Phi(x_i) \rangle \geq \rho - \xi_i, \: \xi_i \geq 0 \notag.
+\end{align}
+
+Here, the parameter $\nu$ controls the penalty or `slack term' and $1-\nu$ is equivalent to $\gamma$~\cite{vert2006consistency}
+in the quantile definition, Eq. \ref{eq:quantile}, as the number of samples increases. The decision
+function, determining point membership in the approximate quantile levelset is given by $g(\bx) = \mbox{sgn}(\langle w,\Phi(x) \rangle-\rho)$. Here, for $x\in \mathcal{X}$, $g(x)=0$ if $x$ lies on the quantile levelset,
+$g(x) = 1$ if $x$ is strictly in the interior of the quantile super-levelset and $g(x) = -1$ 
+if $x$ lies strictly in the quantile sub-levelset. 
+
+
+
+The dual form of the optimization yields a Quadratic Program 
+that has worst case computational complexity of $O(n^3)$. However, Sch{\"o}lkopf et al. developed an improved optimization method that has empirically been shown to scale quadratically~\cite{scholkopf2001estimating},which we use. In the dual, the decision function is given by $g(\bx) = \mbox{sgn}(\sum^N_{i=1}\alpha_i k(\bx_i,\bx)-\rho)$ where $\alpha_i$ corresponds to the dual variables. 
+However, even when sufficient data is available, the associated control inputs may be inconsistent or noisy and a resulting policy
+optimizing Eq. \ref{eq:super_objj} may still incur a large surrogate loss. To account for this, we propose a
+modification to the One Class SVM:
+
+\vspace{-2ex}
+\begin{align}
+y_i = \left\{
+     \begin{array}{lr}
+         1 & : l(\pi_{\theta}(\bx_i),\bu_i)\le \varepsilon\\
+         -1 & : l(\pi_{\theta}(\bx_i),\bu_i)>\varepsilon
+     \end{array}
+   \right.
+\end{align}
+
+Where, in the case when $l$ denotes discrete $0-1$ loss, we set $\varepsilon = 0$, while in the continuous $L_2$ loss
+case, $\varepsilon$ is a user defined threshold specifying allowable surrogate loss.
+We use $y_i$ to modify the One Class SVM decision function as follows: 
+
+
+We divide up our data in to two sets those correctly classified: $\mathcal{D}_{s}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y_i=1\}$ and those states incorrectly classified: $\mathcal{D}_{r}=\{\lbrace \bx_i,\bu_i \rbrace \in \mathcal{D}_{k}, y_i=-1\}$
+A separate One-Class SVM is then trained on each set of states, ($D_{s}$ and $D_{r}$) and providing measures of the level sets, $g_{s}$ and $g_{r}$. Specified by parameters $(\nu,\sigma)$ and $(\nu_r,\sigma_r)$, respectively. 
+
+We then define the overall decision function as:
+
+\vspace{-2ex}
+\begin{align}\label{eq:decision_func}
+g_{\sigma}(\bx) = \left\{
+     \begin{array}{ll}
+         0 & : g_s(\bx) == 1 \: \mbox{and} \: g_r(\bx) == -1\\
+         -1 & : \mbox{otherwise}
+     \end{array}
+   \right.
+\end{align}
+points are deemed risky if $g_{\sigma}(\bx) \neq 0$.  Practically, this modification corresponds to
+`carving out holes' in the estimated quantile super-levelset such that neighborhoods around states with $y_i=-1$ are
+excluded from the super-levelset. 
+
+
+The decision function parametrization consists of the kernel bandwidth $\sigma$ in $g_s$. We treat $\sigma$ as a "risk sensitivity" parameter (and study its implications in Section \ref{sec:experiments}). For two reasons: 1)The expected number of examples, after a policy roll out, the supervisor can be asked is  $T*\int_\bx \mathbf{1}(g_{\sigma}(\bx) == 0) p(\bx|\theta)d\bx$. Thus, smaller $\sigma$ corresponds to asking for more examples. 2) A relation exists between how smooth the supervisor's policy, $\tilde{\pi}$ and how many examples are needed to learn it. Thus, a large $\sigma$ can be dangerous for policies with sharp variation because it will treat points as safe that are really risky. 
+
+\section{SHIV:Svm-based reduction in Human InterVention} \label{sec:SHIV}
+
+Both SHIV and DAgger~\cite{ross2010reduction} solve the minimization in Eq. \ref{eq:LFD_obj} by iterating two steps: 1) compute a $\theta$ using the training data $\mathcal{D}$ thus far, and 2) execute the policy induced by the current $\theta$, and ask for labels for the encountered states. However, instead of querying the supervisor for every new state, SHIV actively decides whether the state is risky enough to warrant a query after the policy roll out. 
+
+ \vspace{-2ex}
+ 
+\subsection{Step 1}
+The first step of each iteration $k$  computes $\theta_k$ that minimizes surrogate loss on the current dataset $\mathcal{D}_k=\{(x_i,u_i)|i\in\{1,\ldots,M\}\}$ of demonstrated state-control pairs (initially just the set $\mathcal{D}$ of initial trajectory demonstrations):
+
+ \vspace{-1ex}
+\begin{align}\label{eq:super_objj}
+\theta_{k} = \underset{\theta}{\argmin} \: \sum_{i=1}^{M} l(\pi_{\theta}(\bx_i),\bu_i).
+\end{align}
+
+This sub-problem is a supervised learning problem, solvable by estimators like a support vector machine or a neural net. Performance can vary though with the selection of the estimator~\cite{scholkopf2002learning} 
+ 
+
+ \subsection{Step 2}
+The second step SHIV and DAgger rolls out their policies, $\pi_{\theta_{k}}$, to sample states that are likely under $p(\bx|\theta_{k})$. 
+
+What happens next, however, differs between SHIV and DAgger. For every state visited, DAgger requests the supervisor to provide the appropriate control/label. Formally, for a given sampled trajectory  $\hat{\tau} = (\bx_0,\bu_0,...,\bx_T,\bu_T )$, the supervisor provides labels $\tilde{\bu}_t$, where $\tilde{\bu}_t \sim \tilde{\pi}(\bx_t) + \epsilon$, where $\epsilon$ is a small zero mean noise term, for $t\in \{0, \ldots, T\}$.
+The states and labeled controls are then aggregated into the next data set of demonstrations $\mathcal{D}_{k+1}$:
+$$D_{k+1}=\mathcal{D}_k \cup \{(\bx_t,\tilde{\bu_t})\|t\in\{0,\ldots,T\}\} $$
+%\fpnote{terms such as aggregated etc would be much clearer if we just refer to a particular line in the algorithm}
+
+
+
+SHIV only asks for supervision on states for which are risky, or $g_{\sigma}(\bx) \neq 0$: 
+$$D_{k+1}=\mathcal{D}_k \cup \{(\bx_t,\tilde{\bu_t})\|t\in\{0,\ldots,T\},g(\bx_t)=-1\}$$
+Steps 1 and 2 are repeated for $K$ iterations or until 
+the robot has achieved sufficient performance on the task\footnote{In the original DAgger the policy rolled out
+was stochastically mixed with the supervisor, thus with probability $\beta$ it would either take the supervisor's action
+or the robots. The use of this stochastically mix policy was for theoretical analysis. In practice, it is recommended
+to set $\beta = 0$ to avoid biasing the sampling~\cite{NIPS2014_5421,ross2010reduction}}.
+
+\section{Theoretical Analysis}\label{sec:theory_sec}
+We recap the analysis of DAgger and state the main result and then introduce SHIV's analysis. Note, we denote a change in notation  $l_i(\bx) = l(\pi_{\theta_i}(\bx),\tilde{\pi}(\bx)) $ where $l_i(\bu): \mathcal{U} \rightarrow \mathbb{R}$. The change is for convenience, since the only time $l$ is used in the analysis is with respect to the supervisor. 
+
+\noindent \textbf{DAgger Analysis} Analysis of DAgger models the problem as online learning, where an algorithm must provide a policy $\pi_n$ at iteration $n$ which incurs loss $E_{p(\bx|\theta_n)}[l_n(\pi_n)]$. After observing this loss the algorithm can provide a different policy $\pi_{n+1}$ for the next iteration which will incur loss $E_{p(\bx|\theta_{n+1})}[l_{n+1}(\pi_{n+1})]$. The loss functions $E_{p(\bx|\theta_{n+1})}[l_{n+1}(\pi_{n+1})]$ may vary in an unknown fashion over time \cite{ross2010reduction}.
+
+DAgger assumes a no-regret algorithm, i.e. an algorithm that produces a series of policies $\pi_1,\pi_2,...,\pi_N$ such that the average regret with respect to the best policy in hindsight goes to $0$ as $N$ goes to $\infty$.
+
+$$\frac{1}{N}\sum^N_{i=1} E_{p(\bx|\theta_i)} [l_i(\pi_\theta(\bx))] - \underset{\pi \in \Pi}{\mbox{min}} \frac{1}{N} \sum^N_{i=1} E_{p(\bx|\theta_i)} [l(\pi(\bx))] \leq \gamma_N$$
+
+for $\mbox{lim}_{N \rightarrow \infty} \gamma_N = 0$. Many no-regret algorithms guarantee that $\gamma_N$ is $\tilde{O}(\frac{1}{N})$ (e.g. when $l$ is strongly convex). 
+
+Assume $l(\bu)$ is strongly convex and bounded over $\Pi$. Let $\epsilon_N = \mbox{min}_{\pi\in \Pi} \frac{1}{N} \sum^N_{i=1} E_{p(\bx|\theta_i)} [l(\pi(\bx))]$ be the true loss of the best policy in hindsight. Then the following holds in the infinite sample case (infinite number of trajectories at each iteration):\\
+
+
+\begin{theorem}\label{thm:Dagger}
+For DAgger if N is $\tilde{O}(T)$ there exists a policy $\hat{\pi} \in \hat{\pi}_{1:N}$ such that $E_{p(\bx|\theta_N)}[l_N(\bx)] \leq \epsilon_N + O(1/T)$\\
+\end{theorem}
+
+Note, a bound on the total expected surrogate loss of a policy during roll out  can be computed by multiplying the right hand side by a factor of $T$. 
+
+
+\noindent \textbf{SHIV Analysis} In SHIV, a state is queried or not queried via a decision function $g_{\sigma}$ the boundaries of this decision function is parameterized by $\nu$ and $\sigma$. We are interested in bounding the worst case effect this has on the original DAgger analysis or Theorem \ref{thm:Dagger}. 
+
+For SHIV's analysis we make the additional assumptions of an $L_0$-Lipschitz supervisor policy, $\tilde{\pi}$ and a class of $L_1$-Lipschitz learned policy $\pi_\theta$.  We also assume a Radial Basis Function (RBF) kernel, $k(x_0,x_1) = \mbox{exp}(-||x_0-x_1||^2/\sigma^2)$, is used in the decision function $g_\sigma(\bx)$. The intuition behind these assumptions and examples of where they would and wouldn't hold is described in Sec. \ref{sec:Intro}. 
+
+We introduce the set of states inside the decision function as $\mathcal{Y} = \lbrace \bx | \bx \in \mathcal{X}, g_\sigma(\bx) = 0 \rbrace$ and the set of states outside as $\mathcal{Z} = \lbrace \bx | \bx \in \mathcal{X}, g_\sigma(\bx) = -1 \rbrace$.
+
+
+ In order to prove the Theorem \ref{thm:main_thereom}, we need the following lemmas. \\
+
+\begin{lemma} \label{lm:lipschitz}
+Given an $L_0$-Lipschitz supervisor policy $\tilde{\pi}$ and $L_1$-Lipschitz learned policy $\pi_\theta$, define $L = \mbox{max}(L_0,L_1)$. With maximum regression error on the dataset $\eta_N$, where $\eta_N = \max_{\bx_i \in \mathcal{D}_N} ||\pi_\theta(\bx_i) - \tilde{\pi}(\bx_i)||^2_2$. Define $L_w: \mathcal{X} \rightarrow [0,\infty)$ as $L_w(\bx) =\mbox{min}_{\bx_i \in \mathcal{D}} ||\bx_i - \bx||_2^2$, which is the shortest Euclidean distance a point is to those in the dataset. The surrogate loss function $l(\pi_\theta(\bx),\tilde{\pi}(\bx)) = ||\pi_\theta(\bx) - \tilde{\pi}(\bx)||^2_2 $ is bounded as follows: 
+
+$$l(\pi_\theta(\bx),\tilde{\pi}(\bx)) \leq (2L)L_w(\bx) + \eta_N$$\\
+\end{lemma}
+
+\begin{proof}
+ Given a point $\bx$, define $\bx_h = \mbox{argmin}_{\bx_i \in\mathcal{D}} \: ||\bx - \bx_i||$ or the point closest to it in the dataset. 
+ 
+ \begin{align*}
+&||\pi_\theta(\bx) - \tilde{\pi}(\bx)||^2_2\\ 
+& = || \pi_\theta(\bx) + (\tilde{\pi}(\bx_h) - \tilde{\pi}(\bx_h)) + (\pi_\theta(\bx_h) - \pi_\theta(\bx_h)) + \tilde{\pi}(\bx)||_2^2\\
+& \leq ||\pi_\theta(\bx) - \pi_\theta(\bx_h)||^2_2 + ||\tilde{\pi}(\bx_h) - \pi_\theta(\bx_h)||^2_2+ ||\tilde{\pi}(\bx) - \tilde{\pi}(\bx_h)||^2_2\\
+& \leq ||\pi_\theta(\bx) - \pi_\theta(\bx_h)||^2_2 + \eta_N + ||\tilde{\pi}(\bx) - \tilde{\pi}(\bx_h)||^2_2\\
+& \leq (_{•}2L)L_w(\bx) + \eta_N
+\end{align*}
+
+Line two come from equality. The intuition behind this is to determine how far your estimate of the supervisor's policy can be when trying to generalize from the training example in the dataset. Line three is a result of the triangle inequality. Line four then applies the definition of $\eta_N$. Line five is applying the definition of Lipschitz continuity and the definition of $L$. 
+
+
+\end{proof}
+
+
+\begin{lemma}\label{lm:F_bound}
+Given a decision function $g_{\sigma}(\bx)$, parameterized by $\nu$ and $\sigma$ and an RBF kernel. Define the constant $F$ as the maximum squared Euclidean  distance of a point inside the decision boundary from the states $g_{\sigma}$ was trained on: 
+
+\vspace{-2ex}
+\begin{align*}\label{eq:primal_sup}
+   F = \underset{\bx \in \mathcal{X}}{\mbox{max}}\underset{\bx_i \in \mathcal{D} }{\mbox{min}}\: ||\bx_i-\bx||^2_2\\
+\mbox{s.t.} \: \bx \in \mathcal{Y} \notag.
+\end{align*} 
+
+We can bound $F$ by the following: 
+
+$$F \leq \sigma^2\mbox{log}(\frac{1}{\rho \nu})$$
+
+\end{lemma}
+
+\begin{proof}
+
+We will   prove Lemma \ref{lm:F_bound} by increasing the set size of $g_{\sigma}(\bx)$ by a series of upper bounds and then bounding the increase set in terms of the hyper parameters $\nu$ and $\sigma$. \\
+
+\begin{align}
+   F = \underset{\bx \in \mathcal{X}}{\mbox{max}}\underset{\bx_i \in \mathcal{D} }{\mbox{min}}\: ||\bx_i-\bx||^2_2\\
+\mbox{s.t.} \: \bx \in \mathcal{Y} \notag.
+\end{align}
+
+Define the solution to the problem  as $ \bx^* \in \mathcal{X}$ and $\bx_m \in \mathcal{D}$ (i.e.) 
+
+\begin{align}
+   \big(\bx^*,\bx_m \big)= \big(\underset{\bx \in \mathcal{X}}{\mbox{argmax}}, \: \underset{\bx_i \in \mathcal{D} }{\mbox{argmin}}\: ||\bx_i-\bx||^2_2\big)\\
+\mbox{s.t.} \: \bx \in \mathcal{Y} \notag.
+\end{align}
+
+We restate the definition of $g_{\sigma}(\bx) = \mbox{sgn}(\sum_i^n \alpha_i k(\bx,\bx_i) - \rho)$. Note we have removed the additional carving out term, since we are only interested in an upper bound on error induced.  We can increase the size of the set by noting that $0 \leq \alpha_i \leq \frac{1}{\nu n}$, which comes from the KKT conditions of the original optimization \cite{scholkopf2001estimating}.  Thus our increased set's decision boundary becomes $\mbox{sgn}(\frac{1}{\nu n}\sum_i^n  k(\bx,\bx_i) - \rho)$. 
+
+\begin{align*}
+   F \leq \underset{\bx \in \mathcal{X}}{\mbox{max}}\underset{\bx_i \in \mathcal{D}}{\mbox{min}}\: ||\bx_i-\bx||^2_2\\
+\mbox{s.t.} \: \frac{1}{\nu n}\sum_i^n  k(\bx,\bx_i) - \rho \geq 0 \notag.
+\end{align*}
+
+To further increase the size of the set around the point $\bx_m$, we change the boundary to  $\mbox{sgn}(\frac{1}{v}  k(\bx,\bx_m) - \rho)$. 
+
+\begin{align*}
+    F \leq \underset{\bx \in \mathcal{X}}{\mbox{max}}\: ||\bx_m-\bx||^2_2\\
+\mbox{s.t.} \: \frac{1}{\nu }  k(\bx,\bx_m) - \rho \geq 0 \notag.
+\end{align*}
+
+
+Now we can determine the distance to the boundary of this larger set by setting 
+ \begin{align*}
+&\frac{1}{\nu} k(\bx,\bx_m) = \rho\\
+&\mbox{exp}(-||\bx-\bx_m||^2/\sigma^2)= \nu\rho\\
+&||\bx-\bx_m|| = \sigma^2 \mbox{log}(\frac{1}{\nu\rho})\\
+\end{align*}
+
+This equality in the large set can then be used to upperbound the original term $F \leq \sigma^2 \mbox{log}(\frac{1}{\nu\rho})$. 
+
+\end{proof}
+
+
+
+
+\begin{theorem}\label{thm:main_thereom}
+For SHIV if N is $O(T)$ there exists a policy $\hat{\pi} \in \hat{\pi}_{1:N}$ such that $E_{p(\bx|\theta_N)}[l_N(\pi_\theta(\bx))] \leq \epsilon_N  + \eta_N+ O(1/T)+(2L)\mbox{log}(\frac{1}{\nu\rho})\sigma^2$\\
+\end{theorem}
+
+We note again to obtain the surrogate loss over an entire trajectory the right hand side is multiplied by $T$. \\
+
+\begin{proof}
+\begin{align*}
+&\mbox{min}_{\pi\in \pi_{1:N}} E_{p(\bx|\theta_i)}[l_i(\pi_\theta(\bx))]\\
+&\leq \frac{1}{N} \sum^N_{i=1} E_{p(\bx|\theta_i)}(l_i(\bx))\\
+&=\frac{1}{N} \sum^N_{i=1} \int_{\mathcal{Y}} l_i(\pi_\theta(\bx)) p(\bx|\theta_i)d\bx+\int_{\mathcal{Z}}l_i(\pi_\theta(\bx)) p(\bx|\theta_i)d\bx\\
+&\leq\frac{1}{N} \sum^N_{i=1}[ \int_{\mathcal{Y}}l_i(\pi_\theta(\bx))p(\bx|\theta_i)d\bx+ \int_{\mathcal{X}} l_i(\pi_\theta(\bx))p(\bx|\theta_i)d\bx]\\
+&\leq\frac{1}{N} \sum^N_{i=1} \int_{\mathcal{Y}} l_i(\pi_\theta(\bx))p(\bx|\theta_i)d\bx+  \epsilon_N + O(1/T)\\
+\end{align*}
+
+Line three in the proof separates the integral over states inside the decision function $g_{\sigma}$ and outside the decision function. Line four  bounds the expectation over the states outside the decision boundary by replacing the integral back to original density for the second term. The intuition for these steps is to separate the problem between what states are predicted to be safe and what ones are deemed risky. 
+
+The last line bounds the second term by the original results of DAgger because these are on the distributions of states outside of the decision function $g_{\sigma}$, where SHIV is identical to DAgger. We note the no regret assumption holds for any unknown $p(\bx|\theta)$, even ones chosen adversarially thus the fact $\theta_i$ is updated with states potentially different than DAgger will not change the result, since it is still a Follow The Leader algorithm by maximizing over all states seen~\cite{ross2010reduction}. 
+
+Using Lemma \ref{lm:lipschitz}, we can bound the surrogate loss function as follows: 
+
+\begin{align*}
+&\leq\frac{1}{N} \sum^N_{i=1} \int_{g_{\sigma}(\bx) =0} (2L)L_w(\bx)p(\bx|\theta_i)d_x+ \eta_N  +...
+\end{align*}
+
+Next by noting that the states evaluated under the worst case loss are within the decision boundary $g_{\sigma}$, we can apply Lemma \ref{lm:F_bound}. 
+
+\begin{align*}
+&\leq (2L)F+\eta_N +...\\
+&\leq  (2L)\mbox{log}(\frac{1}{\rho\nu})\sigma^2+\eta_N+  \epsilon_N + O(1/T)
+\end{align*}
+\end{proof}
+
+\section{Discussion of Analysis}
+Theorem \ref{thm:main_thereom} shows the bound on the expected surrogate loss is still linear in the time horizon, however an additional term is added dependent on the hyperparameters $\sigma$ and $\nu$. If the supervisor's policy has a high Lipschitz constant, $L$, then the risk sensitive parameter, $\sigma$ needs to be smaller proportionally to achieve less surrogate loss as shown in Theorem \ref{thm:main_thereom}. 
+
+We also recall the expected number of queries to a supervisor can be determined  by $T\int_\mathcal{X} \mathbf{1}(g_{\sigma}(\bx) = 0) p(\bx|\theta)d\bx$. Here we see that $\sigma$ directly effects the size of the decision boundary, which in turn controls the expected number of queries. A trade off exists then between supervisor burden and the performance at convergence, but experimentally we show on several different examples one can achieve the same performance as DAgger in significantly less queries (up to $70\%$). 
+
+
+
+  
+\bibliographystyle{IEEEtranS}
+\bibliography{references}
+
+
+
+\end{document}

@@ -21,141 +21,79 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{tensorflow2015-whitepaper}
+\BIBentryALTinterwordspacing
+M.~Abadi, A.~Agarwal, P.~Barham, E.~Brevdo, Z.~Chen, C.~Citro, G.~S. Corrado,
+  A.~Davis, J.~Dean, M.~Devin, S.~Ghemawat, I.~Goodfellow, A.~Harp, G.~Irving,
+  M.~Isard, Y.~Jia, R.~Jozefowicz, L.~Kaiser, M.~Kudlur, J.~Levenberg,
+  D.~Man\'{e}, R.~Monga, S.~Moore, D.~Murray, C.~Olah, M.~Schuster, J.~Shlens,
+  B.~Steiner, I.~Sutskever, K.~Talwar, P.~Tucker, V.~Vanhoucke, V.~Vasudevan,
+  F.~Vi\'{e}gas, O.~Vinyals, P.~Warden, M.~Wattenberg, M.~Wicke, Y.~Yu, and
+  X.~Zheng, ``{TensorFlow}: Large-scale machine learning on heterogeneous
+  systems,'' 2015, software available from tensorflow.org. [Online]. Available:
+  \url{http://tensorflow.org/}
+\BIBentrySTDinterwordspacing
+
 \bibitem{abbeel2007application}
 P.~Abbeel, A.~Coates, M.~Quigley, and A.~Y. Ng, ``An application of
-  reinforcement learning to aerobatic helicopter flight,'' \emph{Advances in
-  neural information processing systems}, vol.~19, p.~1, 2007.
+  reinforcement learning to aerobatic helicopter flight,'' \emph{NIPS},
+  vol.~19, p.~1, 2007.
 
 \bibitem{abbeel2008apprenticeship}
 P.~Abbeel, D.~Dolgov, A.~Y. Ng, and S.~Thrun, ``Apprenticeship learning for
   motion planning with application to parking lot navigation,'' in \emph{IROS
-  2008. IEEE/RSJ International Conference on}.\hskip 1em plus 0.5em minus
-  0.4em\relax IEEE, 2008, pp. 1083--1090.
+  2008. IEEE/RS}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE.
 
 \bibitem{abbeel2004apprenticeship}
-P.~Abbeel and A.~Y. Ng, ``Apprenticeship learning via inverse reinforcement
-  learning,'' in \emph{Proceedings of the twenty-first international conference
-  on Machine learning}.\hskip 1em plus 0.5em minus 0.4em\relax ACM, 2004, p.~1.
+P.~Abbeel and A.~Y. Ng, ``Apprenticeship learning via reinforcement learning,''
+  in \emph{Proceedings of the twenty-first international conference on Machine
+  learning}, 2004, p.~1.
 
 \bibitem{argall2009survey}
 B.~D. Argall, S.~Chernova, M.~Veloso, and B.~Browning, ``A survey of robot
   learning from demonstration,'' \emph{Robotics and autonomous systems},
   vol.~57, no.~5, pp. 469--483, 2009.
 
-\bibitem{atlas1990training}
-L.~E. Atlas, D.~A. Cohn, and R.~E. Ladner, ``Training connectionist networks
-  with queries and selective sampling,'' in \emph{Advances in neural
-  information processing systems}, 1990, pp. 566--573.
-
-\bibitem{breiman1996bagging}
-L.~Breiman, ``Bagging predictors,'' \emph{Machine learning}, vol.~24, no.~2,
-  pp. 123--140, 1996.
-
-\bibitem{burbidge2007active}
-R.~Burbidge, J.~J. Rowland, and R.~D. King, ``Active learning for regression
-  based on query by committee,'' in \emph{Intelligent Data Engineering and
-  Automated Learning-IDEAL 2007}.\hskip 1em plus 0.5em minus 0.4em\relax
-  Springer, 2007, pp. 209--218.
-
 \bibitem{chernova2009interactive}
 S.~Chernova and M.~Veloso, ``Interactive policy learning through
   confidence-based autonomy,'' \emph{Journal of Artificial Intelligence
   Research}, vol.~34, no.~1, p.~1, 2009.
 
-\bibitem{cohn1994improving}
-D.~Cohn, L.~Atlas, and R.~Ladner, ``Improving generalization with active
-  learning,'' \emph{Machine learning}, vol.~15, no.~2, pp. 201--221, 1994.
-
-\bibitem{darzi2004impact}
-A.~Darzi and Y.~Munz, ``The impact of minimally invasive surgical techniques,''
-  \emph{Annu. Rev. Med.}, vol.~55, pp. 223--237, 2004.
-
 \bibitem{duvallet2013imitation}
 F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
   language direction following through unknown environments,'' in
-  \emph{Robotics and Automation (ICRA), 2013 IEEE International Conference
-  on}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2013, pp. 1047--1053.
+  \emph{ICRA}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2013, pp.
+  1047--1053.
 
 \bibitem{grollman2007dogged}
 D.~H. Grollman and O.~C. Jenkins, ``Dogged learning for robots,'' in
-  \emph{Robotics and Automation, 2007 IEEE International Conference on}.\hskip
-  1em plus 0.5em minus 0.4em\relax IEEE, 2007, pp. 2483--2488.
+  \emph{ICRA, 2007 IEEE}.
 
 \bibitem{NIPS2014_5421}
 X.~Guo, S.~Singh, H.~Lee, R.~L. Lewis, and X.~Wang, ``Deep learning for
   real-time atari game play using offline monte-carlo tree search planning,''
-  in \emph{Advances in Neural Information Processing Systems 27},
-  Z.~Ghahramani, M.~Welling, C.~Cortes, N.~Lawrence, and K.~Weinberger,
-  Eds.\hskip 1em plus 0.5em minus 0.4em\relax Curran Associates, Inc., 2014,
-  pp. 3338--3346.
-
-\bibitem{hodge2004survey}
-V.~J. Hodge and J.~Austin, ``A survey of outlier detection methodologies,''
-  \emph{Artificial Intelligence Review}, vol.~22, no.~2, pp. 85--126, 2004.
-
-\bibitem{AnnualReport2014}
-{Intuitive Surgical}, ``Annual report 2014,'' 2014.
+  in \emph{NIPS}, 2014, pp. 3338--3346.
 
 \bibitem{judah2011active}
 K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
   queries,'' in \emph{Proceedings of the ICML Workshop on Combining Learning
   Strategies to Reduce Label Cost}, 2011.
 
-\bibitem{judah2012active}
-K.~Judah, A.~Fern, and T.~G. ietterich, ``Active imitation learning via
-  reduction to iid active learning,'' \emph{arXiv preprint arXiv:1210.4876},
-  2012.
-
 \bibitem{kim2013maximum}
-B.~Kim and J.~Pineau, ``Maximum mean discrepancy imitation learning.''\hskip
-  1em plus 0.5em minus 0.4em\relax Citeseer.
-
-\bibitem{kingnonprehensile}
-J.~E. King, J.~A. Haustein, S.~S. Srinivasa, and T.~Asfour, ``Nonprehensile
-  whole arm rearrangement planning on physics manifolds.''
+B.~Kim and J.~Pineau, ``Maximum mean discrepancy imitation learning.'' in
+  \emph{Robotics Science and Systems}, 2013.
 
 \bibitem{kitaevphysics}
 N.~Kitaev, I.~Mordatch, S.~Patil, and P.~Abbeel, ``Physics-based trajectory
-  optimization for grasping in cluttered environments.''
-
-\bibitem{knox1998algorithms}
-E.~M. Knox and R.~T. Ng, ``Algorithms for mining distancebased outliers in
-  large datasets.''\hskip 1em plus 0.5em minus 0.4em\relax Citeseer.
+  optimization for grasping in cluttered environments,'' pp. 3102--3109, 2015.
 
 \bibitem{levine2015end}
 S.~Levine, C.~Finn, T.~Darrell, and P.~Abbeel, ``End-to-end training of deep
-  visuomotor policies,'' 2015.
-
-\bibitem{liu2015optimal}
-T.~Liu and M.~C. Cavusoglu, ``Optimal needle grasp selection for automatic
-  execution of suturing tasks in robotic minimally invasive surgery,'' in
-  \emph{ICRA, 2015}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2015, pp.
-  2894--2900.
-
-\bibitem{liu2014unsupervised}
-W.~Liu, G.~Hua, and J.~R. Smith, ``Unsupervised one-class learning for
-  automatic outlier removal,'' in \emph{Computer Vision and Pattern Recognition
-  (CVPR), 2014 IEEE Conference on}.\hskip 1em plus 0.5em minus 0.4em\relax
-  IEEE, 2014, pp. 3826--3833.
-
-\bibitem{nadaraya1964estimating}
-E.~A. Nadaraya, ``On estimating regression,'' \emph{Theory of Probability \&
-  Its Applications}, vol.~9, no.~1, pp. 141--142, 1964.
-
-\bibitem{ng2000algorithms}
-A.~Y. Ng, S.~J. Russell \emph{et~al.}, ``Algorithms for inverse reinforcement
-  learning.''
-
-\bibitem{scikit-learn}
-F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel,
-  M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos,
-  D.~Cournapeau, M.~Brucher, M.~Perrot, and E.~Duchesnay, ``Scikit-learn:
-  Machine learning in {P}ython,'' \emph{Journal of Machine Learning Research},
-  vol.~12, pp. 2825--2830, 2011.
+  visuomotor policies,'' \emph{arXiv preprint arXiv:1504.00702}, 2015.
 
 \bibitem{pomerleau1989alvinn}
 D.~A. Pomerleau, ``Alvinn: An autonomous land vehicle in a neural network,''
-  DTIC Document, Tech. Rep., 1989.
+  Carnegie-Mellon University, Tech. Rep., 1989.
 
 \bibitem{ross2010efficient}
 S.~Ross and D.~Bagnell, ``Efficient reductions for imitation learning,'' in
@@ -164,52 +102,24 @@ S.~Ross and D.~Bagnell, ``Efficient reductions for imitation learning,'' in
 
 \bibitem{ross2010reduction}
 S.~Ross, G.~J. Gordon, and J.~A. Bagnell, ``A reduction of imitation learning
-  and structured prediction to no-regret online learning,'' 2010.
+  and structured prediction to no-regret online learning,'' \emph{arXiv
+  preprint arXiv:1011.0686}, 2010.
 
 \bibitem{ross2013learning}
 S.~Ross, N.~Melik-Barkhudarov, K.~S. Shankar, A.~Wendel, D.~Dey, J.~A. Bagnell,
   and M.~Hebert, ``Learning monocular reactive uav control in cluttered natural
-  environments,'' in \emph{Robotics and Automation (ICRA), 2013 IEEE
-  International Conference on}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE,
-  2013, pp. 1765--1772.
-
-\bibitem{scholkopf2001estimating}
-B.~Sch{\"o}lkopf, J.~C. Platt, J.~Shawe-Taylor, A.~J. Smola, and R.~C.
-  Williamson, ``Estimating the support of a high-dimensional distribution,''
-  \emph{Neural computation}, vol.~13, no.~7, pp. 1443--1471, 2001.
+  environments,'' in \emph{ICRA, 2013 IEEE}.\hskip 1em plus 0.5em minus
+  0.4em\relax IEEE.
 
 \bibitem{scholkopf2002learning}
 B.~Sch{\"o}lkopf and A.~J. Smola, \emph{Learning with kernels: Support vector
   machines, regularization, optimization, and beyond}.\hskip 1em plus 0.5em
   minus 0.4em\relax MIT press, 2002.
 
-\bibitem{tokdar2010importance}
-S.~T. Tokdar and R.~E. Kass, ``Importance sampling: a review,'' \emph{Wiley
-  Interdisciplinary Reviews: Computational Statistics}, vol.~2, no.~1, pp.
-  54--60, 2010.
-
-\bibitem{tong2002support}
-S.~Tong and D.~Koller, ``Support vector machine active learning with
-  applications to text classification,'' \emph{The Journal of Machine Learning
-  Research}, vol.~2, pp. 45--66, 2002.
-
 \bibitem{van2010superhuman}
 J.~Van Den~Berg, S.~Miller, D.~Duckworth, H.~Hu, A.~Wan, X.-Y. Fu, K.~Goldberg,
   and P.~Abbeel, ``Superhuman performance of surgical tasks by robots using
-  iterative learning from human-guided demonstrations,'' in \emph{Robotics and
-  Automation (ICRA), 2010 IEEE International Conference on}.\hskip 1em plus
-  0.5em minus 0.4em\relax IEEE, 2010, pp. 2074--2081.
-
-\bibitem{van2013laparoscopic}
-M.~H. van~der Pas, E.~Haglind, M.~A. Cuesta, A.~F{\"u}rst, A.~M. Lacy, W.~C.
-  Hop, H.~J. Bonjer, C.~cancer Laparoscopic~or Open Resection II (COLOR II)
-  Study~Group \emph{et~al.}, ``Laparoscopic versus open surgery for rectal
-  cancer (color ii): short-term outcomes of a randomised, phase 3 trial,''
-  \emph{The lancet oncology}, vol.~14, no.~3, pp. 210--218, 2013.
-
-\bibitem{vert2006consistency}
-R.~Vert and J.-P. Vert, ``Consistency and convergence rates of one-class svms
-  and related algorithms,'' \emph{The Journal of Machine Learning Research},
-  vol.~7, pp. 817--854, 2006.
+  iterative learning from human-guided demonstrations,'' in \emph{ICRA, 2010
+  IEEE}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2010, pp. 2074--2081.
 
 \end{thebibliography}
