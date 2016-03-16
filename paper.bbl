@@ -54,6 +54,11 @@ B.~D. Argall, S.~Chernova, M.~Veloso, and B.~Browning, ``A survey of robot
   learning from demonstration,'' \emph{Robotics and autonomous systems},
   vol.~57, no.~5, pp. 469--483, 2009.
 
+\bibitem{bengio2009curriculum}
+Y.~Bengio, J.~Louradour, R.~Collobert, and J.~Weston, ``Curriculum learning,''
+  in \emph{Proceedings of the 26th annual international conference on machine
+  learning}.\hskip 1em plus 0.5em minus 0.4em\relax ACM, 2009, pp. 41--48.
+
 \bibitem{chernova2009interactive}
 S.~Chernova and M.~Veloso, ``Interactive policy learning through
   confidence-based autonomy,'' \emph{Journal of Artificial Intelligence
