@@ -44,11 +44,6 @@ P.~Abbeel, D.~Dolgov, A.~Y. Ng, and S.~Thrun, ``Apprenticeship learning for
   motion planning with application to parking lot navigation,'' in \emph{IROS
   2008. IEEE/RS}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE.
 
-\bibitem{abbeel2004apprenticeship}
-P.~Abbeel and A.~Y. Ng, ``Apprenticeship learning via reinforcement learning,''
-  in \emph{Proceedings of the twenty-first international conference on Machine
-  learning}, 2004, p.~1.
-
 \bibitem{argall2009survey}
 B.~D. Argall, S.~Chernova, M.~Veloso, and B.~Browning, ``A survey of robot
   learning from demonstration,'' \emph{Robotics and autonomous systems},
@@ -58,6 +53,10 @@ B.~D. Argall, S.~Chernova, M.~Veloso, and B.~Browning, ``A survey of robot
 Y.~Bengio, J.~Louradour, R.~Collobert, and J.~Weston, ``Curriculum learning,''
   in \emph{Proceedings of the 26th annual international conference on machine
   learning}.\hskip 1em plus 0.5em minus 0.4em\relax ACM, 2009, pp. 41--48.
+
+\bibitem{bicchi2000robotic}
+A.~Bicchi and V.~Kumar, ``Robotic grasping and contact: A review.''\hskip 1em
+  plus 0.5em minus 0.4em\relax Citeseer.
 
 \bibitem{chernova2009interactive}
 S.~Chernova and M.~Veloso, ``Interactive policy learning through
@@ -84,9 +83,20 @@ K.~Judah, A.~Fern, and T.~Dietterich, ``Active imitation learning via state
   queries,'' in \emph{Proceedings of the ICML Workshop on Combining Learning
   Strategies to Reduce Label Cost}, 2011.
 
+\bibitem{katz2008can}
+D.~Katz, J.~Kenney, and O.~Brock, ``How can robots succeed in unstructured
+  environments,'' in \emph{In Workshop on Robot Manipulation: Intelligence in
+  Human Environments at Robotics: Science and Systems}.\hskip 1em plus 0.5em
+  minus 0.4em\relax Citeseer, 2008.
+
 \bibitem{kim2013maximum}
 B.~Kim and J.~Pineau, ``Maximum mean discrepancy imitation learning.'' in
   \emph{Robotics Science and Systems}, 2013.
+
+\bibitem{kingnonprehensile}
+J.~E. King, J.~A. Haustein, S.~S. Srinivasa, and T.~Asfour, ``Nonprehensile
+  whole arm rearrangement planning on physics manifolds,'' \emph{ICRA 2015
+  IEEE}.
 
 \bibitem{kitaevphysics}
 N.~Kitaev, I.~Mordatch, S.~Patil, and P.~Abbeel, ``Physics-based trajectory
@@ -95,6 +105,17 @@ N.~Kitaev, I.~Mordatch, S.~Patil, and P.~Abbeel, ``Physics-based trajectory
 \bibitem{levine2015end}
 S.~Levine, C.~Finn, T.~Darrell, and P.~Abbeel, ``End-to-end training of deep
   visuomotor policies,'' \emph{arXiv preprint arXiv:1504.00702}, 2015.
+
+\bibitem{li2010contextual}
+L.~Li, W.~Chu, J.~Langford, and R.~E. Schapire, ``A contextual-bandit approach
+  to personalized news article recommendation,'' in \emph{Proceedings of the
+  19th international conference on World wide web}.\hskip 1em plus 0.5em minus
+  0.4em\relax ACM, 2010, pp. 661--670.
+
+\bibitem{pinto2015supersizing}
+L.~Pinto and A.~Gupta, ``Supersizing self-supervision: Learning to grasp from
+  50k tries and 700 robot hours,'' \emph{arXiv preprint arXiv:1509.06825},
+  2015.
 
 \bibitem{pomerleau1989alvinn}
 D.~A. Pomerleau, ``Alvinn: An autonomous land vehicle in a neural network,''

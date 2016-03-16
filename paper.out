@@ -1,21 +1,20 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
 \BOOKMARK [1][-]{section.2}{Related Work}{}% 2
 \BOOKMARK [1][-]{section.3}{Problem Statement}{}% 3
-\BOOKMARK [1][-]{section.4}{Algorithm}{}% 4
-\BOOKMARK [2][-]{subsection.4.1}{DAgger: Dataset Aggregation}{section.4}% 5
+\BOOKMARK [1][-]{section.4}{Approach and Background}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Details on DAgger: Dataset Aggregation}{section.4}% 5
 \BOOKMARK [3][-]{subsubsection.4.1.1}{Step 1}{subsection.4.1}% 6
 \BOOKMARK [3][-]{subsubsection.4.1.2}{Step 2}{subsection.4.1}% 7
-\BOOKMARK [2][-]{subsection.4.2}{Hierarchy of Supervisors}{section.4}% 8
-\BOOKMARK [2][-]{subsection.4.3}{DAgger with Supervisor Hierarchy}{section.4}% 9
-\BOOKMARK [1][-]{section.5}{Robot Grasping in Clutter}{}% 10
-\BOOKMARK [2][-]{subsection.5.1}{Grasping in Clutter}{section.5}% 11
-\BOOKMARK [2][-]{subsection.5.2}{Supervisor Hierarchy}{section.5}% 12
-\BOOKMARK [2][-]{subsection.5.3}{ Neural Network Policy Architecture}{section.5}% 13
-\BOOKMARK [1][-]{section.6}{Experiments}{}% 14
-\BOOKMARK [2][-]{subsection.6.1}{Hierarchical Supervisors}{section.6}% 15
-\BOOKMARK [2][-]{subsection.6.2}{Quality Crowdsourced Supervisor}{section.6}% 16
-\BOOKMARK [2][-]{subsection.6.3}{Advancing in the Hierarchy}{section.6}% 17
-\BOOKMARK [2][-]{subsection.6.4}{Scaling the Hierarchy}{section.6}% 18
-\BOOKMARK [1][-]{section.7}{Discussions and Future Work}{}% 19
-\BOOKMARK [1][-]{section.8}{Acknowledgments}{}% 20
-\BOOKMARK [1][-]{section*.8}{References}{}% 21
+\BOOKMARK [2][-]{subsection.4.2}{DAgger with Supervisor Hierarchy}{section.4}% 8
+\BOOKMARK [1][-]{section.5}{Robot Grasping in Clutter}{}% 9
+\BOOKMARK [2][-]{subsection.5.1}{Grasping in Clutter}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.2}{Supervisor Hierarchy}{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.3}{Neural Network Policy Architecture}{section.5}% 12
+\BOOKMARK [1][-]{section.6}{Experiments}{}% 13
+\BOOKMARK [2][-]{subsection.6.1}{Hierarchical Supervisors}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.2}{Quality Crowdsourced Supervisor}{section.6}% 15
+\BOOKMARK [2][-]{subsection.6.3}{Advancing in the Hierarchy}{section.6}% 16
+\BOOKMARK [2][-]{subsection.6.4}{Scaling the Hierarchy}{section.6}% 17
+\BOOKMARK [1][-]{section.7}{Discussions and Future Work}{}% 18
+\BOOKMARK [1][-]{section.8}{Acknowledgments}{}% 19
+\BOOKMARK [1][-]{section*.8}{References}{}% 20
