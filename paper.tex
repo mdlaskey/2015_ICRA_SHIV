@@ -383,19 +383,29 @@ to set $\beta = 0$ to avoid biasing the sampling~\cite{NIPS2014_5421,ross2010red
 
 
 \subsection{DAgger with Supervisor Hierarchy}
-Formulating a framework for selecting a supervisor can be difficult because we do not have a known model for how a supervisor selected affects the minimization of the surrogate loss. The reason we do not have a model is because this would require modeling what examples the supervisor will return, the $\theta$ parameters of the neural network policy after training and the states the robot is likely to visit given those parameters. 
+Formulating a framework for supervisor strategy selection poses a challenging problem since no formal model
+for the effect of supervisor selection on the surrogate loss minimization is available a priori and since the
+neural network policy parameters $\theta$ are additionally changing at each step of DAgger's iterative training process.
 
-We could learn a policy using model-free reinforcement learning algorithms ~\cite{sutton1998reinforcement}, where a selection strategy will query different supervisors and learn over time the best supervisor to select given the current policy. However, a problem occurs when applying these approaches because it requires evaluating the objective function, which is the surrogate loss with respect to the costliest and most-skilled supervisor, $S_M$. This requires exhaustively querying the costliest supervisor at each iteration and defeating the purpose of reducing cost. 
+While one could consider to learn a policy using model-free reinforcement learning algorithms
+~\cite{sutton1998reinforcement}, where a selection strategy will query different supervisors and learn over time the
+best supervisor to select given the current policy, this approach requires substantial numbers of 
+queries for supervision of the costliest supervisor at each iteration. In light of this, we propose a greedy allocation
+strategy.
 
- In light of this, we propose a greedy allocation strategy, in terms of supervisor cost, where we train a policy with the cheapest supervisor first for a fix number of trials and then advance through the hierarchy training with each supervisor. Our algorithm is as follows: first iterate through Step 1 and 2 of DAgger for a given supervisor, however after iteration $K_m$. Then iterate to the next supervisor in the hierarchy or $m = m+1$. 
+We train a policy with the cheapest supervisor $S_1$ for a fixed number of $K_1$ iterations with DAgger and then advance
+linearly through the hierarchy $S_1, \ldots, S_M$, where the final Neural Network Parameters $\theta_i$ trained using
+$S_i$ are transferred iteratively to supervisor $S_{i+1}$ before further training the policy with DAgger.
+Each supervisor is trained for $K_i, i\in \{1, \ldots, M\}$ iterations in turn. 
 
-The number of iterations before advancing to the next supervisor can be challenging to set. In practice, we either advanced when the surrogate loss between supervisors was sufficiently low or when the performance on the grasping in clutter task was not improving. The reason for different options was because some supervisors have very large variance (i.e. crowdsourcing), that a fix threshold on surrogate loss could be misleading without a sufficient number of examples. 
+While for large numbers of iterations, convergence tests can be applied to determine a point of diminishing return at
+which a switch to the next supervisor in the hierarchy can be initiated, this approach can be challenging when only a
+limited numbers of roll-outs can be afforded. In practice, we either advanced when the surrogate loss between
+supervisors was sufficiently low or when the performance on the grasping in clutter task was not improving empirically. 
+For crowdsourcing in particular, we chose the second option since, due to the large variance between demonstrations
+we were not able to determine a fixed threshold for the surrogate loss. We hope to significantly scale the number of
+training steps in future work to investigate various switching criterea in full detail.
 
-An issue arises though when performing this iterations because now the current dataset $\mathcal{D}_{K_m}$ has examples from a different supervisor that receives a smaller expected cumulative reward. This could cause a learning algorithm to try and fit to contradictory examples  and be worse than either supervisor trained with \cite{scholkopf2002learning}.
-
-We are thus interested in not storing the dataset collected from the previous supervisor and only remembering the current $\theta_{m,K}$ weight parameters. Thus, we propose only performing DAgger for each individual supervisor in the hierarchy and using the resulting weight vector to bootstrap the learning of the next supervisor. We found empirically in Sec. \ref{sec:Exp} that it also beneficial to add to the new dataset the states and controls applied by the current policy $\pi_{\theta_{m,k}}$ that the current supervisor agreed with by some euclidean distance $\tilde{\epsilon}$.Thus, acting as a regularization on the optimization since stochastic gradient on a section of the min-batch update would be zero for examples where the next supervisor agrees with the previous. 
-
- 
 \begin{figure}[t]
 \centering
 
@@ -540,6 +550,10 @@ We further test how to advance between supervisors in the hierarchy.We examine t
 We compare each strategy on a hierarchy of a MPIO supervisor trained with 100 iterations and then advancing to a human expert supervisor trained with 60 iterations.  Our results reported in Fig.\ref{fig:cost_result} , show that aggregation strategy achieves $0.18\%$, the weight transfer strategy achieves $0.55\%$ and the regularized stochastic gradient update strategy achieves $0.63\%$. Thus, suggesting that techniques to help the policy remain close to the previously trained supervisor are useful for effectively switching between supervisors.   
 
 
+
+An issue arises though when performing this iterations because now the current dataset $\mathcal{D}_{K_m}$ has examples from a different supervisor that receives a smaller expected cumulative reward. This could cause a learning algorithm to try and fit to contradictory examples  and be worse than either supervisor trained with \cite{scholkopf2002learning}.
+
+We are thus interested in not storing the dataset collected from the previous supervisor and only remembering the current $\theta_{m,K}$ weight parameters. Thus, we propose only performing DAgger for each individual supervisor in the hierarchy and using the resulting weight vector to bootstrap the learning of the next supervisor. We found empirically in Sec. \ref{sec:Exp} that it also beneficial to add to the new dataset the states and controls applied by the current policy $\pi_{\theta_{m,k}}$ that the current supervisor agreed with by some euclidean distance $\tilde{\epsilon}$.Thus, acting as a regularization on the optimization since stochastic gradient on a section of the min-batch update would be zero for examples where the next supervisor agrees with the previous. 
 
 
 
