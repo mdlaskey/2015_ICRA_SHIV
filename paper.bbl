@@ -112,14 +112,17 @@ L.~Li, W.~Chu, J.~Langford, and R.~E. Schapire, ``A contextual-bandit approach
   19th international conference on World wide web}.\hskip 1em plus 0.5em minus
   0.4em\relax ACM, 2010, pp. 661--670.
 
+\bibitem{nieuwenhuisen2013mobile}
+M.~Nieuwenhuisen, D.~Droeschel, D.~Holz, J.~Stuckler, A.~Berner, J.~Li,
+  R.~Klein, and S.~Behnke, ``Mobile bin picking with an anthropomorphic service
+  robot,'' in \emph{Robotics and Automation (ICRA), 2013 IEEE International
+  Conference on}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2013, pp.
+  2327--2334.
+
 \bibitem{pinto2015supersizing}
 L.~Pinto and A.~Gupta, ``Supersizing self-supervision: Learning to grasp from
   50k tries and 700 robot hours,'' \emph{arXiv preprint arXiv:1509.06825},
   2015.
-
-\bibitem{pomerleau1989alvinn}
-D.~A. Pomerleau, ``Alvinn: An autonomous land vehicle in a neural network,''
-  Carnegie-Mellon University, Tech. Rep., 1989.
 
 \bibitem{ross2010efficient}
 S.~Ross and D.~Bagnell, ``Efficient reductions for imitation learning,'' in
@@ -141,6 +144,10 @@ S.~Ross, N.~Melik-Barkhudarov, K.~S. Shankar, A.~Wendel, D.~Dey, J.~A. Bagnell,
 B.~Sch{\"o}lkopf and A.~J. Smola, \emph{Learning with kernels: Support vector
   machines, regularization, optimization, and beyond}.\hskip 1em plus 0.5em
   minus 0.4em\relax MIT press, 2002.
+
+\bibitem{sutton1998reinforcement}
+R.~S. Sutton and A.~G. Barto, \emph{Reinforcement learning: An
+  introduction}.\hskip 1em plus 0.5em minus 0.4em\relax MIT press, 1998.
 
 \bibitem{van2010superhuman}
 J.~Van Den~Berg, S.~Miller, D.~Duckworth, H.~Hu, A.~Wan, X.-Y. Fu, K.~Goldberg,
