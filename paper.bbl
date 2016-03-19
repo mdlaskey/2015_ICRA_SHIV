@@ -63,6 +63,12 @@ S.~Chernova and M.~Veloso, ``Interactive policy learning through
   confidence-based autonomy,'' \emph{Journal of Artificial Intelligence
   Research}, vol.~34, no.~1, p.~1, 2009.
 
+\bibitem{cosgun2011push}
+A.~Cosgun, T.~Hermans, V.~Emeli, and M.~Stilman, ``Push planning for object
+  placement on cluttered table surfaces,'' in \emph{Intelligent Robots and
+  Systems (IROS), 2011 IEEE/RSJ International Conference on}.\hskip 1em plus
+  0.5em minus 0.4em\relax IEEE, 2011, pp. 4627--4632.
+
 \bibitem{duvallet2013imitation}
 F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
   language direction following through unknown environments,'' in
@@ -102,15 +108,25 @@ J.~E. King, J.~A. Haustein, S.~S. Srinivasa, and T.~Asfour, ``Nonprehensile
 N.~Kitaev, I.~Mordatch, S.~Patil, and P.~Abbeel, ``Physics-based trajectory
   optimization for grasping in cluttered environments,'' pp. 3102--3109, 2015.
 
+\bibitem{laskeyshiv}
+M.~Laskey, S.~Staszak, W.~Y.-S. Hsieh, J.~Mahler, F.~T. Pokorny, A.~D. Dragan,
+  and K.~Goldberg, ``Shiv: Reducing supervisor burden using support vectors for
+  efficient learning from demonstrations in high dimensional state spaces.''
+
+\bibitem{leeper2012strategies}
+A.~E. Leeper, K.~Hsiao, M.~Ciocarlie, L.~Takayama, and D.~Gossow, ``Strategies
+  for human-in-the-loop robotic grasping,'' in \emph{Proceedings of the seventh
+  annual ACM/IEEE international conference on Human-Robot Interaction}.\hskip
+  1em plus 0.5em minus 0.4em\relax ACM, 2012, pp. 1--8.
+
 \bibitem{levine2015end}
 S.~Levine, C.~Finn, T.~Darrell, and P.~Abbeel, ``End-to-end training of deep
   visuomotor policies,'' \emph{arXiv preprint arXiv:1504.00702}, 2015.
 
-\bibitem{li2010contextual}
-L.~Li, W.~Chu, J.~Langford, and R.~E. Schapire, ``A contextual-bandit approach
-  to personalized news article recommendation,'' in \emph{Proceedings of the
-  19th international conference on World wide web}.\hskip 1em plus 0.5em minus
-  0.4em\relax ACM, 2010, pp. 661--670.
+\bibitem{mason1986mechanics}
+M.~T. Mason, ``Mechanics and planning of manipulator pushing operations,''
+  \emph{The International Journal of Robotics Research}, vol.~5, no.~3, pp.
+  53--71, 1986.
 
 \bibitem{nieuwenhuisen2013mobile}
 M.~Nieuwenhuisen, D.~Droeschel, D.~Holz, J.~Stuckler, A.~Berner, J.~Li,

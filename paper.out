@@ -7,15 +7,12 @@
 \BOOKMARK [3][-]{subsubsection.4.1.2}{Step 2}{subsection.4.1}% 7
 \BOOKMARK [2][-]{subsection.4.2}{DAgger with Supervisor Hierarchy}{section.4}% 8
 \BOOKMARK [1][-]{section.5}{Robot Grasping in Clutter}{}% 9
-\BOOKMARK [2][-]{subsection.5.1}{Grasping in Clutter}{section.5}% 10
-\BOOKMARK [2][-]{subsection.5.2}{Supervisor Hierarchy}{section.5}% 11
-\BOOKMARK [2][-]{subsection.5.3}{Neural Network Policy Architecture}{section.5}% 12
-\BOOKMARK [1][-]{section.6}{Experiments}{}% 13
-\BOOKMARK [2][-]{subsection.6.1}{Experimental Setup}{section.6}% 14
-\BOOKMARK [2][-]{subsection.6.2}{Hierarchical Supervisors}{section.6}% 15
-\BOOKMARK [2][-]{subsection.6.3}{Quality of Crowdsourced Supervisor}{section.6}% 16
-\BOOKMARK [2][-]{subsection.6.4}{Advancing in the Hierarchy}{section.6}% 17
-\BOOKMARK [2][-]{subsection.6.5}{Scaling the Hierarchy}{section.6}% 18
-\BOOKMARK [1][-]{section.7}{Discussions and Future Work}{}% 19
-\BOOKMARK [1][-]{section.8}{Acknowledgments}{}% 20
-\BOOKMARK [1][-]{section*.9}{References}{}% 21
+\BOOKMARK [1][-]{section.6}{Experiments}{}% 10
+\BOOKMARK [2][-]{subsection.6.1}{Experimental Setup}{section.6}% 11
+\BOOKMARK [2][-]{subsection.6.2}{Hierarchical Supervisors}{section.6}% 12
+\BOOKMARK [2][-]{subsection.6.3}{Quality of Crowdsourced Supervisor}{section.6}% 13
+\BOOKMARK [2][-]{subsection.6.4}{Advancing in the Hierarchy}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.5}{Scaling the Hierarchy}{section.6}% 15
+\BOOKMARK [1][-]{section.7}{Discussions and Future Work}{}% 16
+\BOOKMARK [1][-]{section.8}{Acknowledgments}{}% 17
+\BOOKMARK [1][-]{section*.11}{References}{}% 18
