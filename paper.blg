@@ -1,6 +1,6 @@
-This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+This is BibTeX, Version 0.99d (TeX Live 2014)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
-The top-level auxiliary file: ./paper.aux
+The top-level auxiliary file: paper.aux
 The style file: IEEEtranS.bst
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
@@ -8,8 +8,10 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: references.bib
-Warning--I didn't find a database entry for "sanger1994neural"
-Warning--I didn't find a database entry for "opencv_library"
+You're missing a field part---line 644 of file references.bib
+ :     title = 
+ :             ,
+I'm skipping whatever remains of this entry
 -- IEEEtranS.bst version 1.13 (2008/09/30) by Michael Shell.
 -- http://www.michaelshell.org/tex/ieeetran/bibtex/
 -- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
@@ -17,6 +19,8 @@ Warning--I didn't find a database entry for "opencv_library"
 Warning--empty year in abbeel2008apprenticeship
 Warning--empty booktitle in bicchi2000robotic
 Warning--empty year in bicchi2000robotic
+Warning--empty title in opencv_library
+Warning--empty year in opencv_library
 Warning--empty year in grollman2007dogged
 Warning--empty year in kingnonprehensile
 Warning--empty journal in kitaevphysics
@@ -25,45 +29,45 @@ Warning--empty year in laskeyshiv
 Warning--empty year in ross2013learning
 
 Done.
-You've used 28 entries,
+You've used 30 entries,
             4498 wiz_defined-function locations,
-            1047 strings with 14433 characters,
-and the built_in function-call counts, 24673 in all, are:
-= -- 2049
-> -- 993
-< -- 112
-+ -- 496
-- -- 282
-* -- 1327
-:= -- 3626
-add.period$ -- 66
-call.type$ -- 28
-change.case$ -- 224
-chr.to.int$ -- 276
-cite$ -- 37
-duplicate$ -- 1532
-empty$ -- 1858
-format.name$ -- 309
-if$ -- 5473
+            1053 strings with 14641 characters,
+and the built_in function-call counts, 25996 in all, are:
+= -- 2173
+> -- 1015
+< -- 123
++ -- 508
+- -- 286
+* -- 1388
+:= -- 3837
+add.period$ -- 69
+call.type$ -- 30
+change.case$ -- 231
+chr.to.int$ -- 300
+cite$ -- 41
+duplicate$ -- 1624
+empty$ -- 1955
+format.name$ -- 313
+if$ -- 5765
 int.to.chr$ -- 0
-int.to.str$ -- 28
-missing$ -- 299
-newline$ -- 109
-num.names$ -- 56
-pop$ -- 980
+int.to.str$ -- 30
+missing$ -- 312
+newline$ -- 115
+num.names$ -- 60
+pop$ -- 1012
 preamble$ -- 1
-purify$ -- 197
+purify$ -- 203
 quote$ -- 2
-skip$ -- 1692
+skip$ -- 1795
 stack$ -- 0
-substring$ -- 819
-swap$ -- 1079
-text.length$ -- 20
+substring$ -- 886
+swap$ -- 1145
+text.length$ -- 23
 text.prefix$ -- 0
 top$ -- 6
-type$ -- 295
-warning$ -- 9
-while$ -- 102
-width$ -- 30
-write$ -- 261
-(There were 11 warnings)
+type$ -- 317
+warning$ -- 11
+while$ -- 110
+width$ -- 32
+write$ -- 278
+(There was 1 error message)

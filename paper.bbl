@@ -58,6 +58,9 @@ Y.~Bengio, J.~Louradour, R.~Collobert, and J.~Weston, ``Curriculum learning,''
 A.~Bicchi and V.~Kumar, ``Robotic grasping and contact: A review.''\hskip 1em
   plus 0.5em minus 0.4em\relax Citeseer.
 
+\bibitem{opencv_library}
+G.~Bradski, \emph{Dr. Dobb's Journal of Software Tools}.
+
 \bibitem{chernova2009interactive}
 S.~Chernova and M.~Veloso, ``Interactive policy learning through
   confidence-based autonomy,'' \emph{Journal of Artificial Intelligence
@@ -155,6 +158,11 @@ S.~Ross, N.~Melik-Barkhudarov, K.~S. Shankar, A.~Wendel, D.~Dey, J.~A. Bagnell,
   and M.~Hebert, ``Learning monocular reactive uav control in cluttered natural
   environments,'' in \emph{ICRA, 2013 IEEE}.\hskip 1em plus 0.5em minus
   0.4em\relax IEEE.
+
+\bibitem{sanger1994neural}
+T.~D. Sanger, ``Neural network learning control of robot manipulators using
+  gradually increasing task difficulty,'' \emph{Robotics and Automation, IEEE
+  Transactions on}, vol.~10, no.~3, pp. 323--333, 1994.
 
 \bibitem{scholkopf2002learning}
 B.~Sch{\"o}lkopf and A.~J. Smola, \emph{Learning with kernels: Support vector
