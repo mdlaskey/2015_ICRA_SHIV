@@ -125,13 +125,14 @@
 %\title{Iterative Imitation Learning with Reduced Human Supervision [v11]}
 %\title{SHIV:  Reducing Human Supervision for Robot Active Learning [v11]}
 
-\title{Robotic Grasping in Clutter: Using a Hierarchy of Supervisors with Learning from Demonstrations}
+\title{Robot Grasping in Clutter:\\
+ Using a Hierarchy of Supervisors for Learning from Demonstrations}
 
 
 
-\author{Michael Laskey$^1$, Jonathan Lee$^1$, Caleb Chuck$^1$, David Gealy$^1$, Wesley Hsieh$^1$, Florian T. Pokorny,\\
+\author{Michael Laskey$^1$, Jonathan Lee$^1$, Caleb Chuck$^1$, David Gealy$^1$, Wesley Hsieh$^1$, Florian T. Pokorny$^1$,\\
  Anca D. Dragan$^1$, and Ken Goldberg$^{1,2}$% <-this % stops a space
-\thanks{$^1$ Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey,iamwesleyhsieh,ftpokorny,anca\}@berkeley.edu} }%
+\thanks{$^1$ Department of Electrical Engineering and Computer Sciences; {\small \{mdlaskey, jonathan\textunderscore lee, calebchuck, dgealy, wesleyhsieh, ftpokorny, anca\}@berkeley.edu} }%
 \thanks{$^2$ Department of Industrial Engineering and Operations Research; {\small goldberg@berkeley.edu}}%
 \thanks{$^{1-2}$ University of California, Berkeley;  Berkeley, CA 94720, USA}%
 }
@@ -147,15 +148,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-For applications such as Amazon warehouse order fulfillment, robots must grasp a desired object amid clutter: other
-objects that block direct access.  This can be difficult to program explicitly due to uncertainty in friction and push
-mechanics and the large number of objects that can be encountered. Online Learning from Demonstration (LfD) algorithms
-such as DAgger and SHIV have potential to learn robot control policies for tasks where the system dynamics and the cost
-function are unknown. To reduce the burden on human experts to provide control demonstrations, we propose using a
-hierarchy of supervisors and a Deep Learning network to learn a grasping in clutter task.  We consider 3 levels of
-supervisors, a fast motion planner that ignores obstacles, crowdsourced human workers who
-provide appropriate robot control values via online videos, and local human experts.  Experiments suggest that we can
-leverage a hiearchy of supervisors to obtain 22,000 labeled training data examples and achieve 80\% success on a held out test set of cluttered object configurations that contain objects not trained on. 
+For applications such as Amazon warehouse order fulfillment, robots must grasp a desired object amid clutter: other objects that block direct access. This can be difficult to program explicitly due to uncertainty in friction and push mechanics and the variety of objects that can be encountered. Deep Learning networks combined with Online Learning from Demonstration (LfD) algorithms such as DAgger and SHIV have potential to learn robot control policies for such tasks where the input is a camera image and system dynamics and the cost function are unknown.  To explore this idea, we introduce a version of the grasping in clutter problem where a yellow cylinder must be grasped by a planar robot arm amid extruded objects in a variety of shapes and positions. To reduce the burden on human experts to provide demonstrations, we propose using a hierarchy of three levels of supervisors: a fast motion planner that ignores obstacles, crowd-sourced human workers who provide appropriate robot control values remotely via online videos, and a local human expert. Physical experiments suggest that with a fixed budget of 160 expert demonstrations, using the hierarchy of supervisors can increase the probability of a successful grasp (reliability) from $55\%$ to $90\%$.
 
  \end{abstract}
 
@@ -165,7 +158,7 @@ leverage a hiearchy of supervisors to obtain 22,000 labeled training data exampl
 \section{Introduction} 
 As illustrated by the recent Amazon Picking Challenge at ICRA 2015, the grasping in clutter problem, where a robot needs
 to grasp an object that might be occluded by other objects in the environment poses an interesting challenge to robotic
-systems. This problem is relevant to industrial applications such as warehouse shipping operations and flexible manufacturing in a semi-structured environments. One fundamental approach to grasping in clutter is the analytic model driven approach~\cite{bicchi2000robotic},
+systems. This problem is relevant to industrial applications such as warehouse shipping operations and flexible manufacturing in semi-structured environments. One fundamental approach to grasping in clutter is the analytic model driven approach~\cite{bicchi2000robotic},
 where the interaction dynamics between the robot and obstacles are formulated analytically. However, modeling all the 
 physical properties of interaction poses a highly challenging problem due to uncertainty in modeling parameters such as
 inertial properties and friction. 
@@ -178,13 +171,13 @@ surgery~\cite{van2010superhuman}. Furthermore, deep learning, which we use to le
 data, has emerged as a highly versatile technique used for this purpose ~\cite{pinto2015supersizing}.
 
 \begin{figure}
-\includegraphics[width=0.5\textwidth]{f_figs/teaser.eps}
+\includegraphics[width=0.5\textwidth]{f_figs/teaser_h.eps}
 \caption{
     \footnotesize
-Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per column, top to
-bottom) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. 
+Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per row, left to
+right) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. 
 Red shapes indicate clutter objects and the robot is trained to reach the yellow cylinder. The trained manipulation
-policy is represented as a deep neural network that recieves as input an image of the scene and outputs a change in
+policy is represented as a deep neural network that receives as input an image of the scene and outputs a change in
 state position. The resulting policy learns to sweep away clutter objects to reach the goal object. }
 \vspace*{-20pt}
 \label{fig:teaser}
@@ -203,51 +196,64 @@ Our approach is based on Online Learning from Demonstrations where a robot itera
 provided feedback on the current policy roll out by a supervisor~\cite{grollman2007dogged,ross2010efficient,ross2010reduction}. 
 We build on, DAgger, an online LfD algorithm which at each iteration, computes a policy based on prior demonstrations,
 and then rolls out that policy. A supervisor then provides control signals as feedback on the current policy
-and new state/control examples are aggregated with the prior examples for the next iteration. DAgger and related algorithms have been applied in a wide range of applications, from quadrotor flight to natural language to Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}. 
+and new state/control examples are aggregated with the prior examples for the next iteration. DAgger and related algorithms have been applied in a wide range of applications, from quadrotor flight, natural language and Atari games~\cite{NIPS2014_5421,duvallet2013imitation,ross2013learning}. 
 Ross et al. showed that DAgger, under a no-regret assumption, can be guaranteed to deviate from the supervisor's policy with an error
 at most linear in the time horizon for the task~\cite{ross2010reduction}.
 
 One drawback is that DAgger imposes a substantial burden on the supervisor, who must label all states that the robot
 visits during training.  Previously a single expert supervisor has been considered 
-~\cite{ross2010efficient,ross2010reduction,ross2013learning,duvallet2013imitation}. 
+~\cite{ross2010efficient,laskeyshiv,ross2010reduction,ross2013learning,duvallet2013imitation}.
 
-In this work, we propose to instead
-utilize a hierarchy of supervisors that exhibit increasing cost and competence at a given task to incrementally
-bootstrap the learning process. In particular, while model-based planners might not capture physical interactions with
-complete realism. We propose to leverage model-based planners in the initial training phase rather than to utilize an expensive
-expert supervisor from scratch. Thus, at the lowest level of the hierarchy, we use a motion planner on an simplified
+
+We  propose to instead
+utilize a hierarchy of supervisors  to incrementally
+bootstrap the learning process, as opposed to utilizing an expensive
+expert supervisor from scratch. Thus, at the lowest level of the hierarchy, we use a motion planner on a simplified
 version of the grasping in clutter problem that ignores ambient obstacles. As the next supervisor in the hierarchy, 
-we consider crowdsourced workers on Amazon Mechanical Turk and finally the robot is trained with a Phd student in
-robotics, who is considered an expert human supervisor. When trained with the full hierarchy the robot is able to achieve an 80\% success rate on 20 configurations that each contain new objects. Examples of the resulting learned grasping in clutter policy can be seen in Fig. \ref{fig:teaser}. 
-
+we consider crowd-sourced workers on Amazon Mechanical Turk and finally the robot is trained with a PhD student in
+robotics, who is considered an expert human supervisor. Experiments suggest that with a fix budget of 160 expert demonstrations leveraging a hierarchy of supervisors can increase reliability from $55\%$ to $90\%$ on a test set of unknown object configurations. 
 %Learning can be bootstrapped with a sequence of increasingly skilled supervisors. In our grasping in clutter example, the robot spends a large portion of the time learning how to go towards the goal object. Analytical techniques such as forward kinematics, template matching and motion planning are readily available to provide examples in these parts of the state space. 
 
 %We propose bootstrapping a policy from a hierarchy of supervisors ranked by cost: analytical models, crowd-sourced workers and an expert supervisor to learn the robot grasping in clutter task. We demonstrate this approach by training a deep neural network for the visuo-motor based task of  grasping in clutter on a Zymark Robot. Our robot consists of an 2DOF arm and a gripper that lie in a planar workspace. The objects dataset consists of 20  extruded polygons taken from 2D projections of objects in the Dex-Net \cite{mahler2016dexnet} database.  Results show that by leveraging a hierarchy of less skilled experts, the total amount of cost incurred is reduced by X$\%$ and the task is $61\%$ successful on our test set of 20 object configurations of shapes not trained on \mlnote{need to think of a better teaser statement}
 
 
 \section{Related Work}
-Below, we summarize related work in Robotic Grasiping in Clutter, the Online LfD setting and Curriculum learning.
+Below, we summarize related work in Robotic Grasping in Clutter, the Online LfD setting and Curriculum learning.
 
 \noindent \textbf{Robotic Grasping in Clutter}
 Robotic grasping is a well-established research topic in robotics that has been studied for several
 decades~\cite{bicchi2000robotic}. A significant amount of prior work focuses on planning grasps given a known object.
 However, in unstructured environments clutter poses a significant challenge for reaching the planned grasp
-~\cite{katz2008can}. Prior work has addressed integrated perception and grasping in clutter where the objective is to
-grasp objects in an unorganized pile~\cite{pinto2015supersizing,nieuwenhuisen2013mobile}, but these methods do not
-specifically aim to grasp a single target object in clutter. 
+~\cite{katz2008can}. 
+
+
 Prior work has studied the problem of manipulating objects
 by performing pushing operations~\cite{mason1986mechanics}.  Cosgun et al.~\cite{cosgun2011push} and King et al. \cite{kingnonprehensile} consider the problem of planning a series of push operations that move an object to a
-desired target location. Kiteav et al. planned a trajectory in a physics simulator using LQG based controllers
-\cite{kitaevphysics}. However, all of these works assume known properties of the object model, such as mass and friction
-coefficient  or access to an object model in a physics simulator, which can be difficult to obtain for unknown objects. 
+desired target location. We are interested in reaching a desire goal object, not how to move an object to a specific pose.
+
+Additionally prior work has studied the use of hierarchical approaches for motion planning amid movable obstacles ~\cite{stilman2007manipulation,van2009path}. The approach is to use sampling-based methods to compute a high-level plan to move objects our of the way and get to a goal location. Dogar and Srinivasa applied this approach to push-grasping in clutter that plans a trajectory towards a grasp by maintaining a set of movable objects~\cite{dogar2011framework}. Our approach could be potentially integrated with a high level planner for more advance problems, where removing objects from the environment is needed. 
+
+Dogar et al. proposed a physics-based grasp planning approach that pre-computes and caches interactions with obstacles in the environment, which allows for fast real evaluation for a planner~\cite{dogar2012physics}. However, it does not account for inter-object interactions, which can be significant in cluttered environments. A supervisor could potentially impart an intuition for inter-object interaction while training the robot. Kiteav et al. planned a trajectory in a physics simulator using LQG based controllers
+\cite{kitaevphysics} to reach a goal object surrounded by movable obstacles. They demonstrated that leveraging knowledge of object dynamics can lead to higher success than only motion planning.  However, for unknown objects it can be difficult to know parameters such as mass and friction coefficient, which are important for simulation. 
+
+
+
 Leeper et al. ~\cite{leeper2012strategies} used a human operator for assistance
 to guide the robot through clutter with the objective of grasping a target object. However, the robot required the human
 to be present at all times and did not attempt to learn to operate autonomously. We are interested in a data-driven
 approach that only queries a supervisor at training time and  can operate autonomously thereafter.
 
+Prior work has addressed integrated perception and grasping in clutter where the objective is to
+grasp objects in an unorganized pile~\cite{pinto2015supersizing,nieuwenhuisen2013mobile}, but these methods do not
+specifically aim to grasp a single target object in clutter. We train a robot specifically to move towards a goal object and treat other objects as clutter. 
+
+
 A model-free approach to robotic manipulation is Guided Policy Search~\cite{levine2015end}. However, this assumes a
-known low-dimensional state representation to both estimate dynamics and perform LQG in. In the grasping in clutter
+known low-dimensional state representation to both estimate dynamics and apply an LQG controller. In the grasping in clutter
 domain, it can be hard to specify such a low dimensional representation due the dependence on the objects' shape.
+
+
+
 
 \noindent \textbf{Online LfD with an Expert Supervisor}
 Successful robotic examples of Online Learning From Demonstration with an expert supervisor include applications to flying a quad-copter through a forest, navigating a wheel chair across a room and teaching a robot to follow verbal instructions and surgical needle insertion \cite{ross2013learning, kim2013maximum, duvallet2013imitation, laskeyshiv}. 
@@ -264,10 +270,9 @@ learning, the traditional active learning techniques may not be suitable.
 Thus the use of novelty detection was proposed~\cite{kim2013maximum}. Laskey et al. introduced SHIV, using an active
 learning approach tailored to high dimensional and non-stationarity state distributions and a modified version of the
 One Class SVM classifier. This reduced the density estimation problem to a 
-simpler regularized binary classification~\cite{laskeyshiv}. However the grasping in clutter problem exhibits a high amount
-of variability in parameters requiring a large training data set. This poses a significant computational challenge to these methods.
-In the present paper, we hence consider using Deep Learning, as a scalable learning algorithm in combination
-with DAgger.
+simpler regularized binary classification~\cite{laskeyshiv}. 
+
+However, all of these works focus on reducing the duration of the demonstration an expert needs to provide. We focus on reducing the number of demonstrations the expert needs to provide, not the duration. 
 
 \noindent\textbf{Curriculum Learning}
 Our approach is closely related to ideas from curriculum learning, where a neural network is trained  
@@ -278,13 +283,98 @@ to the robot first and then gradually increased the difficulty~\cite{sanger1994n
 We avoid the complexity of ranking training data by difficulty and instead propose an iterative scheme where
 data is presented in an unbiased manner to a hierarchy of supervisors.
 
-\section{Problem Statement}
-Given a collection of increasingly able and costly supervisors $S_1, \ldots, S_M$, the goal of this work is to learn a
-policy that closely matches that of the most able supervisor $S_M$ while minimizing the overall cost of training a
-policy. We formalize this approach as follows.
+
+\section{Robot Grasping in Clutter}\label{sec:sys}
+ We consider a robot grasping an
+object in a cluttered environment. The robot's goal is to grasp a  target, or goal, object in the presence of extruded
+ objects obstructing the path towards the goal object. Kiteav et al. demonstrated that applying only a motion planner to this problem is not as successful as incorporating knowledge of object dynamics \cite{kitaevphysics}. However, since contact dynamics can be difficult to model without  information such as friction coefficient and mass \cite{kitaevphysics,kingnonprehensile}, we do not assume knowledge of explicit object or dynamics models and instead learn a grasping policy directly from demonstrations. We consider the following robot system, three supervisors $S_1, S_2, S_3$ and neural network policy architecture:
+
+\noindent \textbf{Robot System}
+The robot, shown in Fig. \ref{fig:robot}, has a 3
+dimensional internal state of base rotation, arm extension and gripper opening width. The state space of the environment, $\mathcal{X}$, is captured by  an overhead Logitech C270 camera, which is positioned to capture the workspace that contains all cluttered objects, the goal object and the robot arm. Examples of images from the camera can be seen in Fig. \ref{fig:teaser}. The robot is commanded via position 
+control with a  PID controller. Similar to \cite{laskeyshiv}, the controls, $\mathcal{U}$, to the robot are bounded changes in the internal state, which allows for us to easily register control signals to the demonstrations provided by supervisors as opposed to torque control. The control signals for each degree of freedom are continuous values with the following ranges: base rotation, $[-15^\circ,15^\circ]$, arm extension $[-1,1]$. The units are degrees for base rotation and centimeters for arm extension. The precision of control signal is $0.001$ for each degree of freedom. As opposed to unsupervised learning, where discretization of controls helps reduce computational complexity. In supervised learning, or regression, it is common to use a high level of precision for control signals ~\cite{levine2015end, laskeyshiv,kim2013maximum}. 
+
+
+The robot receives feedback from a supervisor by first executing a trajectory that has a time horizon, $T$, or $T=100$. The trajectory, which is composed of $100$ states, or images captured by the camera, is then given to a supervisor, who provides a demonstration. A demonstration is defined as the supervisor providing  the control they would apply if it was in the robot's current state, for each state in the trajectory. The robot then uses these demonstrations  in an approach similar to supervisor learning,  described in Sec. \ref{sec:PS}, to  update its current manipulation policy.
+
+
+\begin{figure}[t]
+\centering
+
+\includegraphics{f_figs/robot.eps}
+
+\caption{\footnotesize  Shown above is a Zymark robot. The robot consists of a 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.}
+\vspace*{-20pt}
+
+\label{fig:robot}
+\end{figure}
+
+\noindent \textbf{MPIO: Motion Planner Ignoring Obstacles Supervisor} Supervisor, $S_1$, is a first order motion planner that computes
+control signals for the robot to reach the goal object in a straight line, ignoring the presence of obstacles. We refer to this supervisor as Motion Planner  Ignoring Obstacles (MPIO). Our
+method employs template matching to identify the goal object in the image and uses the forward dynamics of the robot to
+compute the relative change in direction the robot should apply as a control. The template matching is implemented in
+OpenCV and uses the normalized cross-correlation filter~\cite{opencv_library}. This supervisor is designed to just provide an initial improvement of a random neural network policy.
+
+\begin{figure}[t]
+\centering
+
+\includegraphics[]{f_figs/labeling.eps}
+
+\caption{\footnotesize  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire desire control, which is a bounded change in internal state, the robot should apply. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.}
+\vspace*{-20pt}
+\label{fig:overlays}
+\end{figure}
+
+\noindent \textbf{Crowd-Sourced Supervisor} Supervisor, $S_2$, uses a crowd source service, called Amazon
+Mechanical Turk (AMT). The AMT platform makes readily available thousands of human workers that can provide 
+supervision for \$0.10 per demonstration. The time to provide a demonstration to the robot takes 50s, since the robot trial is slowed down to a half second per time-step in the trajectory. 
+
+In order to have the AMT workers provide demonstrations, we designed the supervision interface shown in Fig. \ref{fig:overlays}. The interface displays a video of a trajectory in the image state space and allows the human supervisors to command an overlay visualization of the robot arm to
+demonstrate the correct control the robot should be applied. The interface is controlled via a mouse, which when held down a robot visualization appears and can be dragged to the desired control (or change in state) the robot should apply. The desired control is bounded by the range in controls listed above. 
+
+We  designed a tutorial for the Crowd-Sourced Supervisor. We first describe the learning task to them as a
+robot that is trying to reach a yellow cylinder and needs their help learning how to get it. In a tutorial, they are then trained
+to perform designated motions with a virtual robot, to help them understand  the robot's kinematics. We additionally
+provide a video of an expert providing corrections on three robot trajectories. We instruct the Crowd-Sourced
+Supervisor to only provide a control when they are confident. If a state in the demonstration does not receive a label that state is not added to the training set. 
+
+To help ensure quality, we provide all Crowd-Sourced Supervisors with the same trajectory first and compare their
+demonstration against a demonstration of a Human Expert Supervisor. If the average Squared-Euclidean distance over control
+signals between demonstrations is above a threshold, then the CrowdSource Supervisor is not asked to provide additional demonstrations. The threshold is set with the intention to only remove  AMT workers, who provide arbitrary demonstrations, no demonstrations or possibly adversarial demonstrations.   
+
+\noindent \textbf{Expert Supervisor} Supervisor, $S_3$ is the  Expert Supervisor, who is capable of
+a better understanding of the problem domain but is a limited resource. An Expert Supervisor in this case is a PhD student in
+machine learning and robotics. The Expert Supervisor uses the same
+interface as the Crowd-Sourced supervisors, shown in Fig. \ref{fig:overlays}, to provide examples to the robot.  
+
+An Expert Supervisor can utilize a variety of knowledge about the physical limitations of the robot and environment,
+joint limits and experience in how certain objects might behave under force. Furthermore, the Expert Supervisor might
+have an intuition for how training examples could lead to better training of the robot.
+
+\noindent \textbf{Neural Network Policy Architecture}
+In Online LfD, a  robot is trained by learning a policy, or function mapping state space $\mathcal{X}$ to control space $\mathcal{U}$. Commonly, a policy is a specific function in some function class such as linear regression, kernelized ridge regression, or a neural network. To handle the high dimensional image space of the problem, we are interested in representing the robot's policy as a deep neural network. Deep learning can be advantageous because it has the potential to learn features relevant for manipulation~\cite{levine2015end,pinto2015supersizing}. Furthermore as opposed to kernel based methods, neural networks readily support online updates (i.e. the ability to add more demonstrations without having to retrain on previous demonstrations)~\cite{scholkopf2002learning}, which can be important when switching supervisors in the hierarchy. 
+
+To facilitate training the neural network, we scaled the controls  between 1 and -1 for each dimension independently, which is common for training ~\cite{tensorflow2015-whitepaper}. To be robust to lighting and reduce
+the dimensionality of the problem, we applied a binary mask to each channel of the 250x250 RGB images setting
+values above 125 to one and 0 otherwise.
+The policy  outputs a 4 dimensional control signals, or delta state positions, for a given input image or state. The network also has the ability to control the turn-table motor controlling the rotation of the disc workspace and the single degree of freedom of the robot gripper. However, we do not use these controls in experiments and in the training data set those controls to $0$. 
+
+ Our network architecture was designed as follows. First, to work with image data we used a convolutional layer with 5 channels and 11x11 filters. Then we added a Rectified Linear Unit (i.e. $\mbox{max}(0,x)$) or ReLu,  to add a non-linearity between layers. ReLus have been shown to allow for faster training than other non-linear separators~\cite{krizhevsky2012imagenet}. After the non-linearity we added a fully connected layer, or a weight matrix with an out dimension of 128. Then  another ReLu  followed by a weight matrix that maps to the 4 dimensional output. We place a final $\mbox{tanh}$ function on the output, which  enforces the output is between $-1$ and $1$.
+ 
+To determine parameters of the network architecture described we performed a search over 30 different architectures trained after 400 iterations
+with a batch size of 200. The set of architectures consisted of different network architectures in terms of
+convolutional layers, filter size,  fully connected layers and output dimension of each layer. In finding an architecture, we trained all networks on a dataset of 6K state/control pairs from the MPIO Supervisor on a Nvidia Tesla K40 GPU, which is able to train each network in an average of 10 minutes.  All networks were trained using Stochastic Gradient Descent with Momentum in TensorFlow ~\cite{tensorflow2015-whitepaper}. Momentum is a method to control the magnitude of the gradient based on how large previous gradients were. We used a gradient step size,or learning rate of $0.01$ and a momentum term of $0.9$. 
+
+
+
+\section{Online Learning From Demonstrations}\label{sec:PS}
+Given a collection of increasingly skilled supervisors $S_1, \ldots, S_M$, the goal of this work is to learn a
+policy that closely matches that of the most skilled supervisor $S_M$ while minimizing the overall number of queries to the more skilled supervisors. 
+
+
 
 \noindent\textbf{Assumptions and Modeling Choices } 
-We assume a known state space and set of controls. We also assume access to a robot or simulator, such that we can sample from the state sequences induced by a sequence of controls. Lastly, we assume access to a set of supervisors who can, given a state, provide a control signal label. We additionally assume the supervisors can be noisy and imperfect, noting that a lower cost supervisor also has lower quality.
+We assume a known state space and set of controls. We also assume access to a robot or simulator, such that we can sample from the state sequences induced by a sequence of controls. Lastly, we assume access to a set of supervisors who can, given a state, provide a control signal label. We additionally assume the supervisors can be noisy and imperfect.
 
  We model the system dynamics as Markovian, stochastic, and stationary. Stationary dynamics occur when, given a state and a control, the probability of the next state does not change over time. Note this is different from the non-stationary distribution over the states the robot encounters during learning. We model the initial state as sampled from a distribution over the state space. 
 
@@ -368,7 +458,7 @@ The first step of any iteration $k$ is to compute a $\theta_k$ that minimizes su
 \end{align}
 
 This sub-problem is a supervised learning problem, which we solve with a deep neural network. Other approaches such as
-support vector machines can also be considered~\cite{scholkopf2002learning}. 
+kernel based regression can also be considered~\cite{scholkopf2002learning}. 
  
 
  \subsubsection{Step 2}
@@ -406,89 +496,8 @@ For crowdsourcing in particular, we chose the second option since, due to the la
 we were not able to determine a fixed supervisor switching threshold for the surrogate loss. We hope to significantly scale the number of
 training steps in future work to investigate various switching criteria in full detail.
 
-
-
-
-\section{Robot Grasping in Clutter}\label{sec:sys}
-Let us now describe how we apply the above approach for the grasping in clutter problem. We consider a robot grasping an
-object in a cluttered environment. The robot's goal is to grasp a yellow cylindrical target object while other extruded
-planar objects obstruct the path towards the goal object. Since contact dynamics are difficult to model \cite{kitaevphysics,kingnonprehensile}, we do not assume the knowledge of explicit object or dynamics models and instead learn a grasping policy directly from labeled
-overhead video data. The state space space $\mathcal{X}$, is hence given by an image from an overhead video
-camera, observing a set of K objects, the robot arm and a goal object in a bounded workspace. $U$ denotes the set of continuous control
-signals given by delta values of joint angles, we consider control of the robots arm extension, base rotation and gripper, as shown in \ref{fig:robot}. We consider the following three supervisors $S_1, S_2, S_3$, which try to optimize the underlying reward
-function of $1$ if a trajectory ends with the goal object in the gripper and $0$ otherwise.
-
-\noindent \textbf{Motion Planner Ignoring Obstacle Supervisor} Our first supervisor, $S_1$, is a first order motion planner that computes
-control signals for the robot to reach the goal object in a straight line, ignoring the presence of obstacles. We refer to this supervisor as a Motion Planner  Ignoring Obstacles (MPIO). Our
-method employs template matching to identify the goal object in the image and uses the forward dynamics of the robot to
-compute the relative change in direction the robot should apply as a control. The template matching is implemented in
-OpenCV and uses the normalized cross-correlation filter~\cite{opencv_library}. This supervisor is intentionally
-simplistic to execute and implement, and is designed to just provide an initial improvement of a random neural network policy.
-We assign a cost of $C_1 = \$0.01$ to this supervisor, which stems from the amtorized cost need to implement this supervisor. This cost is set as an example of what one could consider. 
-\begin{figure}[t]
-\centering
-
-\includegraphics[]{f_figs/labeling.eps}
-
-\caption{\footnotesize  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.}
-\vspace*{-10pt}
-\label{fig:overlays}
-\end{figure}
-
-\noindent \textbf{Crowd-Sourced Supervisor} The second supervisor, $S_2$, relies on a crowd source service, called Amazon
-Mechanical Turk (AMT). The AMT platform makes readily available thousands of human workers that we can query to provide robot
-supervision examples for approximately \$0.10 per robot trial. We use as an example cost $C_2 = 0.1$, which is based on the crowdsource pay rate. 
-We designed the supervision interface shown in Fig. \ref{fig:overlays}. The interface displays a video of a roll-out of
-the current robot policy and allows the human supervisors to command an overlay visualization of the robot arm to
-showcase a deviation to the current policy that should be applied with a maximal angle joint deviation of 15 degree and maximal extension deviation of 1cm  to
-the current roll-out.
-
-We additionally designed a tutorial for the Crowd-Sourced Supervisor. We first describe the learning task to them as a
-robot that is trying to reach a yellow cylinder and needs their help learning how to get it. In a tutorial, they are then trained
-to perform designated motions with a virtual robot, to help them understand how the robot's kinematics. We additionally
-provide a video of an expert providing corrections on three robot trajectories. We lastly instruct the Crowd-Sourced
-Supervisor to only label when they are sure in their decision, in order to minimize contradictory examples associated
-with random guesses.  
-
-To help ensure quality, we provide all Crowd-Sourced Supervisors with the same robot trial first and measure their
-performance against the performance of a Human Expert Supervisor. If the average Squared-Euclidean distance over control
-signals between examples is above a threshold, then the Crowdsource Supervisor is not asked to provide additional examples.
-
-\noindent \textbf{Human Expert Supervisor} The final supervisor, $S_3$ is the Human Expert supervisor, who is capable of
-achieving high cumulative reward but is a limited resource. An Human Expert Supervisor in this case is a PhD student in
-machine learning and robotics, to which we assign a cost of $C_3=1.0$ to signify a higher pay rate than the previous supervisor. The Human Expert Supervisor uses the same
-interface as the Crowd-Sourced supervisors, shown in Fig. \ref{fig:overlays}, to provide examples to the robot.  
-
-An expert supervisor can utilize a variety of knowledge about the physical limitations of the robot and environment,
-joint limits and experience in how certain objects might behave under force. Furthermore, the expert supervisor might
-have an intuition for how training examples could lead to better training of the robot's policy $\pi_\theta$. 
-
-
 \section{Experiments} \label{sec:Exp}
 
-\begin{figure}[t]
-\centering
-
-\includegraphics{f_figs/binary_segment.eps}
-
-\caption{\footnotesize Example of how the binary mask applied to each RGB channel affects the input data. As can be seen
-it reduces the range of each channel's pixel value from the range of [0,255] to [0,1], increasing robustness to small
-lighting condition changes.  }
-
-\label{fig:b_seg}
-\end{figure}
-
-
-
-\begin{figure}[t]
-\centering
-
-\includegraphics{f_figs/robot.eps}
-
-\caption{\footnotesize  Shown above is a Zymark robot. The robot consists of an 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.}
-
-\label{fig:robot}
-\end{figure}
 
 \begin{figure}[t]
 \centering
@@ -513,167 +522,87 @@ added some unknown objects not present in the test set. }
 \label{fig:suc_meas}
 \end{figure}
 
-We discuss our experimental setup and test the performance of using a supervisor hierarchy versus a baseline approach
-with one supervisor. We then evaluate the quality the Crowd-Source supervisors. 
-
 \subsection{Experimental Setup}
-We work with a Zymark robot to perform a grasping in clutter task. The robot, shown in Fig. \ref{fig:robot}, has a 3
-dimensional internal state of base rotation, arm extension and gripper opening width. The robot is commanded via position 
-control with a tuned PID controller. We used
-relative state control because this enabled us to easily enforce stay out zones for safety
-and to register control signals to the labeling interface in Fig. \ref{fig:overlays}. We utilize the two main rotational joints of the
-robot as degrees of freedom which are controlled by a neural network policy $\pi_{\theta}$ trained on image data taken by
-an overhead Logitech C270 camera. Examples of images from the camera can be seen in Fig. \ref{fig:teaser}.
+For the grasping in clutter task, we consider objects made of Medium Density Fiberboard with an average 4" diameter and 3" in height. The objects used to form clutter are red extruded polygons while the goal object is a yellow cylinder.  The robot workspace, which is green, consists of a  30" disk region which is
+surrounded by an elevated plate constraining the objects to a ring and prohibiting them from leaving the camera's field of view. 
 
-We consider objects made of Medium Density Fiberboard with an average 4" diameter and 3" in height. The objects used to form clutter are
-painted red while the goal object is a yellow cylinder. The robot workspace consists of a disk region which is
-surrounded by an elevated plate constraining the objects to the workspace and prohibiting them from being swept off
-the workspace, thus adding to the difficulty of the task.
 
-Our policy $\pi_{\theta}$ is represented as a deep neural network, which was trained using
-TensorFlow~\cite{tensorflow2015-whitepaper}. Our network architecture consists of 1 convolutional layer with 5 channels
-and filters with size 11x11, a fully connected layer with an output of 128 dimensions and a final layer that maps to a
-four dimensional control signal. We used ReLus to separate the different layers and a final tanh on the output to scale
-the output between -1 and 1. Each policy runs for a total of $T=100$ timesteps.
-
-The control examples were scaled between 1 and -1 for each dimension independently. To be robust to lighting and reduce
-the dimensionality of the problem, we applied a binary mask to each channel of the 250x250 RGB video frames setting
-values above 125 to one and 0 otherwise. Each channel is shown in Fig. \ref{fig:b_seg}.
-The policy $\pi_\theta$ outputs delta position control signals for a given input video frame.
-Originally we considered also controlling two additional degrees of freedom of the arm: a turn-table motor controlling
-the rotation of the disc workspace and the single degree of freedom of the robot gripper. However, in initial
-experiments controlling the turn table proved unintuitive and was rarely used by human supervisors and the gripper degree of freedom was only used at the end of a policy. As a result, we labeled these output degrees of freedom with zero and instead automatically closed the gripper
-at the final T=100 timestep. The joint controls were limited to $\pm 15$ degrees for rotation and $1$ cm for the
-extension degree of freedom.
-
-To determine our network architecture we performed a search over 40 different architectures trained after 400 iterations
-with a batch size of 200. The set of architectures consisted of different network architectures in terms of
-convolutional layers, fully connected layers and size of each one as well as different gradient descent momentum
-terms used in learning, and weight initialization schemes. In finding an architecture, we trained all networks on a dataset of 6K images labeled with the MPIO Supervisor on a Nvidia Tesla K40 GPU, which is able to train each network in an average of 10 minutes.  
-
-To test the performance of a policy, we created a test set composed of 20 different configurations each containing
+To test the performance of each robot policy, we created a test set composed of 20 different configurations each containing
 objects that were not in the training set.  The training objects and test
 objects introduced during testing are shown in Fig. \ref{fig:shape_set}. The test set configurations varied by placing
-test objects from Fig. \ref{fig:shape_set} in with objects we trained on in similar configurations. Examples of training and test configurations are shown in Fig. \ref{fig:suc_meas}.  We measure success by whether the object was in the gripper at the final timestep. We define reliability of $\rho$ as the percentage of successful configurations.
-Per iteration of DAgger, we roll out 20 trajectories which corresponds to 2000 video frame images. Thus 100 robotic trials correspond to 5 iterations of DAgger.
+test objects from Fig. \ref{fig:shape_set} with objects we trained on in similar configurations. Examples of training and test configurations are shown in Fig. \ref{fig:suc_meas}.  During training and testing, we manually place the objects in configurations. However, a hardware mechanism that moves the objects around, such as a pre-defined sweeping motion from the robot arm, could be used in future work. We measure success by whether the object was in the gripper at the final timestep. We define reliability or $\rho$ as the percentage of successful configurations.
 
-\subsection{Hierarchical Supervisors}
+Per iteration of Hierarchical DAgger, we collect 20 trajectories on different training configurations and then have a supervisor provide 20 demonstrations. We do this to sample a variety of configurations with the current policy before updating the weights. Thus 100 robotic trials correspond to 5 iterations of DAgger.
+
+\subsection{Three Types of Supervisors}
 
 \begin{figure*}[t]
 \centering
 \includegraphics{f_figs/results.eps}
 
-\caption{ \footnotesize The reliability or $\rho$ and the amount of trials of each policy trained with a supervisor is reported. The bar graphs
-show how many successful and failed grasps in clutter occurred. The top row 
-reports results for the MPIO ($\rho = 30\%$), Crowdsource ($\rho = 35\%$) and  Human Expert ($\rho = 55\%$) supervisor in isolation.
-The bottom row corresponds to hierarchical supervisors: MPIO then CrowdSourced ($\rho = 45\%$), MPIO then Human Expert ($\rho = 60\%$) and MPIO then CrowdSourced then Human Expert ($\rho = 80\%$). All policies expect for the full hierarchy are trained on 160 trials. The final full hierarchy is able to scale to 320 trials on the robot and achieve a reliability of $80\%$}
-
+\caption{ \footnotesize The reliability or $\rho$, which is a measure of performance on previously unseen objects, of each policy trained with a supervisor is reported. The bar graphs
+shows the number of successful and failed trials. The top row 
+reports results for the MPIO ($\rho = 30\%$), Crowd-Sourced ($\rho = 35\%$) and  Expert ($\rho = 55\%$) supervisor in isolation.
+The bottom  left and middle correspond to hierarchical supervisors: MPIO then Crowd-Sourced ($\rho = 45\%$) and MPIO then Expert ($\rho = 60\%$). All policies expect for the full hierarchy (bottom right) are trained on 160 demonstrations. The full hierarchy (bottom right)  has a fix budget of 160 Expert demonstrations, but  first leverages MPIO and Crowd-Sourced Supervisors until no improvement in reward from their demonstrations and is able to achieve a reliability of $\rho = 90\%$}
+\vspace*{-20pt}
 \label{fig:perf_results}
 \end{figure*}
 
-We first test that using a hierarchy of supervisors can reduce total cost needed to train a policy, but still maintain 
-similar performance . We compare having only the MPIO Supervisor for a fixed amount of data to having only an Human Expert,
-and to having the hierarchy of both. The non-hierarchical policies trained with the human expert supervisor only for
-160 demonstrations or only the MPIO supervisor for 160 demonstrations.  The policy trained with a hierarchical supervisor
-first receives  100 demonstrations from the MPIO supervisor and  60 demonstrations from the expert supervisor. 
+We first compare each supervisors' performance. We train the robot with MPIO Supervisor, Crowd-Sourced Supervisor or the Expert Supervisor for a fixed amount of 160 demonstrations on the training configurations. Our results shown in Fig. \ref{fig:perf_results}, show that for our fix budget of 160 trials the supervisors receive a reliability of $\rho = 30\%$, $\rho = 35\%$ and $\rho = 55\%$, respectively. 
 
-Our results, shown in Fig. \ref{fig:perf_results}, show that the policy trained with just the MPIO Supervisor
-achieves a reliability( or \% success) of $\rho = 30\%$, the policy trained with just the Human Expert Supervisor achieves $\rho=55\%$ and the policy
-trained with a hierarchy of supervisor achieves $\rho=60\%$.  Thus, the hierarchical supervisor and expert supervisor achieve
-approximately the same performance. We hypothesize the slight increase in performance was an effect of the neural network finding a better local minima with an easier to learn function first (i.e. curriculum learning \cite{bengio2009curriculum}). However, training with a two step hierarchy of both yields a $40\%$ reduction in
-cost, for our cost examples, incurred compared to the policy trained with only an expert supervisor. Thus indicating that by using a hierarchy of supervisors, we can reduce the cost of training a policy and achieve similar performance to the Human Expert Supervisor.
+When testing the Crowd-Sourced Supervisor, we hired  44 AMT workers. We found only
+21 AMT workers were able to pass the quality check and continue providing demonstrations as described in Sec. \ref{sec:sys}. On average a worker would
+provide 8 demonstrations before choosing to not provide any more. A single demonstrations would take 50s to provide.  
 
-\subsection{Quality of Crowdsourced Supervisor}
-We next evaluate the potential of a  crowdsourced supervisor for a being part of the hierarchy. Thus, we perform an
-experiment using the Amazon Mechanical Turk (AMT) platform described in Sec. \ref{sec:sys}. We  first test how well a crowdosurce supervisor
-performs as part of a hierarchy of supervisors. We trained a policy with 100  demonstrations provided by the MPIO
-supervisor, then had 60 demonstrations provided by AMT workers. We also compare how well the crowdsource supervisors
-performs in isolation, by having them provide all 160 demonstrations.
+We are next interested in testing how the supervisors perform in the hierarchy. We divide the original budget of 160 demonstrations to 100 MPIO demonstrations and 60 demonstrations of a higher skill supervisor (i.e. Crowd-Sourced or Expert). The choice of 100 demonstrations was made due to no improvement in reward from the MPIO Supervisor after 100 demonstrations. 
 
-Our results, shown in Fig. \ref{fig:perf_results}, indicate that the policy trained with just the crowdsourced supervisor achieves
-a reliability of $\rho=35\%$. The policy trained with MPIO and then crowdsourced  supervisor obtained a reliability of
-$\rho=45\%$ on our test set compared to $\rho=60\%$ with the motion planning and expert supervisors hierarchy. The total cost, based on our  example assignments, was
-only crowdsource supervisor was 15, while the hierarchical supervisor was 7. 
-
-In total, we utilized 44 AMT workers and asked them to provide examples for a single rollout and then if they passed
-quality check asked them if they wanted to exit or continue for an additional \$$0.12$ per demonstration. We found only
-21 AMT workers were able to pass the quality check and continue providing demonstrations. On average a worker would
-provide 4 demonstrations before choosing to not provide any more. 
-
-\subsection{Advancing in the Hierarchy}
-We further test how to advance between supervisors in the hierarchy. We examine three different strategies for dataset
-management when changing supervisors 1) aggregating the dataset of the data collected with both supervisors 2)
-transferring only the weights of the nerural network policy or $\theta$ vector between the supervisors and removing the
-previous supervisors' demonstration dataset completely 3) transferring only the weights of the neural network policy but
-adding the values output by $\pi_\theta(\bx)$  instead of $\tilde{\pi}_m(\bx)$ at parts of the states visited that the
-current supervisor is in close agreement with as measured by the following $||\tilde{\pi}_m(\bx) - \pi_\theta(\bx)||^2_2
-< 0.01$. Thus, acting as a regularization on the optimization since stochastic gradient on a section of the mini-batch update would be zero for examples where the next supervisor agrees with the previous. 
-
-We compare each strategy on a hierarchy of the MPIO supervisor trained with 100 iterations and then advancing to a human expert supervisor trained with 60 iterations.  Our results reported in Fig.\ref{fig:cost_result}, show that aggregation strategy achieves reliability, $\rho=15\%$, the weight transfer strategy achieves $\rho=55\%$ and the regularized stochastic gradient update strategy achieves $\rho=65\%$. Thus, suggesting that techniques to help the policy remain close to the previously trained supervisor are useful for effectively switching between supervisors.   
- 
-
-%This could cause a learning algorithm to try and fit to contradictory examples  and be worse than either supervisor trained with \cite{scholkopf2002learning}.
-%We are thus interested in only remembering the current $\theta_{m,K}$ weight parameters as we transition between
-%different supervisors. Thus, we propose only performing DAgger for each individual supervisor in the
-%hierarchy and use the resulting weight vector to bootstrap the learning of the next supervisor. We found empirically
-%in Sec. \ref{sec:Exp} that it is also beneficial to add the new dataset the states and controls applied by the current
-%policy $\pi_{\theta_{m,k}}$ that the current supervisor agreed with by some euclidean distance
-%$\tilde{\epsilon} = 0.01$. Thus, acting as a regularization on the optimization since stochastic gradient on a section of the min-batch update would be zero for examples where the next supervisor agrees with the previous. 
+Results shown in Fig. \ref{fig:perf_results}, suggest that a hierarchy of supervisor with MPIO and Crowd-Sourced achieves a reliability of $\rho = 45\%$ and MPIO and Expert achieves a reliability of $\rho = 60\%$. This suggests that a hierarchy of supervisors can be beneficial to increase reliability of a robot at a lower cost than only with an Expert Supervisor. 
 
 
-\subsection{Scaling the Hierarchy}
-Here, we ran our algorithm on a hierarchy with 3 supervisors: MPIO supervisor, crowdsourced and human
-expert. We ran each policy until we observed the pay out in terms of reward achieved was not increasing. This results in
-MPIO for 100 demonstrations, crowdsourced for 120 demonstrations and human expert for 100 demonstrations. Thus resulting
-in 320 trials on the robot and approximately 22,000 images annotated by control supervision labels. Note however that
-fewer images had non-zero delta-control labels because the human supervisors only labeled when confident in their
-decisions, which on average results in a 55\% of the robot trial. 
 
-The results of our trained policy, as shown in Fig. \ref{fig:perf_results}, demonstrate that by leveraging a hierarchy we are able to achieve a reliability of $\rho=80\%$ with a cost, based on our assigned examples, of only 113. We note that policy trained with the human expert supervisor, which incurred a cost of $160$, was only able to achieve a score of $55\%$. 
+
+\subsection{Full Hierarchy}
+Given a fixed budget of 160 Expert Supervisor demonstrations, which achieves $55\%$ reliability,  we are interested in increasing relaibility by leveraging the less costly supervisors, MPIO and Crowd-Sourced.  We thus had MPIO and Crowd-Sourced supervisor provide demonstrations until we observed the reward achieved was not increasing. This results in the
+MPIO Supervisors providing 100 demonstrations, the Crowd-Sourced Supervisor providing 120 demonstrations. We then had the Expert Supervisor provide a fix budget of 160 demonstrations. The resulting policy had a reliability of $90\%$ as shown in Fig. \ref{fig:perf_results}.
 
 Investigating the learned policy, we observed that it appears to find gaps in between the clutter objects and sweeps
 left to right,  until the objects are pushed apart and then moves towards the goal object, as illustrated in Fig.
 \ref{fig:teaser}. We noticed that the magnitude of the sweeping motion appeared anti-proportional to the size of the gap in
- between the cluttered objects. Small gaps tended to cause a high frequency of sweeping while for large gaps the
-robot appeared to sweep away objects in a single motion.
+ between the cluttered objects. For example, two cluttered objects placed close together in front of the goal object would  cause a high frequency of sweeping. While a single object in front of the goal object would often result in a single sweeping motion pushing the obstacle away from the goal object.  We also noticed that the robot would in general stop once it reached the goal object. However, it was rare to see the robot go backwards and correct itself, despite those demonstrations being given. 
 
-While our policy showed improved performance when trained using a hierarchy, failure modes persisted in our test
-configurations as shown in Fig. \ref{fig:failure_modes}. The cause of the failure modes are either that the robot
-sweeps too far and jams the objects against the inscribed circle around the workspace or an obstacle object was caught
-in the gripper while being pushed. At present, it is unclear how well these results will generalize to very different configurations 
-of objects.
+ While our policy showed improved performance when trained using a hierarchy, failure modes persisted in our test
+configurations. Common failure modes are either that the robot
+sweeps too far and jams the objects against the inscribed circle around the workspace or a smaller obstacle object was caught in the gripper while being pushed.
 
-\begin{figure}[t]
-\centering 
-\includegraphics{f_figs/failure_modes.eps}
+\subsection{Advancing in the Hierarchy}
+We lastly test how to advance between supervisors in the hierarchy. We examine the situation where the robot is first trained with the MPIO supervisor for 100 demonstrations and then the Expert Supervisor for 60 demonstrations. 
 
-\caption{\footnotesize The four failure modes in our test set on the fully trained policy. On the left the robot sweeps
-to far and the collision objects jam up against the edge of the work space. On the right, both the banana-shaped object
-and the boot-shaped object are prone to get entrapped in the gripper during pushing and prevent the gripper from reaching the circle.  }
-\label{fig:failure_modes}
-\end{figure}
+We are interested in testing the following strategies for changing supervisors 1) aggregating the two datasets of the demonstrations collected with both MPIO and Expert Supervisors 2)
+transferring only the weights of the neural network policy or $\theta$  to initialize training with the Expert and not retraining on the MPIO Supervisor's demonstrations 3) transferring only the weights of the neural network policy but
+adding the values output by $\pi_\theta(\bx)$  instead of $\tilde{\pi}_m(\bx)$ in the states visited that the
+Expert Supervisor's demonstrations are similar too the output of the policy as measured by the following $||\tilde{\pi}_m(\bx) - \pi_\theta(\bx)||^2_2
+< 0.01$. Thus, acting as a form of regularization on the optimization since stochastic gradient on a section of the mini-batch update would be zero for examples where the policy trained with the MPIO Supervisor matches that of the Expert. 
 
+ Our results reported in Fig.\ref{fig:cost_result}, show that the aggregation strategy achieves reliability, $\rho=15\%$, the weight transfer strategy achieves $\rho = 60\%$ and the regularized stochastic gradient update strategy achieves $\rho=65\%$. Thus, suggesting that techniques to help the policy remain close to the previously trained supervisor are useful for effectively switching between supervisors.
 
 \begin{figure}[t]
 \centering 
 \includegraphics{f_figs/cost_result.eps}
 
 \caption{\footnotesize The performance of each policy trained with a different data management strategy is reported. The
-bar graphs shows the breakdown in terms of situations the policy encountered on the test set. Each policy was trained
-with the MPIO then Human Expert hierarchical supervisor. From left to right is the following data management strategies: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) }
+bar graph show the breakdown in terms of Failure and Success on the test configurations.Each policy was trained with the MPIO and then the Human Expert supervisor. From left to right , we display the following: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) }
+
 \label{fig:cost_result}
+\vspace*{-22pt}
 \end{figure}
 
+
 \section{Discussions and Future Work}
-Our results suggest that learning to grasp in clutter can be more cost-efficiently learned by employing a hierarchy of
-supervisors. In future work, we intend to investigate algorithmic approaches to determining how to appropriately select
-the next supervisor in a hierarchy automatically, which we believe will require a significant scaling of the number of
-training iterations due to the sparsity of the current data set. While our current strategy worked well empirically, it remains to be 
-investigated how this approach can be utilized in different application domains and higher degree of freedom robots.
-A current challenge of our setup appears to be related to a lack of fine motor precision. 
-Our current supervisors do not have the ability to give fine motor control corrections. Furthermore, the use of more
-sophisticated analytical methods as supervisors might enable better performance. 
-Further information, video and code can be found at the following \url{http://berkeleyautomation.github.io/HierSupCASE/}. 
+Robot grasping in clutter is a challenging problem for automation in warehouse order assembly and home cleaning due to uncertainty arising from sensing and control and the inherent complexity of push mechanics. We introduce a version of the problem where a yellow cylinder must be grasped by a planar robot arm amid extruded objects with a variety of shapes and positions.  Results suggest that this task is amenable to a Learning from Demonstrations approach such as DAgger or SHIV but can put a burden on human experts.
+
+To reduce the burden, we consider two alternative supervisors:  one is a motion planner that ignores obstacles (MPIO) and the second is crowd-sourced workers from Amazon Mechanical Turk who provide demonstrations using a novel overlay interface.  Results show as expected that the reliability of the policies depend on the skill level of the demonstrations.  We introduce a hierarchical approach where supervisors with differing skill levels are combined.  Results suggest that staging supervisors in terms of increasing skill level can bootstrap LfD to learn reliable policies, in this case the robot learns a counter-intuitive policy where the it sweeps the gripper back and forth to clear obstacles before grasping.
+
+To our knowledge this is the first study of hierarchical supervisors for Learning from Demonstrations. In future work, we will perform more experiments in this context with added noise in perception and control, and study how the policies generalize to a broader variety of objects and different configurations. We will also study the comparative performance of other motion planning-based supervisors and study how hierarchical approaches can be applied to tasks such as driving and assembly.  Further information, video and code can be found at the following \url{http://berkeleyautomation.github.io/HierSupCASE/}. 
 
 
 

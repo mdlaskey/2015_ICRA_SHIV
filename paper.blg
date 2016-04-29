@@ -8,7 +8,7 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: references.bib
-You're missing a field part---line 644 of file references.bib
+You're missing a field part---line 679 of file references.bib
  :     title = 
  :             ,
 I'm skipping whatever remains of this entry
@@ -21,6 +21,8 @@ Warning--empty booktitle in bicchi2000robotic
 Warning--empty year in bicchi2000robotic
 Warning--empty title in opencv_library
 Warning--empty year in opencv_library
+Warning--empty journal in dogar2012physics
+Warning--empty year in dogar2011framework
 Warning--empty year in grollman2007dogged
 Warning--empty year in kingnonprehensile
 Warning--empty journal in kitaevphysics
@@ -29,45 +31,45 @@ Warning--empty year in laskeyshiv
 Warning--empty year in ross2013learning
 
 Done.
-You've used 30 entries,
+You've used 35 entries,
             4498 wiz_defined-function locations,
-            1053 strings with 14641 characters,
-and the built_in function-call counts, 25996 in all, are:
-= -- 2173
-> -- 1015
-< -- 123
-+ -- 508
-- -- 286
-* -- 1388
-:= -- 3837
-add.period$ -- 69
-call.type$ -- 30
-change.case$ -- 231
-chr.to.int$ -- 300
-cite$ -- 41
-duplicate$ -- 1624
-empty$ -- 1955
-format.name$ -- 313
-if$ -- 5765
+            1076 strings with 15555 characters,
+and the built_in function-call counts, 30516 in all, are:
+= -- 2555
+> -- 1161
+< -- 154
++ -- 585
+- -- 322
+* -- 1618
+:= -- 4473
+add.period$ -- 81
+call.type$ -- 35
+change.case$ -- 264
+chr.to.int$ -- 384
+cite$ -- 48
+duplicate$ -- 1908
+empty$ -- 2305
+format.name$ -- 354
+if$ -- 6788
 int.to.chr$ -- 0
-int.to.str$ -- 30
-missing$ -- 312
-newline$ -- 115
-num.names$ -- 60
-pop$ -- 1012
+int.to.str$ -- 35
+missing$ -- 358
+newline$ -- 130
+num.names$ -- 70
+pop$ -- 1162
 preamble$ -- 1
-purify$ -- 203
+purify$ -- 231
 quote$ -- 2
-skip$ -- 1795
+skip$ -- 2119
 stack$ -- 0
-substring$ -- 886
-swap$ -- 1145
-text.length$ -- 23
+substring$ -- 1113
+swap$ -- 1355
+text.length$ -- 26
 text.prefix$ -- 0
 top$ -- 6
-type$ -- 317
-warning$ -- 11
-while$ -- 110
-width$ -- 32
-write$ -- 278
+type$ -- 372
+warning$ -- 13
+while$ -- 132
+width$ -- 37
+write$ -- 319
 (There was 1 error message)

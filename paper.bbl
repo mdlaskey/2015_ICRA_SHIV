@@ -72,6 +72,14 @@ A.~Cosgun, T.~Hermans, V.~Emeli, and M.~Stilman, ``Push planning for object
   Systems (IROS), 2011 IEEE/RSJ International Conference on}.\hskip 1em plus
   0.5em minus 0.4em\relax IEEE, 2011, pp. 4627--4632.
 
+\bibitem{dogar2012physics}
+M.~Dogar, K.~Hsiao, M.~Ciocarlie, and S.~Srinivasa, ``Physics-based grasp
+  planning through clutter,'' 2012.
+
+\bibitem{dogar2011framework}
+M.~Dogar and S.~Srinivasa, ``A framework for push-grasping in clutter,''
+  \emph{Robotics: Science and systems VII}.
+
 \bibitem{duvallet2013imitation}
 F.~Duvallet, T.~Kollar, and A.~Stentz, ``Imitation learning for natural
   language direction following through unknown environments,'' in
@@ -110,6 +118,11 @@ J.~E. King, J.~A. Haustein, S.~S. Srinivasa, and T.~Asfour, ``Nonprehensile
 \bibitem{kitaevphysics}
 N.~Kitaev, I.~Mordatch, S.~Patil, and P.~Abbeel, ``Physics-based trajectory
   optimization for grasping in cluttered environments,'' pp. 3102--3109, 2015.
+
+\bibitem{krizhevsky2012imagenet}
+A.~Krizhevsky, I.~Sutskever, and G.~E. Hinton, ``Imagenet classification with
+  deep convolutional neural networks,'' in \emph{Advances in neural information
+  processing systems}, 2012, pp. 1097--1105.
 
 \bibitem{laskeyshiv}
 M.~Laskey, S.~Staszak, W.~Y.-S. Hsieh, J.~Mahler, F.~T. Pokorny, A.~D. Dragan,
@@ -169,6 +182,12 @@ B.~Sch{\"o}lkopf and A.~J. Smola, \emph{Learning with kernels: Support vector
   machines, regularization, optimization, and beyond}.\hskip 1em plus 0.5em
   minus 0.4em\relax MIT press, 2002.
 
+\bibitem{stilman2007manipulation}
+M.~Stilman, J.-U. Schamburek, J.~Kuffner, and T.~Asfour, ``Manipulation
+  planning among movable obstacles,'' in \emph{Robotics and Automation, 2007
+  IEEE International Conference on}.\hskip 1em plus 0.5em minus 0.4em\relax
+  IEEE, 2007, pp. 3327--3332.
+
 \bibitem{sutton1998reinforcement}
 R.~S. Sutton and A.~G. Barto, \emph{Reinforcement learning: An
   introduction}.\hskip 1em plus 0.5em minus 0.4em\relax MIT press, 1998.
@@ -178,5 +197,11 @@ J.~Van Den~Berg, S.~Miller, D.~Duckworth, H.~Hu, A.~Wan, X.-Y. Fu, K.~Goldberg,
   and P.~Abbeel, ``Superhuman performance of surgical tasks by robots using
   iterative learning from human-guided demonstrations,'' in \emph{ICRA, 2010
   IEEE}.\hskip 1em plus 0.5em minus 0.4em\relax IEEE, 2010, pp. 2074--2081.
+
+\bibitem{van2009path}
+J.~Van Den~Berg, M.~Stilman, J.~Kuffner, M.~Lin, and D.~Manocha, ``Path
+  planning among movable obstacles: a probabilistically complete approach,'' in
+  \emph{Algorithmic Foundation of Robotics VIII}.\hskip 1em plus 0.5em minus
+  0.4em\relax Springer, 2009, pp. 599--614.
 
 \end{thebibliography}

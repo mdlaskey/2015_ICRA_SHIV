@@ -30,22 +30,27 @@
 \citation{ross2013learning}
 \citation{ross2010reduction}
 \citation{ross2010efficient}
+\citation{laskeyshiv}
 \citation{ross2010reduction}
 \citation{ross2013learning}
 \citation{duvallet2013imitation}
 \@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{section.1}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per column, top to bottom) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. Red shapes indicate clutter objects and the robot is trained to reach the yellow cylinder. The trained manipulation policy is represented as a deep neural network that recieves as input an image of the scene and outputs a change in state position. The resulting policy learns to sweep away clutter objects to reach the goal object. \relax }}{1}{figure.caption.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per row, left to right) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. Red shapes indicate clutter objects and the robot is trained to reach the yellow cylinder. The trained manipulation policy is represented as a deep neural network that receives as input an image of the scene and outputs a change in state position. The resulting policy learns to sweep away clutter objects to reach the goal object. \relax }}{1}{figure.caption.1}}
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:teaser}{{1}{1}{\footnotesize Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per column, top to bottom) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. Red shapes indicate clutter objects and the robot is trained to reach the yellow cylinder. The trained manipulation policy is represented as a deep neural network that recieves as input an image of the scene and outputs a change in state position. The resulting policy learns to sweep away clutter objects to reach the goal object. \relax }{figure.caption.1}{}}
+\newlabel{fig:teaser}{{1}{1}{\footnotesize Three policy roll-outs on a Zymark 3-DOF Robot of a fully trained grasping in clutter policy (one per row, left to right) which was trained using a hierarchy of three supervisors consisting of a motion planning algorithm, crowd-sourcing and a human expert. Red shapes indicate clutter objects and the robot is trained to reach the yellow cylinder. The trained manipulation policy is represented as a deep neural network that receives as input an image of the scene and outputs a change in state position. The resulting policy learns to sweep away clutter objects to reach the goal object. \relax }{figure.caption.1}{}}
 \citation{bicchi2000robotic}
 \citation{katz2008can}
-\citation{pinto2015supersizing}
-\citation{nieuwenhuisen2013mobile}
 \citation{mason1986mechanics}
 \citation{cosgun2011push}
 \citation{kingnonprehensile}
+\citation{stilman2007manipulation}
+\citation{van2009path}
+\citation{dogar2011framework}
+\citation{dogar2012physics}
 \citation{kitaevphysics}
 \citation{leeper2012strategies}
+\citation{pinto2015supersizing}
+\citation{nieuwenhuisen2013mobile}
 \citation{levine2015end}
 \citation{ross2013learning}
 \citation{kim2013maximum}
@@ -58,9 +63,30 @@
 \citation{laskeyshiv}
 \citation{bengio2009curriculum}
 \citation{sanger1994neural}
+\citation{kitaevphysics}
+\citation{kitaevphysics}
+\citation{kingnonprehensile}
 \@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{section.2}}
-\@writefile{toc}{\contentsline {section}{\numberline {III}Problem Statement}{2}{section.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}Robot Grasping in Clutter}{2}{section.3}}
+\newlabel{sec:sys}{{III}{2}{Robot Grasping in Clutter}{section.3}{}}
+\citation{laskeyshiv}
+\citation{levine2015end}
+\citation{laskeyshiv}
+\citation{kim2013maximum}
+\citation{opencv_library}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  Shown above is a Zymark robot. The robot consists of a 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.\relax }}{3}{figure.caption.2}}
+\newlabel{fig:robot}{{2}{3}{\footnotesize Shown above is a Zymark robot. The robot consists of a 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.\relax }{figure.caption.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire desire control, which is a bounded change in internal state, the robot should apply. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.\relax }}{3}{figure.caption.3}}
+\newlabel{fig:overlays}{{3}{3}{\footnotesize The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire desire control, which is a bounded change in internal state, the robot should apply. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.\relax }{figure.caption.3}{}}
+\citation{levine2015end}
+\citation{pinto2015supersizing}
+\citation{scholkopf2002learning}
+\citation{tensorflow2015-whitepaper}
+\citation{krizhevsky2012imagenet}
+\citation{tensorflow2015-whitepaper}
 \citation{ross2010reduction}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Online Learning From Demonstrations}{4}{section.4}}
+\newlabel{sec:PS}{{IV}{4}{Online Learning From Demonstrations}{section.4}{}}
 \citation{levine2015end}
 \citation{kitaevphysics}
 \citation{ross2010reduction}
@@ -68,42 +94,28 @@
 \citation{scholkopf2002learning}
 \citation{NIPS2014_5421}
 \citation{ross2010reduction}
-\newlabel{eq:LFD_obj}{{1}{3}{Problem Statement}{equation.3.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Approach and Background}{3}{section.4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-A}Details on DAgger: Dataset Aggregation}{3}{subsection.4.1}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-A.1}Step 1}{3}{subsubsection.4.1.1}}
-\newlabel{eq:super_objj}{{2}{3}{Step 1}{equation.4.2}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-A.2}Step 2}{3}{subsubsection.4.1.2}}
 \citation{sutton1998reinforcement}
-\citation{kitaevphysics}
-\citation{kingnonprehensile}
-\citation{opencv_library}
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-B}DAgger with Supervisor Hierarchy}{4}{subsection.4.2}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Robot Grasping in Clutter}{4}{section.5}}
-\newlabel{sec:sys}{{V}{4}{Robot Grasping in Clutter}{section.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.\relax }}{4}{figure.caption.2}}
-\newlabel{fig:overlays}{{2}{4}{\footnotesize The interface AMT workers see for providing feedback to the robot for the grasping in clutter task. The pink overlay indicates the desire change in the robot position with respect to the current robot state. Then AMT workers can use their intuition for how objects respond to force to provide examples of how the robot should behave. On the left side is an example of a robot state and on the right side is an example a human supervisor would provide via a Computer Mouse.\relax }{figure.caption.2}{}}
-\citation{tensorflow2015-whitepaper}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  Example of how the binary mask applied to each RGB channel affects the input data. As can be seen it reduces the range of each channel's pixel value from the range of [0,255] to [0,1], increasing robustness to small lighting condition changes. \relax }}{5}{figure.caption.3}}
-\newlabel{fig:b_seg}{{3}{5}{\footnotesize Example of how the binary mask applied to each RGB channel affects the input data. As can be seen it reduces the range of each channel's pixel value from the range of [0,255] to [0,1], increasing robustness to small lighting condition changes. \relax }{figure.caption.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Experiments}{5}{section.6}}
-\newlabel{sec:Exp}{{VI}{5}{Experiments}{section.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {VI-A}Experimental Setup}{5}{subsection.6.1}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  Shown above is a Zymark robot. The robot consists of an 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.\relax }}{5}{figure.caption.4}}
-\newlabel{fig:robot}{{4}{5}{\footnotesize Shown above is a Zymark robot. The robot consists of an 3DOF arm in a planar workspace. It is able to extend its arm and rotate about a fixed base. The robot can also open and close its gripper.\relax }{figure.caption.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The Training objects on the right are the four objects used in training. The test objects on the left represent represent objects that were added in our test configurations. Every test configuration contained at least one of the objects on the right.\relax }}{5}{figure.caption.5}}
-\newlabel{fig:shape_set}{{5}{5}{\footnotesize The Training objects on the right are the four objects used in training. The test objects on the left represent represent objects that were added in our test configurations. Every test configuration contained at least one of the objects on the right.\relax }{figure.caption.5}{}}
-\citation{bengio2009curriculum}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  Right: examples of training configurations we presented to the robot. The shapes were arranged around the goal object in different poses and in different parts of the workspace. At test time, we considered similar configurations but added some unknown objects not present in the test set. \relax }}{6}{figure.caption.6}}
-\newlabel{fig:suc_meas}{{6}{6}{\footnotesize Right: examples of training configurations we presented to the robot. The shapes were arranged around the goal object in different poses and in different parts of the workspace. At test time, we considered similar configurations but added some unknown objects not present in the test set. \relax }{figure.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {VI-B}Hierarchical Supervisors}{6}{subsection.6.2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {VI-C}Quality of Crowdsourced Supervisor}{6}{subsection.6.3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {VI-D}Advancing in the Hierarchy}{6}{subsection.6.4}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  The reliability or $\rho $ and the amount of trials of each policy trained with a supervisor is reported. The bar graphs show how many successful and failed grasps in clutter occurred. The top row reports results for the MPIO ($\rho = 30\%$), Crowdsource ($\rho = 35\%$) and Human Expert ($\rho = 55\%$) supervisor in isolation. The bottom row corresponds to hierarchical supervisors: MPIO then CrowdSourced ($\rho = 45\%$), MPIO then Human Expert ($\rho = 60\%$) and MPIO then CrowdSourced then Human Expert ($\rho = 80\%$). All policies expect for the full hierarchy are trained on 160 trials. The final full hierarchy is able to scale to 320 trials on the robot and achieve a reliability of $80\%$\relax }}{7}{figure.caption.7}}
-\newlabel{fig:perf_results}{{7}{7}{\footnotesize The reliability or $\rho $ and the amount of trials of each policy trained with a supervisor is reported. The bar graphs show how many successful and failed grasps in clutter occurred. The top row reports results for the MPIO ($\rho = 30\%$), Crowdsource ($\rho = 35\%$) and Human Expert ($\rho = 55\%$) supervisor in isolation. The bottom row corresponds to hierarchical supervisors: MPIO then CrowdSourced ($\rho = 45\%$), MPIO then Human Expert ($\rho = 60\%$) and MPIO then CrowdSourced then Human Expert ($\rho = 80\%$). All policies expect for the full hierarchy are trained on 160 trials. The final full hierarchy is able to scale to 320 trials on the robot and achieve a reliability of $80\%$\relax }{figure.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {VI-E}Scaling the Hierarchy}{7}{subsection.6.5}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The four failure modes in our test set on the fully trained policy. On the left the robot sweeps to far and the collision objects jam up against the edge of the work space. On the right, both the banana-shaped object and the boot-shaped object are prone to get entrapped in the gripper during pushing and prevent the gripper from reaching the circle. \relax }}{7}{figure.caption.8}}
-\newlabel{fig:failure_modes}{{8}{7}{\footnotesize The four failure modes in our test set on the fully trained policy. On the left the robot sweeps to far and the collision objects jam up against the edge of the work space. On the right, both the banana-shaped object and the boot-shaped object are prone to get entrapped in the gripper during pushing and prevent the gripper from reaching the circle. \relax }{figure.caption.8}{}}
+\newlabel{eq:LFD_obj}{{1}{5}{Online Learning From Demonstrations}{equation.4.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Approach and Background}{5}{section.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {V-A}Details on DAgger: Dataset Aggregation}{5}{subsection.5.1}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {V-A.1}Step 1}{5}{subsubsection.5.1.1}}
+\newlabel{eq:super_objj}{{2}{5}{Step 1}{equation.5.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {V-A.2}Step 2}{5}{subsubsection.5.1.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {V-B}DAgger with Supervisor Hierarchy}{5}{subsection.5.2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The Training objects on the right are the four objects used in training. The test objects on the left represent represent objects that were added in our test configurations. Every test configuration contained at least one of the objects on the right.\relax }}{6}{figure.caption.4}}
+\newlabel{fig:shape_set}{{4}{6}{\footnotesize The Training objects on the right are the four objects used in training. The test objects on the left represent represent objects that were added in our test configurations. Every test configuration contained at least one of the objects on the right.\relax }{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  Right: examples of training configurations we presented to the robot. The shapes were arranged around the goal object in different poses and in different parts of the workspace. At test time, we considered similar configurations but added some unknown objects not present in the test set. \relax }}{6}{figure.caption.5}}
+\newlabel{fig:suc_meas}{{5}{6}{\footnotesize Right: examples of training configurations we presented to the robot. The shapes were arranged around the goal object in different poses and in different parts of the workspace. At test time, we considered similar configurations but added some unknown objects not present in the test set. \relax }{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Experiments}{6}{section.6}}
+\newlabel{sec:Exp}{{VI}{6}{Experiments}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-A}Experimental Setup}{6}{subsection.6.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-B}Three Types of Supervisors}{6}{subsection.6.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-C}Full Hierarchy}{6}{subsection.6.3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces  \relax \fontsize  {8}{9pt}\selectfont  The reliability or $\rho $, which is a measure of performance on previously unseen objects, of each policy trained with a supervisor is reported. The bar graphs shows the number of successful and failed trials. The top row reports results for the MPIO ($\rho = 30\%$), Crowd-Sourced ($\rho = 35\%$) and Expert ($\rho = 55\%$) supervisor in isolation. The bottom left and middle correspond to hierarchical supervisors: MPIO then Crowd-Sourced ($\rho = 45\%$) and MPIO then Expert ($\rho = 60\%$). All policies expect for the full hierarchy (bottom right) are trained on 160 demonstrations. The full hierarchy (bottom right) has a fix budget of 160 Expert demonstrations, but first leverages MPIO and Crowd-Sourced Supervisors until no improvement in reward from their demonstrations and is able to achieve a reliability of $\rho = 90\%$\relax }}{7}{figure.caption.6}}
+\newlabel{fig:perf_results}{{6}{7}{\footnotesize The reliability or $\rho $, which is a measure of performance on previously unseen objects, of each policy trained with a supervisor is reported. The bar graphs shows the number of successful and failed trials. The top row reports results for the MPIO ($\rho = 30\%$), Crowd-Sourced ($\rho = 35\%$) and Expert ($\rho = 55\%$) supervisor in isolation. The bottom left and middle correspond to hierarchical supervisors: MPIO then Crowd-Sourced ($\rho = 45\%$) and MPIO then Expert ($\rho = 60\%$). All policies expect for the full hierarchy (bottom right) are trained on 160 demonstrations. The full hierarchy (bottom right) has a fix budget of 160 Expert demonstrations, but first leverages MPIO and Crowd-Sourced Supervisors until no improvement in reward from their demonstrations and is able to achieve a reliability of $\rho = 90\%$\relax }{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {VI-D}Advancing in the Hierarchy}{7}{subsection.6.4}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The performance of each policy trained with a different data management strategy is reported. The bar graph show the breakdown in terms of Failure and Success on the test configurations.Each policy was trained with the MPIO and then the Human Expert supervisor. From left to right , we display the following: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) \relax }}{7}{figure.caption.7}}
+\newlabel{fig:cost_result}{{7}{7}{\footnotesize The performance of each policy trained with a different data management strategy is reported. The bar graph show the breakdown in terms of Failure and Success on the test configurations.Each policy was trained with the MPIO and then the Human Expert supervisor. From left to right , we display the following: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) \relax }{figure.caption.7}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {VII}Discussions and Future Work}{7}{section.7}}
 \bibstyle{IEEEtranS}
 \bibdata{references}
@@ -116,28 +128,31 @@
 \bibcite{opencv_library}{7}
 \bibcite{chernova2009interactive}{8}
 \bibcite{cosgun2011push}{9}
-\bibcite{duvallet2013imitation}{10}
-\bibcite{grollman2007dogged}{11}
-\bibcite{NIPS2014_5421}{12}
-\bibcite{judah2011active}{13}
-\bibcite{katz2008can}{14}
-\bibcite{kim2013maximum}{15}
-\bibcite{kingnonprehensile}{16}
-\bibcite{kitaevphysics}{17}
-\bibcite{laskeyshiv}{18}
-\bibcite{leeper2012strategies}{19}
-\bibcite{levine2015end}{20}
-\bibcite{mason1986mechanics}{21}
-\bibcite{nieuwenhuisen2013mobile}{22}
-\bibcite{pinto2015supersizing}{23}
-\bibcite{ross2010efficient}{24}
-\bibcite{ross2010reduction}{25}
-\bibcite{ross2013learning}{26}
-\bibcite{sanger1994neural}{27}
-\bibcite{scholkopf2002learning}{28}
-\bibcite{sutton1998reinforcement}{29}
-\bibcite{van2010superhuman}{30}
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces \relax \fontsize  {8}{9pt}\selectfont  The performance of each policy trained with a different data management strategy is reported. The bar graphs shows the breakdown in terms of situations the policy encountered on the test set. Each policy was trained with the MPIO then Human Expert hierarchical supervisor. From left to right is the following data management strategies: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) \relax }}{8}{figure.caption.9}}
-\newlabel{fig:cost_result}{{9}{8}{\footnotesize The performance of each policy trained with a different data management strategy is reported. The bar graphs shows the breakdown in terms of situations the policy encountered on the test set. Each policy was trained with the MPIO then Human Expert hierarchical supervisor. From left to right is the following data management strategies: Dataset Aggregation, Weight Transfer and Regularization. Regularization achieves the highest performing reliability of ($\rho = 0.65\%$) \relax }{figure.caption.9}{}}
+\bibcite{dogar2012physics}{10}
+\bibcite{dogar2011framework}{11}
+\bibcite{duvallet2013imitation}{12}
+\bibcite{grollman2007dogged}{13}
+\bibcite{NIPS2014_5421}{14}
+\bibcite{judah2011active}{15}
+\bibcite{katz2008can}{16}
+\bibcite{kim2013maximum}{17}
+\bibcite{kingnonprehensile}{18}
+\bibcite{kitaevphysics}{19}
+\bibcite{krizhevsky2012imagenet}{20}
+\bibcite{laskeyshiv}{21}
+\bibcite{leeper2012strategies}{22}
+\bibcite{levine2015end}{23}
+\bibcite{mason1986mechanics}{24}
+\bibcite{nieuwenhuisen2013mobile}{25}
+\bibcite{pinto2015supersizing}{26}
+\bibcite{ross2010efficient}{27}
+\bibcite{ross2010reduction}{28}
+\bibcite{ross2013learning}{29}
+\bibcite{sanger1994neural}{30}
+\bibcite{scholkopf2002learning}{31}
+\bibcite{stilman2007manipulation}{32}
+\bibcite{sutton1998reinforcement}{33}
+\bibcite{van2010superhuman}{34}
+\bibcite{van2009path}{35}
 \@writefile{toc}{\contentsline {section}{\numberline {VIII}Acknowledgments}{8}{section.8}}
-\@writefile{toc}{\contentsline {section}{References}{8}{section*.10}}
+\@writefile{toc}{\contentsline {section}{References}{8}{section*.8}}
